@@ -1,0 +1,4 @@
+.git_archival.txt  export-subst
+
+# Auto detect text files and perform LF normalization
+* text=auto
