@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=61", "pooch", "tqdm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,6 +12,7 @@ description = "Binaries for the Hugo static site generator, installable with pip
 readme = "README.md"
 license.file = "LICENSE"
 requires-python = ">=3.8"
+dynamic = ["scripts"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
