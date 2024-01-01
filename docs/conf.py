@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import importlib.metadata
 
-project = "hugo-python-distributions"
+project = "python-hugo"
 copyright = "2023, Agriya Khetarpal"
 author = "Agriya Khetarpal"
 version = release = importlib.metadata.version("python-hugo")
