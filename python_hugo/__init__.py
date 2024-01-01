@@ -24,19 +24,27 @@ try:
         "binaries",
         f"hugo-{hugo_version}"
     )
+    if not os.path.exists(hugo_executable):
+        raise FileNotFoundError
 except FileNotFoundError:
     hugo_executable = os.path.join(
+        # Go up into the venv directory and down into the data files
         os.path.dirname(
             os.path.dirname(
+                os.path.dirname(
+            os.path.dirname(
                 os.path.dirname(__file__)
+                    )
+                )
             )
         ),
         "binaries",
         f"hugo-{hugo_version}",
     )
+    if not os.path.exists(hugo_executable):
+        raise FileNotFoundError
 except Exception as e:
     print(f"Error: {e}")
-    print("Please open an issue")
 
 def __call():
     """
