@@ -1,1 +1,2 @@
+include licenses/LICENSE-hugo.txt
 exclude python_hugo/binaries/*
