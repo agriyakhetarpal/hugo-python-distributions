@@ -34,7 +34,6 @@ classifiers = [
   "Topic :: Internet :: WWW/HTTP :: Browsers",
   "Topic :: Utilities",
 ]
-dependencies = []
 
 [project.optional-dependencies]
 dev = [
