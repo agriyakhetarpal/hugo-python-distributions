@@ -114,11 +114,8 @@ setup(
     # TODO: data_files is deprecated for wheels, so we need to find a better way to
     # include the binary in the wheel
     data_files=[("binaries", [f"python_hugo/binaries/hugo-{HUGO_VERSION}"])],
-    # Add Hugo binary as a dynamic console script entry point but with its version
-    # number. This is done so that users can run, say, `hugo_0.X.Y` to run
-    # Hugo 0.X.Y, even if they have multiple versions of Hugo installed.
     entry_points={
-        "console_scripts": [rf"hugo_{HUGO_VERSION}=python_hugo.__init__:__call"]
+        "console_scripts": ["hugo=python_hugo.__init__:__call"]
     },
     version=HUGO_VERSION,
 )
