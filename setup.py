@@ -118,7 +118,7 @@ setup(
     # number. This is done so that users can run, say, `hugo_0.X.Y` to run
     # Hugo 0.X.Y, even if they have multiple versions of Hugo installed.
     entry_points={
-        "console_scripts": [rf"hugo=python_hugo.__init__:__call"]
+        "console_scripts": [rf"hugo_{HUGO_VERSION}=python_hugo.__init__:__call"]
     },
     version=HUGO_VERSION,
 )
