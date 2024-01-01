@@ -21,6 +21,7 @@ def lint(session: nox.Session) -> None:
         "pre-commit", "run", "--all-files", "--show-diff-on-failure", *session.posargs
     )
 
+
 @nox.session(reuse_venv=True)
 def docs(session: nox.Session) -> None:
     """
@@ -61,6 +62,7 @@ def docs(session: nox.Session) -> None:
         session.run("sphinx-autobuild", *shared_args)
     else:
         session.run("sphinx-build", "--keep-going", *shared_args)
+
 
 @nox.session
 def release(session: nox.Session) -> None:
