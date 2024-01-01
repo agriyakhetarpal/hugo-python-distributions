@@ -3,8 +3,8 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hugo-python-distributions"
-version = "0.1.0"
+name = "python-hugo"
+version = "0.120.4"
 authors = [
   { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
 ]
