@@ -4,7 +4,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "python-hugo"
-version = "0.120.4"
 authors = [
   { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
 ]
@@ -12,7 +11,7 @@ description = "Binaries for the Hugo static site generator, installable with pip
 readme = "README.md"
 license.file = "LICENSE"
 requires-python = ">=3.8"
-dynamic = ["scripts"]
+dynamic = ["scripts", "version"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -38,24 +37,22 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest >=6",
+  "pytest>=6",
 ]
 docs = [
   "sphinx>=7.0",
   "myst_parser>=0.13",
   "sphinx_copybutton",
-  "sphinx_autodoc_typehints",
   "furo>=2023.08.17",
 ]
 
 [project.urls]
 Homepage = "https://github.com/agriyakhetarpal/hugo-python-distributions"
-"Bug Tracker" = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
-Discussions = "https://github.com/agriyakhetarpal/hugo-python-distributions/discussions"
+Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
 [tool.ruff]
-src = ["src"]
+src = ["python_hugo"]
 
 [tool.ruff.lint]
 extend-select = [
