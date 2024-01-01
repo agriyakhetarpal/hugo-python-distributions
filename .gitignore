@@ -172,3 +172,6 @@ go.work
 
 # macOS
 .DS_Store
+
+# Binaries
+python_hugo/binaries/*
