@@ -11,7 +11,8 @@ import sys
 
 import importlib.metadata
 
-hugo_version = importlib.metadata.version("python-hugo")
+HUGO_VERSION = importlib.metadata.version("python-hugo")
+FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 # On editable and source installs, we keep binaries in the package directory
 # for ease of use. On wheel installs, we keep them in the venv/binaries directory.
@@ -22,7 +23,7 @@ try:
     hugo_executable = os.path.join(
         os.path.dirname(__file__),
         "binaries",
-        f"hugo-{hugo_version}"
+        f"hugo-{HUGO_VERSION}" + FILE_EXT,
     )
     if not os.path.exists(hugo_executable):
         raise FileNotFoundError
@@ -39,7 +40,7 @@ except FileNotFoundError:
             )
         ),
         "binaries",
-        f"hugo-{hugo_version}",
+        f"hugo-{HUGO_VERSION}" + FILE_EXT,
     )
     if not os.path.exists(hugo_executable):
         raise FileNotFoundError
