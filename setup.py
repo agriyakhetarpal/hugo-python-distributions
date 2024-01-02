@@ -16,7 +16,7 @@ HUGO_RELEASE = (
 
 # Pooch will download the tarball into the OS cache directory.
 # We will point the build command to that location to build Hugo from source
-HUGO_CACHE_DIR = pooch.os_cache(".python_hugo")
+HUGO_CACHE_DIR = "hugo_cache"
 HUGO_SHA256 = "e374effe369c340d8085060e6bb45337eabf64cfe075295432ecafd6d033eb8b"
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
