@@ -55,7 +55,8 @@ jobs:
         run: |
           python -m build --wheel . --outdir dist/
 
-      - name: Test entry points for package
+      - name: Test entry points for package for macOS and Linux
+        if: matrix.runs-on != 'windows-latest'
         run: |
           python -m virtualenv venv
           source venv/bin/activate
@@ -63,3 +64,12 @@ jobs:
           hugo version
           hugo env --logLevel debug
 
+      - name: Test entry points for package for Windows
+        if: matrix.runs-on == 'windows-latest'
+        shell: bash
+        run: |
+          python -m virtualenv venv
+          venv\Scripts\activate
+          python -m pip install dist\*.whl
+          hugo version
+          hugo env --logLevel debug
