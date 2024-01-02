@@ -59,6 +59,8 @@ class HugoBuilder(build_ext):
             os.path.dirname(os.path.abspath(__file__)), "python_hugo", "binaries"
         )
 
+        os.environ["GOPATH"] = os.path.abspath(HUGO_CACHE_DIR)
+
         # Build Hugo from source using the Go toolchain, place it into GOBIN
         # Requires the following dependencies:
         #
@@ -74,7 +76,7 @@ class HugoBuilder(build_ext):
                 "-tags",
                 "extended",
             ],
-            cwd=os.path.join(HUGO_CACHE_DIR, f"hugo-{HUGO_VERSION}"),
+            cwd=os.path.abspath(os.path.join(HUGO_CACHE_DIR, f"hugo-{HUGO_VERSION}")),
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
