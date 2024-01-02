@@ -76,3 +76,12 @@ def release(session: nox.Session) -> None:
 
     session.install("build")
     session.run("python", "-m", "build")
+
+
+@nox.session(name="venv")
+def venv(session: nox.Session) -> None:
+    """Create a virtual environment and install wheels from the dist/ folder into it."""
+    for file in DIR.joinpath("dist").glob("*.whl"):
+        session.install(file)
+    session.run("hugo", "version")
+    session.run("hugo", "env", "--logLevel", "debug")
