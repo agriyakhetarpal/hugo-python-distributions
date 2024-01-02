@@ -175,3 +175,9 @@ go.work
 
 # Binaries
 python_hugo/binaries/*
+
+# ruff cache
+.ruff_cache/
+
+# Hugo builder cache
+hugo_cache/
