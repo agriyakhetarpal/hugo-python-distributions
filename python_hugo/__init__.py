@@ -19,6 +19,8 @@ FILE_EXT = ".exe" if sys.platform == "win32" else ""
 # On installing from a wheel, the binary is in the venv/binaries, but the package
 # is in venv/lib/python3.X/site-packages, so we need to go up two directories and
 # then down into binaries
+# Note: on Windows, this is venv\Lib\site-packages (instead of venv/lib/python3.X/site-packages)
+# therefore we need to go up to the venv directory and then down into the data files
 try:
     hugo_executable = os.path.join(
         os.path.dirname(__file__),
@@ -28,24 +30,38 @@ try:
     if not os.path.exists(hugo_executable):
         raise FileNotFoundError
 except FileNotFoundError:
-    hugo_executable = os.path.join(
-        # Go up into the venv directory and down into the data files
-        os.path.dirname(
+    if sys.platform == "win32":
+        PATH_TO_SEARCH = os.path.join(
             os.path.dirname(
                 os.path.dirname(
-            os.path.dirname(
-                os.path.dirname(__file__)
+                    os.path.dirname(
+                        os.path.dirname(__file__)
                     )
                 )
+            ),
+            "binaries"
+            ) # four times instead of five
+    else:
+        # five times instead of four
+        PATH_TO_SEARCH = os.path.join(
+            os.path.dirname(
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(
+                            os.path.dirname(__file__)
+                        )
+                    )
+                )
+            ),
+            "binaries"
             )
-        ),
-        "binaries",
-        f"hugo-{HUGO_VERSION}" + FILE_EXT,
-    )
+
+    # Go up into the venv directory and down into the data files
+    hugo_executable = os.path.join(PATH_TO_SEARCH, f"hugo-{HUGO_VERSION}" + FILE_EXT)
     if not os.path.exists(hugo_executable):
-        raise FileNotFoundError
+        raise FileNotFoundError from None
 except Exception as e:
-    print(f"Error: {e}")
+    sys.exit(f"Error: {e}")
 
 def __call():
     """
