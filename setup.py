@@ -54,15 +54,9 @@ class HugoBuilder(build_ext):
         with tarfile.open(hugo_targz) as tar:
             tar.extractall(path=HUGO_CACHE_DIR)
 
-        os.environ["CGO_ENABLED"] = "1"
-
-        if sys.platform != "win32":
-            os.environ["GOPATH"] = os.path.join(os.environ.get("HOME"), "go")
-        else:
-            os.environ["GOPATH"] = os.path.join(os.environ.get("USERPROFILE"), "go")
-
-        # The binary is put into GOBIN, which is set to the package directory (src/python_hugo/binaries)
+        # The binary is put into GOBIN, which is set to the package directory (python_hugo/binaries)
         # for use in editable mode. The binary is copied into the wheel afterwards
+        os.environ["CGO_ENABLED"] = "1"
         os.environ["GOBIN"] = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "python_hugo", "binaries"
         )
