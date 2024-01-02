@@ -18,8 +18,6 @@ HUGO_RELEASE = (
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = pooch.os_cache(".python_hugo")
 HUGO_SHA256 = "e374effe369c340d8085060e6bb45337eabf64cfe075295432ecafd6d033eb8b"
-# Path where the Hugo binary will be placed and copied from
-HUGO_BIN = os.path.join(os.environ.get("HOME"), "go")
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 
