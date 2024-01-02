@@ -1,7 +1,5 @@
 import os
-# TODO: add support for Windows
-# import sys
-# import platform
+import sys
 import subprocess
 import tarfile
 
@@ -22,6 +20,7 @@ HUGO_CACHE_DIR = pooch.os_cache(".python_hugo")
 HUGO_SHA256 = "e374effe369c340d8085060e6bb45337eabf64cfe075295432ecafd6d033eb8b"
 # Path where the Hugo binary will be placed and copied from
 HUGO_BIN = os.path.join(os.environ.get("HOME"), "go")
+FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 
 class HugoBuilder(build_ext):
@@ -56,7 +55,12 @@ class HugoBuilder(build_ext):
             tar.extractall(path=HUGO_CACHE_DIR)
 
         os.environ["CGO_ENABLED"] = "1"
-        os.environ["GOPATH"] = os.path.join(os.environ.get("HOME"), "go")
+
+        if sys.platform != "win32":
+            os.environ["GOPATH"] = os.path.join(os.environ.get("HOME"), "go")
+        else:
+            os.environ["GOPATH"] = os.path.join(os.environ.get("USERPROFILE"), "go")
+
         # The binary is put into GOBIN, which is set to the package directory (src/python_hugo/binaries)
         # for use in editable mode. The binary is copied into the wheel afterwards
         os.environ["GOBIN"] = os.path.join(
@@ -84,27 +88,17 @@ class HugoBuilder(build_ext):
 
         # Mangle the name of the compiled executable to include the version
         # of Hugo being built
-        original_name = os.path.join(os.environ.get("GOBIN"), "hugo")
-        new_name = os.path.join(os.environ.get("GOBIN"), f"hugo-{HUGO_VERSION}")
+        original_name = os.path.join(os.environ.get("GOBIN"), "hugo" + FILE_EXT)
+        new_name = os.path.join(
+            os.environ.get("GOBIN"), f"hugo-{HUGO_VERSION}" + FILE_EXT
+        )
         os.rename(original_name, new_name)
 
 
 setup(
-    ext_modules=[
-        Extension(
-            name="hugo.build",
-            sources=[
-                "setup.py"
-            ]
-        )
-    ],
-    cmdclass={
-        "build_ext": HugoBuilder
-    },
-    packages=[
-        "python_hugo",
-        "python_hugo.binaries"
-    ]
+    ext_modules=[Extension(name="hugo.build", sources=["setup.py"])],
+    cmdclass={"build_ext": HugoBuilder},
+    packages=["python_hugo", "python_hugo.binaries"]
     if os.path.exists("python_hugo/binaries")
     else ["python_hugo"],
     # Include binary named hugo-HUGO_VERSION in the wheel, which is presently stored
@@ -113,9 +107,7 @@ setup(
     # include_package_data=True,
     # TODO: data_files is deprecated for wheels, so we need to find a better way to
     # include the binary in the wheel
-    data_files=[("binaries", [f"python_hugo/binaries/hugo-{HUGO_VERSION}"])],
-    entry_points={
-        "console_scripts": ["hugo=python_hugo.__init__:__call"]
-    },
+    data_files=[("binaries", [f"python_hugo/binaries/hugo-{HUGO_VERSION}" + FILE_EXT])],
+    entry_points={"console_scripts": ["hugo=python_hugo.__init__:__call"]},
     version=HUGO_VERSION,
 )
