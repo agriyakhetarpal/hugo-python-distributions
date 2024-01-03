@@ -52,7 +52,6 @@ For more information on using Hugo and its command-line interface, please refer 
 
 ## Supported platforms
 
-<!-- Add a table -->
 | Platform | Architecture | Supported        |
 | -------- | ------------ | ---------------- |
 | macOS    | x86_64       | ✅               |
@@ -60,7 +59,6 @@ For more information on using Hugo and its command-line interface, please refer 
 | Linux    | amd64        | ✅               |
 | Linux    | arm64        | Coming soon      |
 | Windows  | x86_64       | ✅               |
-| Windows  | arm64        | Coming soon      |
 
 ## Building from source
 
