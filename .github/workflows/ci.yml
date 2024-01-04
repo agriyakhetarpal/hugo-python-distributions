@@ -61,7 +61,7 @@ jobs:
 
       - name: Build binary distribution (wheel)
         run: |
-          python -m build --wheel . --outdir dist/
+          python -m build --wheel . --outdir wheelhouse/
 
       - name: Save Hugo builder cache
         uses: actions/cache/save@v3
