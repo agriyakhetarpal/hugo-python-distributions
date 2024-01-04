@@ -77,8 +77,9 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
-          CIBW_TEST_REQUIRES: nox
-          CIBW_TEST_COMMAND: python -m nox -s venv
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -118,8 +119,9 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
-          CIBW_TEST_REQUIRES: nox
-          CIBW_TEST_COMMAND: python -m nox -s venv
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -157,8 +159,9 @@ jobs:
         env:
           CIBW_ARCHS_MACOS: x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
-          CIBW_TEST_REQUIRES: nox
-          CIBW_TEST_COMMAND: python -m nox -s venv
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -199,8 +202,9 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: >
             GOARCH="arm64"
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
-          CIBW_TEST_REQUIRES: nox
-          CIBW_TEST_COMMAND: python -m nox -s venv
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
