@@ -22,9 +22,6 @@ pip install hugo-python
 
 This places a `hugo` executable in a `binaries` directory in your virtual environment and adds an entry point to it.
 
-> [!IMPORTANT]
-> It is currently necessary to use a virtual environment to install and use isolated version of Hugo. Please refer to https://github.com/agriyakhetarpal/hugo-python-distributions/issues/7
-
 > [!TIP]
 > You can, however, use [`pipx`](https://github.com/pypa/pipx) to install Hugo in an isolated environment without having to create a virtual environment manually, allowing you to use Hugo as a command-line tool without having to install it globally on your system. Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
 
