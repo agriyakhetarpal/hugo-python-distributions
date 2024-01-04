@@ -51,7 +51,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@v3.3.2
+        uses: actions/cache/restore@v3
         with:
           path: ./hugo_cache/
           key: ${{ runner.os }}-${{ matrix.go-version }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
@@ -62,6 +62,12 @@ jobs:
       - name: Build binary distribution (wheel)
         run: |
           python -m build --wheel . --outdir dist/
+
+      - name: Save Hugo builder cache
+        uses: actions/cache/save@v3
+        with:
+          path: ./hugo_cache/
+          key: ${{ runner.os }}-${{ matrix.go-version }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
 
       - name: Test entry points for package
         run: nox -s venv
