@@ -204,9 +204,7 @@ class Cleaner(Command):
 
         for path_spec in files_to_clean:
             # Make paths absolute and relative to this path
-            abs_paths = glob.glob(
-                os.path.normpath(os.path.join(here, path_spec))
-            )
+            abs_paths = glob.glob(os.path.normpath(os.path.join(here, path_spec)))
             for path in [str(p) for p in abs_paths]:
                 if not path.startswith(here):
                     # raise error if path in files_to_clean is absolute + outside
@@ -243,9 +241,17 @@ class HugoWheel(bdist_wheel):
         if sys.platform == "darwin":
             platform_tag = get_platform("_")
             # ensure correct platform tag for macOS arm64 and macOS x86_64
-            if "arm64" in platform_tag and os.environ.get("GOARCH") == "amd64":
+            # macOS 3.12 Python runners are mislabelling the platform tag to be universal2
+            # see: https://github.com/pypa/wheel/issues/573. we will explicitly rename the
+            # universal2 tag to macosx_X_Y_arm64 or macosx_X_Y_x86_64 respectively, since
+            # we fuse the wheels together later anyway.
+            if (("arm64" in platform_tag) or ("univeral2" in platform_tag)) and (
+                os.environ.get("GOARCH") == "amd64"
+            ):
                 self.plat_name = platform_tag.replace("arm64", "x86_64")
-            if "x86_64" in platform_tag and os.environ.get("GOARCH") == "arm64":
+            if (("x86_64" in platform_tag) or ("universal2" in platform_tag)) and (
+                os.environ.get("GOARCH") == "arm64"
+            ):
                 self.plat_name = platform_tag.replace("x86_64", "arm64")
         super().finalize_options()
 
