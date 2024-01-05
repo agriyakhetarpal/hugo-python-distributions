@@ -90,7 +90,7 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
-  linux_wheels:
+  linux_amd64_wheels:
     strategy:
       fail-fast: false
     name: Linux wheels
@@ -104,9 +104,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.8
-
-      - name: Install GCC
-        run: sudo apt-get install gcc
 
       - uses: pypa/cibuildwheel@v2.16.2
         with:
@@ -130,7 +127,47 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: linux_wheels
+          name: linux_amd64_wheels
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  linux_aarch64_wheels:
+    strategy:
+      fail-fast: false
+    name: Linux wheels (arm64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - name: Set up QEMU for emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+
+      - uses: pypa/cibuildwheel@v2.16.2
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: aarch64
+          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux_aarch64_wheels
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
@@ -242,7 +279,7 @@ jobs:
           cp macos_x86_64_wheels/*.whl wheelhouse_x86_64/
           cp macos_arm64_wheels/*.whl wheelhouse_arm64/
           python -m pip install delocate
-          python scripts/ci/tools/fuse_wheels.py ./wheelhouse_x86_64 ./wheelhouse_arm64 ./wheelhouse_universal2
+          python scripts/ci/tools/macos/fuse_wheels.py ./wheelhouse_x86_64 ./wheelhouse_arm64 ./wheelhouse_universal2
 
       - name: Upload combined macOS wheels
         uses: actions/upload-artifact@v4
@@ -252,7 +289,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [sdist, windows_wheels, linux_wheels, combined_macos_wheels]
+    needs: [sdist, windows_wheels, linux_amd64_wheels, linux_aarch64_wheels, combined_macos_wheels]
     name: Publish to PyPI or TestPyPI
     # environment: release
     # permissions:
@@ -267,7 +304,7 @@ jobs:
       - name: Move all artifacts to upload directory
         run: |
           mkdir upload
-          mv sdist windows_wheels/* linux_wheels/* combined_macos_wheels/* upload/
+          mv sdist windows_wheels/* linux_amd64_wheels/* linux_aarch64_wheels/* combined_macos_wheels/* upload/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: github.event_name == 'release' && github.event.action == 'published'
