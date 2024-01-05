@@ -304,7 +304,7 @@ jobs:
       - name: Move all artifacts to upload directory
         run: |
           mkdir upload
-          mv sdist windows_wheels/* linux_amd64_wheels/* linux_aarch64_wheels/* combined_macos_wheels/* upload/
+          mv source_distribution/* windows_wheels/* linux_amd64_wheels/* linux_aarch64_wheels/* combined_macos_wheels/* upload/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: github.event_name == 'release' && github.event.action == 'published'
