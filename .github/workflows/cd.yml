@@ -93,7 +93,7 @@ jobs:
   linux_amd64_wheels:
     strategy:
       fail-fast: false
-    name: Linux wheels
+    name: Linux wheels (amd64)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
   linux_aarch64_wheels:
     strategy:
       fail-fast: false
-    name: Linux wheels (arm64)
+    name: Linux wheels (aarch64)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
