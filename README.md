@@ -7,13 +7,13 @@
 
 <!-- SPHINX-START -->
 
-Binaries for the Hugo static site generator, installable via `pip`
+Binaries for the extended version of the Hugo static site generator, installable via `pip`
 
 This package provides wheels for [Hugo](https://gohugo.io/) to be used with `pip` on macOS, Linux, and Windows.
 
 ## Quickstart
 
-Create a virtual environment and install the package:
+Create a virtual environment and install the package (or install it globally on your system):
 
 ```bash
 python -m virtualenv venv  # (or your preferred method of creating virtual environments)
@@ -55,17 +55,30 @@ For more information on using Hugo and its command-line interface, please refer 
 
 ## Supported platforms
 
-| Platform | Architecture | Supported        |
-| -------- | ------------ | ---------------- |
-| macOS    | x86_64       | ✅               |
-| macOS    | arm64        | ✅               |
-| Linux    | amd64        | ✅               |
-| Linux    | arm64        | Coming soon      |
-| Windows  | x86_64       | ✅               |
+A subset of the platforms supported by Hugo itself are supported by `python-hugo`. The plan is to support as many platforms as possible with Python wheels and platform tags. Please refer to the following table for a list of supported platforms and architectures:
+
+| Platform | Architecture    | Supported                       |
+| -------- | --------------- | ------------------------------- |
+| macOS    | x86_64 (Intel)  | ✅                              |
+| macOS    | arm64 (Silicon) | ✅                              |
+| Linux    | amd64           | ✅                              |
+| Linux    | arm64           | ✅                              |
+| Windows  | x86_64          | ✅                              |
+| Windows  | i686            | ❌ Will not receive support[^1] |
+| Windows  | arm64           | 💡 Probable[^3]                 |
+| DragonFlyBSD | amd64       | ❌ Will not receive support[^2] |
+| FreeBSD  | amd64           | ❌ Will not receive support[^2] |
+| OpenBSD  | amd64           | ❌ Will not receive support[^2] |
+| NetBSD   | amd64           | ❌ Will not receive support[^2] |
+| Solaris  | amd64           | ❌ Will not receive support[^2] |
+
+[^1]: Windows 32-bit support is possible to include, but hasn't been included due to the diminishing popularity of i686 instruction set-based systems and the lack of resources to test and build for it. If you need support for Windows 32-bit, please consider either using the official Hugo binaries or compiling from [HugoReleaser](https://github.com/gohugoio/hugoreleaser).
+[^2]: Support for these platforms is not possible to include because of i. the lack of resources to test and build for them and ii. the lack of support for these platform specifications in Python packaging standards and tooling. If you need support for these platforms, please consider downloading the [official Hugo binaries](https://github.com/gohugoio/hugo/releases)
+[^3]: Support for Windows ARM64 is possible to include, but `cibuildwheel` support for it is currently experimental. Hugo does not officially support Windows ARM64 at the moment, but it should be possible to build from source for it and can receive support in the future through this package.
 
 ## Building from source
 
-Building Hugo from source requires the following dependencies:
+Building the extended version of Hugo from source requires the following dependencies:
 
 - [Go](https://go.dev/doc/install) toolchain
 - [Git](https://git-scm.com/downloads)

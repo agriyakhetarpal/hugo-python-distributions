@@ -16,13 +16,12 @@ env:
 
 jobs:
   build:
-    name: Wheels (${{ matrix.runs-on }} / Python ${{ matrix.python-version }} / Go ${{ matrix.go-version }})
+    name: Wheels (${{ matrix.runs-on }} / Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.12"]
-        go-version: ["1.20.x", "1.21.x"]
         runs-on: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
@@ -38,7 +37,7 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: "1.21.x"
           cache: false
           check-latest: true
 
@@ -54,20 +53,20 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: ./hugo_cache/
-          key: ${{ runner.os }}-${{ matrix.go-version }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
+          key: ${{ runner.os }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
 
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox
 
       - name: Build binary distribution (wheel)
         run: |
-          python -m build --wheel . --outdir dist/
+          python -m build --wheel . --outdir wheelhouse/
 
       - name: Save Hugo builder cache
         uses: actions/cache/save@v3
         with:
           path: ./hugo_cache/
-          key: ${{ runner.os }}-${{ matrix.go-version }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
+          key: ${{ runner.os }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
 
       - name: Test entry points for package
         run: nox -s venv
