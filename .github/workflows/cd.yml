@@ -113,9 +113,9 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_BEFORE_ALL_LINUX: >
-            sudo add-apt-repository ppa:longsleep/golang-backports
-            sudo apt-get update
-            sudo apt-get install golang-go
+            add-apt-repository ppa:longsleep/golang-backports
+            apt-get update
+            apt-get install golang-go
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
           CIBW_TEST_COMMAND: >
             hugo version
