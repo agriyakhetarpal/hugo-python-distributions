@@ -104,13 +104,6 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Set up Go toolchain
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21.x'
-          cache: false
-          check-latest: true
-
       - name: Install GCC
         run: sudo apt-get install gcc
 
@@ -119,6 +112,10 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
+          CIBW_BEFORE_ALL_LINUX: >
+            sudo add-apt-repository ppa:longsleep/golang-backports
+            sudo apt-get update
+            sudo apt-get install golang-go
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
           CIBW_TEST_COMMAND: >
             hugo version
