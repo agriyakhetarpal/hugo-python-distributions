@@ -7,9 +7,12 @@ name = "python-hugo"
 authors = [
   { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
 ]
+maintainers = [
+  { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
+]
 description = "Binaries for the Hugo static site generator, installable with pip"
 readme = "README.md"
-license.file = "LICENSE"
+license = "Apache-2.0"
 requires-python = ">=3.8"
 dynamic = ["scripts", "version"]
 classifiers = [
@@ -35,17 +38,6 @@ classifiers = [
   "Topic :: Utilities",
 ]
 
-[project.optional-dependencies]
-dev = [
-  "pytest>=6",
-]
-docs = [
-  "sphinx>=7.0",
-  "myst_parser>=0.13",
-  "sphinx_copybutton",
-  "furo>=2023.08.17",
-]
-
 [project.urls]
 Homepage = "https://github.com/agriyakhetarpal/hugo-python-distributions"
 Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
@@ -53,8 +45,6 @@ Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releas
 
 [tool.ruff]
 src = ["python_hugo"]
-
-[tool.ruff.lint]
 extend-select = [
   "B",        # flake8-bugbear
   "I",        # isort
@@ -84,5 +74,5 @@ ignore = [
   "ISC001",   # Conflicts with formatter
 ]
 
-[tool.ruff.lint.per-file-ignores]
+[tool.ruff.per-file-ignores]
 "noxfile.py" = ["T20"]
