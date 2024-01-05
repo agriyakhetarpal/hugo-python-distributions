@@ -13,6 +13,7 @@ elif [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
 else
     echo "Unsupported architecture: $arch"
     exit 1
+fi
 
 wget https://golang.org/dl/$tarball
 mkdir $HOME/go_installed/
