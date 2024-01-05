@@ -26,7 +26,6 @@ HUGO_ARCH = {
     "aarch64": "arm64",
 }[platform.machine()]
 
-
 @lru_cache(maxsize=1)
 def hugo_executable():
     """
@@ -38,9 +37,12 @@ def hugo_executable():
         f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}" + FILE_EXT,
     )
 
+MESSAGE = f"Running Hugo {HUGO_VERSION} via python-hugo at {hugo_executable()}"
 
 def __call():
     """
     Hugo binary entry point. Passes all command-line arguments to Hugo.
     """
+    # send to stdout a message that we are using the python-hugo wrapper
+    print(MESSAGE)
     os.execvp(hugo_executable(), ["hugo", *sys.argv[1:]])
