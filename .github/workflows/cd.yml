@@ -112,6 +112,7 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
+          CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_ALL_LINUX: >
             yum install wget &&
             wget https://golang.org/dl/go1.21.5.linux-amd64.tar.gz &&
