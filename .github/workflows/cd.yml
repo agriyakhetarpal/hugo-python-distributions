@@ -78,6 +78,7 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
+          CIBW_ARCHS_WINDOWS: AMD64
           CIBW_TEST_COMMAND: >
             hugo version
             hugo env --logLevel debug
