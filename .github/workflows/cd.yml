@@ -117,10 +117,11 @@ jobs:
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y wget &&
             wget https://golang.org/dl/go1.21.5.linux-amd64.tar.gz &&
-            mkdir go_installed &&
-            tar -C go_installed/ -xzf go1.21.5.linux-amd64.tar.gz &&
-            export PATH="go_installed/go/bin:$PATH" &&
+            mkdir $HOME/go_installed &&
+            tar -C $HOME/go_installed/ -xzf go1.21.5.linux-amd64.tar.gz &&
+            export PATH="$HOME/go_installed/go/bin:$PATH" &&
             go version
+          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
           CIBW_TEST_COMMAND: >
             hugo version
