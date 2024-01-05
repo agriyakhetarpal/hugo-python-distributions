@@ -287,11 +287,11 @@ jobs:
   publish:
     needs: [sdist, windows_wheels, linux_amd64_wheels, linux_aarch64_wheels, combined_macos_wheels]
     name: Publish to PyPI or TestPyPI
-    # environment: release
-    # permissions:
-    #   id-token: write
+    environment: release
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
-    # if: github.event_name == 'release' && github.event.action == 'published'
+    if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
       - name: Download all artifacts
