@@ -81,10 +81,7 @@ def release(session: nox.Session) -> None:
 @nox.session(name="venv")
 def venv(session: nox.Session) -> None:
     """Create a virtual environment and install wheels from a specified folder into it."""
-    if session.interactive:
-        folder = "dist"
-    else:
-        folder = "wheelhouse"
+    folder = "dist" if session.interactive else "wheelhouse"
     session.log(f"Installing wheels from {folder}")
     for file in DIR.joinpath(folder).glob("*.whl"):
         session.install(file)
