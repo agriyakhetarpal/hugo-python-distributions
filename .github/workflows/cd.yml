@@ -167,6 +167,40 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
+  repair_linux_wheels:
+    name: Repair Linux wheels
+    runs-on: ubuntu-latest
+    needs: [linux_amd64_wheels, linux_aarch64_wheels]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Linux wheels for both architectures
+        uses: actions/download-artifact@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Repair Linux wheels to add conformant platform tags
+        run: |
+          mkdir wheelhouse_amd64
+          mkdir wheelhouse_aarch64
+          mkdir repaired_linux_wheels
+          cp linux_amd64_wheels/*.whl wheelhouse_amd64/
+          cp linux_aarch64_wheels/*.whl wheelhouse_aarch64/
+          python scripts/ci/tools/linux/repair_wheels.py ./wheelhouse_amd64 ./repaired_linux_wheels
+          python scripts/ci/tools/linux/repair_wheels.py ./wheelhouse_aarch64 ./repaired_linux_wheels
+
+      - name: Upload repaired Linux wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: repaired_linux_wheels
+          path: ./repaired_linux_wheels/*.whl
+          if-no-files-found: error
+
   macos_x86_64_wheels:
     strategy:
       fail-fast: false
@@ -285,7 +319,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [sdist, windows_wheels, linux_amd64_wheels, linux_aarch64_wheels, combined_macos_wheels]
+    needs: [sdist, windows_wheels, repair_linux_wheels, combined_macos_wheels]
     name: Publish to PyPI or TestPyPI
     environment: release
     permissions:
@@ -300,7 +334,7 @@ jobs:
       - name: Move all artifacts to upload directory
         run: |
           mkdir upload
-          mv source_distribution/* windows_wheels/* linux_amd64_wheels/* linux_aarch64_wheels/* combined_macos_wheels/* upload/
+          mv source_distribution/* windows_wheels/* repaired_linux_wheels/* combined_macos_wheels/* upload/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: github.event_name == 'release' && github.event.action == 'published'
@@ -308,3 +342,4 @@ jobs:
           # Remember to tell (test-)pypi about this repo before publishing
           # Remove this line to publish to PyPI
           repository-url: https://test.pypi.org/legacy/
+          packages-dir: upload
