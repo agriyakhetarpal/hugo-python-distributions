@@ -12,8 +12,7 @@ import sys
 from pathlib import Path
 from functools import lru_cache
 
-# Read Hugo version from VERSION file in repository root
-HUGO_VERSION = Path(__file__).parent.parent.joinpath("HUGO_VERSION").read_text().strip()
+HUGO_VERSION = "0.121.1"
 
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 HUGO_PLATFORM = {
