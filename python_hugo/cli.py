@@ -6,13 +6,15 @@ python-hugo: Binaries for the Hugo static site generator, installable with pip
 
 from __future__ import annotations
 
-import importlib.metadata
 import os
 import platform
 import sys
+from pathlib import Path
 from functools import lru_cache
 
-HUGO_VERSION = importlib.metadata.version("python-hugo")
+# Read Hugo version from VERSION file in repository root
+HUGO_VERSION = Path(__file__).parent.parent.joinpath("HUGO_VERSION").read_text().strip()
+
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 HUGO_PLATFORM = {
     "darwin": "darwin",
