@@ -9,7 +9,7 @@
 
 Binaries for the extended version of the Hugo static site generator, installable via `pip`
 
-This package provides wheels for [Hugo](https://gohugo.io/) to be used with `pip` on macOS, Linux, and Windows.
+This package provides wheels for [Hugo](https://gohugo.io/) to be used with `pip` on macOS, Linux, and Windows; for Python versions 3.8–3.12.
 
 ## What is Hugo?
 
