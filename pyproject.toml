@@ -12,9 +12,10 @@ maintainers = [
 ]
 description = "Binaries for the Hugo static site generator, installable with pip"
 readme = "README.md"
+version = "24.1.0"
 license = {text = "Apache License v2.0"}
 requires-python = ">=3.8"
-dynamic = ["scripts", "version"]
+dynamic = ["scripts"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",

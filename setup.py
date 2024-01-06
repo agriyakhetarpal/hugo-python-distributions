@@ -14,7 +14,9 @@ from wheel.bdist_wheel import bdist_wheel, get_platform
 from wheel.macosx_libfile import calculate_macosx_platform_tag
 
 # Keep in sync with pyproject.toml and update SHA-256 hashes accordingly
-HUGO_VERSION = "0.120.4"
+
+# read Hugo version from VERSION file
+HUGO_VERSION = Path("HUGO_VERSION").read_text().strip()
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
 )
@@ -22,7 +24,7 @@ HUGO_RELEASE = (
 # The pooch tool will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
-HUGO_SHA256 = "e374effe369c340d8085060e6bb45337eabf64cfe075295432ecafd6d033eb8b"
+HUGO_SHA256 = Path("HUGO_CHECKSUM").read_text().strip()
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 # Normalise platform strings to match the Go toolchain
@@ -302,7 +304,4 @@ setup(
     },
     include_package_data=True,
     entry_points={"console_scripts": ["hugo=python_hugo.cli:__call"]},
-    # the package version, which is the same as the version
-    # of Hugo that it will build and provide
-    version=HUGO_VERSION,
 )
