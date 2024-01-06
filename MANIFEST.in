@@ -1,3 +1,5 @@
 include licenses/LICENSE-hugo.txt
+include HUGO_VERSION
+include HUGO_CHECKSUM
 include python_hugo/binaries/*
 exclude python_hugo/binaries/hugo-*
