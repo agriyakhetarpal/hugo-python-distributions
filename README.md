@@ -17,7 +17,7 @@ This package provides wheels for [Hugo](https://gohugo.io/) to be used with `pip
 
 ## What version of `python-hugo` do I install?
 
-This package, `python-hugo` is versioned separately and will adhere to an [amalgamation](https://jacobtomlinson.dev/posts/2023/sometimes-i-regret-using-calver/) of [CalVer](https://calver.org/) (calendar versioning) and [SemVer](https://semver.org/) (semantic versioning) software standards, which is subject to change if deemed absolutely necessary. A release for `python-hugo` will be versioned as `YY.M.PATCH` where `YY` is the year, `M` is the month, and `PATCH` is the patch number of the release. For example, `31.8.2` shall be the release for `python-hugo` on August 2031, patch number 2. This is done to avoid confusion with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [`0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
+This package, `python-hugo` is versioned separately and will adhere to an [amalgamation](https://jacobtomlinson.dev/posts/2023/sometimes-i-regret-using-calver/) of [CalVer](https://calver.org/) (calendar versioning) and [SemVer](https://semver.org/) (semantic versioning) software standards, which is subject to change if deemed absolutely necessary. A release for `python-hugo` will be versioned as `YY.M.PATCH` where `YY` is the year, `M` is the month, and `PATCH` is the patch number of the release. For example, `31.8.2` shall be the release for `python-hugo` on August 2031, patch number 2. This is done to avoid confusion with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [`0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases). A bump in the `python-hugo` version does not necessarily mean a bump in the Hugo version, and vice versa, but it is likely that a bump in the PATCH number of `python-hugo` will correspond to a new release of Hugo, as mentioned in the table below.
 
 The version of `python-hugo` you install will correspond to a particular version of Hugo as listed in the following table in ascending order of `python-hugo` version.
 
@@ -73,10 +73,10 @@ hugo --printI18nWarnings server
 ...
 ```
 
-Virtual environments allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package:
+Virtual environments allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package (please refer to [What version of `python-hugo` do I install?](#what-version-of-python-hugo-do-i-install) for more information):
 
 ```bash
-pip install "hugo-python==0.121.1"
+pip install "hugo-python==24.1.0"
 ```
 
 For more information on using Hugo and its command-line interface, please refer to the [Hugo documentation](https://gohugo.io/documentation/) and [Hugo CLI documentation](https://gohugo.io/commands/).
