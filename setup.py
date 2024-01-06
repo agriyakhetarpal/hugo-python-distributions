@@ -14,14 +14,14 @@ from wheel.bdist_wheel import bdist_wheel, get_platform
 from wheel.macosx_libfile import calculate_macosx_platform_tag
 
 # Has to be kept in sync with the version in python_hugo/cli.py
-HUGO_VERSION = "0.121.1"
+HUGO_VERSION = "0.121.2"
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
 )
 # The pooch tool will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
-HUGO_SHA256 = "fd16b6723365e2d60bef9dd2c0a12a0b046185b033973a85eae7e5979693b799"
+HUGO_SHA256 = "bbefa92a7ae9442f7acd082df3dca64f0d872264bb0ffb8bc582def4d5690a1b"
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 # Normalise platform strings to match the Go toolchain
@@ -234,7 +234,6 @@ class HugoWheel(bdist_wheel):
         # amd64 on an arm64 machine, we need to set the platform tag to macosx_X_Y_arm64 or
         # macosx_X_Y_x86_64 respectively.
         #
-        #
         # TODO: FIXME: look at how Linux and Windows tags are set later
 
         if sys.platform == "darwin":
@@ -247,11 +246,13 @@ class HugoWheel(bdist_wheel):
             if (("arm64" in platform_tag) or ("univeral2" in platform_tag)) and (
                 os.environ.get("GOARCH") == "amd64"
             ):
-                self.plat_name = platform_tag.replace("arm64", "x86_64")
+                self.plat_name = platform_tag.replace(
+                    "arm64", "x86_64").replace("universal2", "x86_64")
             if (("x86_64" in platform_tag) or ("universal2" in platform_tag)) and (
                 os.environ.get("GOARCH") == "arm64"
             ):
-                self.plat_name = platform_tag.replace("x86_64", "arm64")
+                self.plat_name = platform_tag.replace(
+                    "x86_64", "arm64").replace("universal2", "arm64")
         super().finalize_options()
 
     def run(self):

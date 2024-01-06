@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from functools import lru_cache
 
-HUGO_VERSION = "0.121.1"
+HUGO_VERSION = "0.121.2"
 
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 HUGO_PLATFORM = {
