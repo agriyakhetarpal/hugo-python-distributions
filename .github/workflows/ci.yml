@@ -49,24 +49,12 @@ jobs:
         if: matrix.runs-on == 'windows-latest'
         run: choco install mingw
 
-      - name: Restore Hugo builder cache
-        uses: actions/cache/restore@v3
-        with:
-          path: ./hugo_cache/
-          key: ${{ runner.os }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
-
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox
 
       - name: Build binary distribution (wheel)
         run: |
           python -m build --wheel . --outdir wheelhouse/
-
-      - name: Save Hugo builder cache
-        uses: actions/cache/save@v3
-        with:
-          path: ./hugo_cache/
-          key: ${{ runner.os }}-hugo-build-cache-${{ hashFiles('**/setup.py', '**/pyproject.toml') }}
 
       - name: Test entry points for package
         run: nox -s venv
