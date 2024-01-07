@@ -11,7 +11,6 @@ import pooch
 from setuptools import Command, Extension, setup
 from setuptools.command.build_ext import build_ext
 from wheel.bdist_wheel import bdist_wheel, get_platform
-from wheel.macosx_libfile import calculate_macosx_platform_tag
 
 # Has to be kept in sync with the version in python_hugo/cli.py
 HUGO_VERSION = "0.121.2"
@@ -61,7 +60,7 @@ class HugoBuilder(build_ext):
         # 4. linux/arm64
         # 5. windows/amd64
         # The platform is the first part of the string, the architecture is the second.
-        # We need to mangle the hugo binary name to include the platform and architecture
+        # We will mangle the hugo binary name to include the platform and architecture
         # so that we can build Hugo for multiple platforms and architectures.
         # The platform is used to set the GOOS environment variable, the architecture
         # is used to set the GOARCH environment variable, and they must be exactly these
@@ -74,7 +73,7 @@ class HugoBuilder(build_ext):
     def run(self):
         """
         Build Hugo from source and place the binary in the package directory, mangling
-        # the name so that it is unique to the verion of Hugo being built.
+        # the name so that it is unique to the version of Hugo being built.
         """
 
         # Download Hugo source tarball, place into hugo_cache/ directory
@@ -100,9 +99,8 @@ class HugoBuilder(build_ext):
         #     os.path.dirname(os.path.abspath(__file__)), "python_hugo", "binaries"
         # )
         os.environ["CGO_ENABLED"] = "1"
-        os.environ["GOPATH"] = os.path.abspath(
-            HUGO_CACHE_DIR
-        )  # must be absolute (Go requirement)
+        os.environ["GOPATH"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
+        # it must be absolute (Go requirement)
 
         os.environ["GOOS"] = self.hugo_platform
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
@@ -118,9 +116,7 @@ class HugoBuilder(build_ext):
         # Once built this the files are cached into GOPATH for future use
 
         # Delete hugo_cache/bin/ + files inside, it left over from a previous build
-        shutil.rmtree(
-            os.path.join(os.path.abspath(HUGO_CACHE_DIR), "bin"), ignore_errors=True
-        )
+        shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
 
         subprocess.check_call(
             [
@@ -129,7 +125,7 @@ class HugoBuilder(build_ext):
                 "-tags",
                 "extended",
             ],
-            cwd=os.path.abspath(os.path.join(HUGO_CACHE_DIR, f"hugo-{HUGO_VERSION}")),
+            cwd=os.path.abspath(os.path.join(HUGO_CACHE_DIR, f"hugo-{HUGO_VERSION}")),  # noqa: PTH118, PTH100
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
@@ -144,41 +140,40 @@ class HugoBuilder(build_ext):
         # the GOPATH/bin folder.
 
         if os.environ.get("GOARCH") != self.hugo_arch:
-            original_name = os.path.join(
-                os.environ.get("GOPATH"),
-                "bin",
-                f"{self.hugo_platform}_{os.environ.get('GOARCH')}",
-                "hugo" + FILE_EXT,
+            original_name = (
+                Path(os.environ.get("GOPATH"))
+                / "bin"
+                / f"{self.hugo_platform}_{os.environ.get('GOARCH')}"
+                / ("hugo" + FILE_EXT)
             )
         else:
-            original_name = os.path.join(
-                os.environ.get("GOPATH"), "bin", "hugo" + FILE_EXT
-            )
+            original_name = Path(os.environ.get("GOPATH")) / "bin" / ("hugo" + FILE_EXT)
 
-        new_name = os.path.join(
-            os.environ.get("GOPATH"),
-            "bin",
-            f"hugo-{HUGO_VERSION}-{self.hugo_platform}-{os.environ.get('GOARCH', self.hugo_arch)}"
-            + FILE_EXT,
+        new_name = (
+            Path(os.environ.get("GOPATH"))
+            / "bin"
+            / (
+                f"hugo-{HUGO_VERSION}-{self.hugo_platform}-{os.environ.get('GOARCH', self.hugo_arch)}"
+                + FILE_EXT
+            )
         )
-        os.rename(original_name, new_name)
+        original_name.rename(new_name)
 
         # Copy the new_name file into a folder binaries/ inside python_hugo/
         # so that it is included in the wheel.
         # basically we are copying hugo-HUGO_VERSION-PLATFORM-ARCH into
         # python_hugo/binaries/ and creating the folder if it does not exist.
 
-        binaries_dir = os.path.join(
-            os.path.dirname(__file__), "python_hugo", "binaries"
-        )
-        if not os.path.exists(binaries_dir):
-            os.mkdir(binaries_dir)
+        binaries_dir = Path(__file__).parent / "python_hugo" / "binaries"
+        if not binaries_dir.exists():
+            binaries_dir.mkdir()
 
         # if the binary already exists, delete it, and then copy the new binary
         # to ensure that the binary is always the newest rendition
-        if os.path.exists(os.path.join(binaries_dir, os.path.basename(new_name))):
-            os.remove(os.path.join(binaries_dir, os.path.basename(new_name)))
-        os.rename(new_name, os.path.join(binaries_dir, os.path.basename(new_name)))
+        new_binary_path = binaries_dir / new_name.name
+        if new_binary_path.exists():
+            new_binary_path.unlink()
+        new_name.rename(new_binary_path)
 
 
 # https://github.com/pypa/setuptools/issues/1347: setuptools does not support
@@ -198,14 +193,14 @@ class Cleaner(Command):
     def run(self):
         """Clean ancillary files at runtime."""
 
-        here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))
+        here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))  # noqa: PTH100, PTH120
         files_to_clean = "./build ./*.pyc ./*.egg-info ./__pycache__".split(" ")
 
         for path_spec in files_to_clean:
             # Make paths absolute and relative to this path
-            abs_paths = glob.glob(os.path.normpath(os.path.join(here, path_spec)))
+            abs_paths = glob.glob(os.path.normpath(os.path.join(here, path_spec)))  # noqa: PTH207, PTH118
             for path in [str(p) for p in abs_paths]:
-                if not path.startswith(here):
+                if not path.startswith(str(here)):
                     # raise error if path in files_to_clean is absolute + outside
                     # this directory
                     msg = f"{path} is not a path around {here}"
@@ -239,20 +234,23 @@ class HugoWheel(bdist_wheel):
         if sys.platform == "darwin":
             platform_tag = get_platform("_")
             # ensure correct platform tag for macOS arm64 and macOS x86_64
-            # macOS 3.12 Python runners are mislabelling the platform tag to be universal2
-            # see: https://github.com/pypa/wheel/issues/573. we will explicitly rename the
-            # universal2 tag to macosx_X_Y_arm64 or macosx_X_Y_x86_64 respectively, since
-            # we fuse the wheels together later anyway.
+            # macOS 3.12 Python runners are mislabelling the platform tag to be
+            # universal2
+            # see: https://github.com/pypa/wheel/issues/573. we will explicitly rename
+            # the universal2 tag to macosx_X_Y_arm64 or macosx_X_Y_x86_64 respectively,
+            # since we fuse the wheels together later anyway.
             if (("arm64" in platform_tag) or ("univeral2" in platform_tag)) and (
                 os.environ.get("GOARCH") == "amd64"
             ):
-                self.plat_name = platform_tag.replace(
-                    "arm64", "x86_64").replace("universal2", "x86_64")
+                self.plat_name = platform_tag.replace("arm64", "x86_64").replace(
+                    "universal2", "x86_64"
+                )
             if (("x86_64" in platform_tag) or ("universal2" in platform_tag)) and (
                 os.environ.get("GOARCH") == "arm64"
             ):
-                self.plat_name = platform_tag.replace(
-                    "x86_64", "arm64").replace("universal2", "arm64")
+                self.plat_name = platform_tag.replace("x86_64", "arm64").replace(
+                    "universal2", "arm64"
+                )
         super().finalize_options()
 
     def run(self):
@@ -260,18 +258,21 @@ class HugoWheel(bdist_wheel):
 
         self.run_command("clean")  # clean the build directory before building the wheel
 
-        # ensure that the binary is copied into the binaries/ folder and then into the wheel.
-        hugo_binary = os.path.join(
-            os.path.dirname(__file__),
-            "python_hugo",
-            "binaries",
-            f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
-            + FILE_EXT,
+        # ensure that the binary is copied into the binaries/ folder and then
+        # into the wheel.
+        hugo_binary = (
+            Path(__file__).parent
+            / "python_hugo"
+            / "binaries"
+            / (
+                f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
+                + FILE_EXT
+            )
         )
 
         # if the binary does not exist, then we need to build it, so invoke
         # the build_ext command again and proceed to build the binary
-        if not os.path.exists(hugo_binary):
+        if not Path(hugo_binary).exists():
             self.run_command("build_ext")
 
         # now that the binary exists, we have ensured its presence in the wheel

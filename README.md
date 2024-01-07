@@ -26,7 +26,7 @@ This package provides wheels for [Hugo](https://gohugo.io/) to be used with `pip
 
 ## What is Hugo?
 
-[Hugo](https://gohugo.io/) is a static site generator written in [Go](https://golang.org/). It is designed to be fast and flexible, and it is used by many people and organizations for their websites, documentation, and peronal blogs.
+[Hugo](https://gohugo.io/) is a static site generator written in [Go](https://golang.org/). It is designed to be fast and flexible, and it is used by many people and organizations for their websites, documentation, and personal blogs.
 
 ## What version of `python-hugo` do I install?
 
