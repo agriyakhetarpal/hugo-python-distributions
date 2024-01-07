@@ -16,7 +16,6 @@ env:
 
 jobs:
   style:
-    # Run style checks on ubuntu-latest
     name: Lint
     runs-on: ubuntu-latest
     steps:

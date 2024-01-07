@@ -1,6 +1,6 @@
 ci:
   autoupdate_commit_msg: "Update versions for pre-commit hooks"
-  autofix_commit_msg: "🪩 Automated fixes from https://pre-commit.ci"
+  autofix_commit_msg: "🪩 Automated fixes from `https://pre-commit.ci`"
 
 repos:
 
