@@ -10,7 +10,6 @@ import os
 import platform
 import sys
 from functools import lru_cache
-from pathlib import Path
 
 HUGO_VERSION = "0.121.2"
 
@@ -33,12 +32,11 @@ def hugo_executable():
     """
     Returns the path to the Hugo executable.
     """
-    return (
-        Path(__file__).parent
-        / "binaries"
-        / f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}"
-        + FILE_EXT
-    )
+    return os.path.join(  # noqa: PTH118
+            os.path.dirname(__file__),  # noqa: PTH120
+            "binaries",
+            f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}" + FILE_EXT
+        )
 
 
 MESSAGE = f"Running Hugo {HUGO_VERSION} via python-hugo at {hugo_executable()}"
@@ -48,6 +46,5 @@ def __call():
     """
     Hugo binary entry point. Passes all command-line arguments to Hugo.
     """
-    # send to stdout a message that we are using the python-hugo wrapper
     print(MESSAGE)
     os.execvp(hugo_executable(), ["hugo", *sys.argv[1:]])
