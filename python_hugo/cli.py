@@ -9,8 +9,8 @@ from __future__ import annotations
 import os
 import platform
 import sys
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
 HUGO_VERSION = "0.121.2"
 
@@ -27,18 +27,22 @@ HUGO_ARCH = {
     "aarch64": "arm64",
 }[platform.machine()]
 
+
 @lru_cache(maxsize=1)
 def hugo_executable():
     """
     Returns the path to the Hugo executable.
     """
-    return os.path.join(
-        os.path.dirname(__file__),
-        "binaries",
-        f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}" + FILE_EXT,
+    return (
+        Path(__file__).parent
+        / "binaries"
+        / f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}"
+        + FILE_EXT
     )
 
+
 MESSAGE = f"Running Hugo {HUGO_VERSION} via python-hugo at {hugo_executable()}"
+
 
 def __call():
     """
