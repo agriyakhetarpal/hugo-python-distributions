@@ -33,10 +33,10 @@ def hugo_executable():
     Returns the path to the Hugo executable.
     """
     return os.path.join(  # noqa: PTH118
-            os.path.dirname(__file__),  # noqa: PTH120
-            "binaries",
-            f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}" + FILE_EXT
-        )
+        os.path.dirname(__file__),  # noqa: PTH120
+        "binaries",
+        f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}" + FILE_EXT,
+    )
 
 
 MESSAGE = f"Running Hugo {HUGO_VERSION} via python-hugo at {hugo_executable()}"
