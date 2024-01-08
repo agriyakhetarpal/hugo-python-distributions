@@ -53,9 +53,10 @@ def __call():
     """
     Hugo binary entry point. Passes all command-line arguments to Hugo.
     """
-    print(MESSAGE)
     if sysplatform == "win32":
         # execvp broken on Windows, use subprocess instead to not launch a new shell
+        print(MESSAGE)
         check_call([hugo_executable(), *argv[1:]])
     else:
+        print(MESSAGE)
         execvp(hugo_executable(), ["hugo", *argv[1:]])
