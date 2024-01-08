@@ -78,7 +78,7 @@ def release(session: nox.Session) -> None:
     session.run("python", "-m", "build")
 
 
-@nox.session(name="venv")
+@nox.session(name="venv", reuse_venv=True)
 def venv(session: nox.Session) -> None:
     """Create a virtual environment and install wheels from a specified folder into it."""
     folder = "dist" if session.interactive else "wheelhouse"
