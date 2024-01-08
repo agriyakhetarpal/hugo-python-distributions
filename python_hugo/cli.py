@@ -6,25 +6,30 @@ python-hugo: Binaries for the Hugo static site generator, installable with pip
 
 from __future__ import annotations
 
-import os
-import platform
-import sys
+# Reduce expenses for various imports
 from functools import lru_cache
+from os import execvp, path
+from platform import machine
+from subprocess import check_call
+from sys import argv
+from sys import platform as sysplatform
 
 HUGO_VERSION = "0.121.2"
 
-FILE_EXT = ".exe" if sys.platform == "win32" else ""
+FILE_EXT = ".exe" if sysplatform == "win32" else ""
+
 HUGO_PLATFORM = {
     "darwin": "darwin",
     "linux": "linux",
     "win32": "windows",
-}[sys.platform]
+}[sysplatform]
+
 HUGO_ARCH = {
     "x86_64": "amd64",
     "arm64": "arm64",
     "AMD64": "amd64",
     "aarch64": "arm64",
-}[platform.machine()]
+}[machine()]
 
 
 @lru_cache(maxsize=1)
@@ -32,8 +37,8 @@ def hugo_executable():
     """
     Returns the path to the Hugo executable.
     """
-    return os.path.join(  # noqa: PTH118
-        os.path.dirname(__file__),  # noqa: PTH120
+    return path.join(  # noqa: PTH118
+        path.dirname(__file__),  # noqa: PTH120
         "binaries",
         f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}" + FILE_EXT,
     )
@@ -47,4 +52,8 @@ def __call():
     Hugo binary entry point. Passes all command-line arguments to Hugo.
     """
     print(MESSAGE)
-    os.execvp(hugo_executable(), ["hugo", *sys.argv[1:]])
+    if sysplatform == "win32":
+        # execvp broken on Windows, use subprocess instead to not launch a new shell
+        check_call([hugo_executable(), *argv[1:]])
+    else:
+        execvp(hugo_executable(), ["hugo", *argv[1:]])
