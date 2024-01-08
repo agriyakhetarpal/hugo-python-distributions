@@ -57,4 +57,6 @@ for wheel_name in os.listdir(out_dir):
     src_path = Path(out_dir) / wheel_name
     dest_path = Path(out_dir) / wheel_name_new
 
+    print(f"Renamed wheel {wheel_name} to {wheel_name_new}")
+
     Path(src_path).rename(dest_path)
