@@ -18,7 +18,7 @@
 | Classifiers | Description |
 | ------ | ----------- |
 | Builds | [![Actions Status][actions-badge]][actions-link] |
-| Package | [![PyPI version][pypi-version]][pypi-link] [![PyPI platforms][pypi-platforms]][pypi-link] [![PyPI downloads][pypi-downloads-total]][pypi-link] [![PyPI downloads (monthly)][pypi-downloads-monthly]][pypi-link] |
+| Package | [![PyPI version][pypi-version]][pypi-link] [![PyPI platforms][pypi-platforms]][pypi-platforms] [![PyPI downloads][pypi-downloads-total]][pypi-downloads-total] [![PyPI downloads (monthly)][pypi-downloads-monthly]][pypi-downloads-monthly] |
 | Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] |
 
 Binaries for the extended version of the Hugo static site generator, installable via `pip`
