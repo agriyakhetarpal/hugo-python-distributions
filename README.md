@@ -28,26 +28,16 @@ This package provides wheels for [Hugo](https://gohugo.io/) so that it can be us
 
 [Hugo](https://gohugo.io/) is a static site generator written in [Go](https://golang.org/). It is designed to be fast and flexible, and it is used by many people and organizations for their websites, documentation, and personal blogs.
 
+> [!NOTE]
+> This distribution of `Hugo` is currently not affiliated with the official `Hugo` project. Please refer to the [Hugo documentation](https://gohugo.io/documentation/) for more information on Hugo.
+
 ## What version of `hugo` do I install?
 
-This package, `hugo` is versioned separately and will adhere to an [amalgamation](https://jacobtomlinson.dev/posts/2023/sometimes-i-regret-using-calver/) of [CalVer](https://calver.org/) (calendar versioning) and [SemVer](https://semver.org/) (semantic versioning) software standards, which is subject to change if deemed absolutely necessary. A release for `hugo` will be versioned as `YY.M.PATCH` where `YY` is the year, `M` is the month, and `PATCH` is the patch number of the release. For example, `31.8.2` shall be the release for `hugo` on August 2031, patch number 2. This is done to avoid confusion with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases). A bump in the `hugo` version does not necessarily mean a bump in the Hugo version, and vice versa, but it is likely that a bump in the PATCH number of `hugo` will correspond to a new release of Hugo, as mentioned in the table below.
+This package, `hugo` is versioned alongside the Hugo releases and is aligned with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
 
-The version of `hugo` you install will correspond to a particular version of Hugo as listed in the following table in ascending order of `hugo` version.
+Binaries for `hugo` through these wheels are available for Hugo versions **0.121.2** and above. If you need an older version of `hugo` that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
 
-<!-- NOTE: add versions to this table as we go along with releases. -->
-
-| `hugo` version | Hugo (extended) version                                             |
-| --------------------- | ------------------------------------------------------------------- |
-| `24.1.0`              | [`0.121.1`](https://github.com/gohugoio/hugo/releases/tag/v0.121.1) |
-| `24.1.1`              | [`0.121.2`](https://github.com/gohugoio/hugo/releases/tag/v0.121.2) |
-
-<!-- NOTE: add versions to this table as we go along with releases. -->
-
-If you would like to use any available version of Hugo, you don't need to worry about this and you can just install the latest version of `hugo` on PyPI.
-
-If you would like to use a specific version of Hugo, you can install the corresponding version of `hugo` as listed in the table above.
-
-Please refer to the section on [Supported platforms](#supported-platforms) for a list of `hugo`'s supported platforms and architectures. If it does, jump to the [Quickstart](#quickstart) section to get started.
+Please refer to the section on [Supported platforms](#supported-platforms) for a list of wheels available for supported platforms and architectures. If it does, jump to the [Quickstart](#quickstart) section to get started.
 
 ## Documentation
 
@@ -70,7 +60,7 @@ py -m pip install hugo         # Windows
 ```
 
 > [!TIP]
-> It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or Hugo in an isolated location without having to create a virtual environment, which will allow you to use Hugo as a command-line tool without having to install it globally on your system. Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
+> It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system. Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
 
 Then, you can use the `hugo` commands as you would normally:
 
@@ -88,7 +78,7 @@ hugo --printI18nWarnings server
 ...
 ```
 
-Virtual environments allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package (please refer to [What version of `hugo` do I install?](#what-version-of-hugo-do-i-install) for more information):
+Virtual environments can allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package (please refer to the section [_What version of `hugo` do I install?_](#what-version-of-hugo-do-i-install) for more information):
 
 ```bash
 pip install "hugo==0.121.2"
@@ -98,7 +88,7 @@ For more information on using Hugo and its command-line interface, please refer 
 
 ### Supported platforms
 
-A subset of the platforms supported by Hugo itself are supported by `hugo`. The plan is to support as many platforms as possible with Python wheels and platform tags. Please refer to the following table for a list of supported platforms and architectures:
+A subset of the platforms supported by Hugo itself are supported by these wheels for `hugo` via `hugo-python-distributions`. The plan is to support as many platforms as possible with Python wheels and platform tags. Please refer to the following table for a list of supported platforms and architectures:
 
 | Platform | Architecture    | Supported                       |
 | -------- | --------------- | ------------------------------- |
@@ -181,8 +171,8 @@ This package is designed to be used in the following scenarios:
 - You want to use Hugo in a Python-based project, such as a static site generator that uses Hugo as a backend?
 - You want to test a new version of Hugo without having to install it globally on your system or affecting your existing Hugo installation
 - Python wheels allow for incredibly fast installation, in comparison to using other methods of installing Hugo such as system package managers
-- Easier updates to the latest version of Hugo through the use of the `pip install --upgrade hugo` command, and automatic updates if you use a package manager such as [Poetry](https://python-poetry.org/) or [PDM](https://pdm.fming.dev/) to manage your Python dependencies or a tool such as [pipx](https://pipxproject.github.io/pipx/) to manage your command-line tools
-- ...and so on
+- Easy updates to the latest version of Hugo through the use of the `pip install --upgrade hugo` command, and automatic updates possible too if you use a package manager such as [Poetry](https://python-poetry.org/) or [PDM](https://pdm.fming.dev/) to manage your Python dependencies or a tool such as [pipx](https://pipxproject.github.io/pipx/) to manage your command-line tools
+- ...and more!
 
 #### (Known) limitations
 
@@ -192,3 +182,8 @@ This package is designed to be used in the following scenarios:
 ### Licensing
 
 This project is licensed under the terms of the [Apache 2.0 license](LICENSE). Hugo is available under Apache 2.0 (see [the Hugo license](licenses/LICENSE-hugo.txt)) as well.
+
+### Footnotes
+
+- This project is currently not affiliated with the official Hugo project. Please refer to the [Hugo documentation](https://gohugo.io/documentation/) for more information on Hugo.
+- The author of this project: @agriyakhetarpal, would like to express a token of gratitude to the owner of the `Hugo` package on PyPI (@nariman) for their kind gesture of allowing me to take over the package name with the underlying provisions of PEP 541. This way, it allows users to install the package using the same name as the official Hugo project, which undoubtedly provides for a better user experience and convenience to users of this package when compared to the previous package name, `python-hugo`.
