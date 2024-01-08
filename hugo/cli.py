@@ -55,8 +55,8 @@ def __call():
     """
     if sysplatform == "win32":
         # execvp broken on Windows, use subprocess instead to not launch a new shell
-        print(MESSAGE)
+        print(f"\033[95m{MESSAGE}\033[0m")
         check_call([hugo_executable(), *argv[1:]])
     else:
-        print(MESSAGE)
+        print(f"\033[95m{MESSAGE}\033[0m")
         execvp(hugo_executable(), ["hugo", *argv[1:]])
