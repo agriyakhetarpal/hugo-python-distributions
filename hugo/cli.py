@@ -1,7 +1,7 @@
 """
 Copyright (c) 2023 Agriya Khetarpal. All rights reserved.
 
-python-hugo: Binaries for the Hugo static site generator, installable with pip
+hugo: Binaries for the Hugo static site generator, installable with pip
 """
 
 from __future__ import annotations
@@ -44,16 +44,19 @@ def hugo_executable():
     )
 
 
-MESSAGE = f"Running Hugo {HUGO_VERSION} via python-hugo at {hugo_executable()}"
+MESSAGE = (
+    f"Running Hugo {HUGO_VERSION} via hugo-python-distributions at {hugo_executable()}"
+)
 
 
 def __call():
     """
     Hugo binary entry point. Passes all command-line arguments to Hugo.
     """
-    print(MESSAGE)
     if sysplatform == "win32":
         # execvp broken on Windows, use subprocess instead to not launch a new shell
+        print(f"\033[95m{MESSAGE}\033[0m")
         check_call([hugo_executable(), *argv[1:]])
     else:
+        print(f"\033[95m{MESSAGE}\033[0m")
         execvp(hugo_executable(), ["hugo", *argv[1:]])

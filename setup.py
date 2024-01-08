@@ -12,7 +12,7 @@ from setuptools import Command, Extension, setup
 from setuptools.command.build_ext import build_ext
 from wheel.bdist_wheel import bdist_wheel, get_platform
 
-# Has to be kept in sync with the version in python_hugo/cli.py
+# Has to be kept in sync with the version in hugo/cli.py and incantation of setup()
 HUGO_VERSION = "0.121.2"
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
@@ -90,13 +90,13 @@ class HugoBuilder(build_ext):
             tar.extractall(path=HUGO_CACHE_DIR)
 
         # The binary is put into GOBIN, which is set to the package directory
-        # (python_hugo/binaries/) for use in editable mode. The binary is copied
+        # (hugo/binaries/) for use in editable mode. The binary is copied
         # into the wheel afterwards
         # Error: GOBIN cannot be set if GOPATH is set when compiling for different
         # architectures, so we use the default GOPATH/bin as the place to copy
         # binaries from
         # os.environ["GOBIN"] = os.path.join(
-        #     os.path.dirname(os.path.abspath(__file__)), "python_hugo", "binaries"
+        #     os.path.dirname(os.path.abspath(__file__)), "hugo", "binaries"
         # )
         os.environ["CGO_ENABLED"] = "1"
         os.environ["GOPATH"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
@@ -159,12 +159,12 @@ class HugoBuilder(build_ext):
         )
         original_name.rename(new_name)
 
-        # Copy the new_name file into a folder binaries/ inside python_hugo/
+        # Copy the new_name file into a folder binaries/ inside hugo/
         # so that it is included in the wheel.
         # basically we are copying hugo-HUGO_VERSION-PLATFORM-ARCH into
-        # python_hugo/binaries/ and creating the folder if it does not exist.
+        # hugo/binaries/ and creating the folder if it does not exist.
 
-        binaries_dir = Path(__file__).parent / "python_hugo" / "binaries"
+        binaries_dir = Path(__file__).parent / "hugo" / "binaries"
         if not binaries_dir.exists():
             binaries_dir.mkdir()
 
@@ -262,7 +262,7 @@ class HugoWheel(bdist_wheel):
         # into the wheel.
         hugo_binary = (
             Path(__file__).parent
-            / "python_hugo"
+            / "hugo"
             / "binaries"
             / (
                 f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
@@ -284,7 +284,7 @@ setup(
         Extension(
             name="hugo.build",
             sources=[
-                f"python_hugo/binaries/hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
+                f"hugo/binaries/hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
                 + FILE_EXT
             ],
         )
@@ -294,13 +294,15 @@ setup(
         "clean": Cleaner,
         "bdist_wheel": HugoWheel,
     },
-    packages=["python_hugo", "python_hugo.binaries"],
+    packages=["hugo", "hugo.binaries"],
     package_data={
-        "python_hugo": [
+        "hugo": [
             f"binaries/hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
             + FILE_EXT
         ],
     },
     include_package_data=True,
-    entry_points={"console_scripts": ["hugo=python_hugo.cli:__call"]},
+    entry_points={"console_scripts": ["hugo=hugo.cli:__call"]},
+    # has to be kept in sync with the version in hugo/cli.py
+    version=HUGO_VERSION,
 )

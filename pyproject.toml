@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "pooch", "tqdm", "wheel==0.42.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "python-hugo"
+name = "hugo"
 authors = [
   { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
 ]
@@ -12,10 +12,9 @@ maintainers = [
 ]
 description = "Binaries for the Hugo static site generator, installable with pip"
 readme = "README.md"
-version = "24.1.1"
 license = {text = "Apache License v2.0"}
 requires-python = ">=3.8,<3.13"
-dynamic = ["scripts"]
+dynamic = ["scripts", "version"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -45,7 +44,7 @@ Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
 [tool.ruff]
-src = ["python_hugo"]
+src = ["hugo"]
 extend-select = [
   "B",        # flake8-bugbear
   "I",        # isort

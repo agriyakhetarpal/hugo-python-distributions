@@ -1,3 +1,3 @@
 include licenses/LICENSE-hugo.txt
-include python_hugo/binaries/*
-exclude python_hugo/binaries/hugo-*
+include hugo/binaries/*
+exclude hugo/binaries/hugo-*
