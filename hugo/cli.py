@@ -1,7 +1,7 @@
 """
 Copyright (c) 2023 Agriya Khetarpal. All rights reserved.
 
-python-hugo: Binaries for the Hugo static site generator, installable with pip
+hugo: Binaries for the Hugo static site generator, installable with pip
 """
 
 from __future__ import annotations
@@ -44,7 +44,9 @@ def hugo_executable():
     )
 
 
-MESSAGE = f"Running Hugo {HUGO_VERSION} via python-hugo at {hugo_executable()}"
+MESSAGE = (
+    f"Running Hugo {HUGO_VERSION} via hugo-python-distributions at {hugo_executable()}"
+)
 
 
 def __call():

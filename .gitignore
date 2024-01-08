@@ -174,7 +174,7 @@ go.work
 .DS_Store
 
 # Binaries
-python_hugo/binaries/*
+hugo/binaries/*
 
 # ruff cache
 .ruff_cache/
