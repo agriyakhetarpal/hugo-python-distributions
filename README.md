@@ -5,14 +5,15 @@
 [pypi-link]:                https://pypi.org/project/hugo/
 [pypi-platforms]:           https://img.shields.io/pypi/pyversions/hugo/
 [pypi-version]:             https://img.shields.io/pypi/v/hugo/
-[pypi-downloads-total]:     https://img.shields.io/pypi/dd/hugo/
-[pypi-downloads-monthly]:   https://img.shields.io/pypi/dm/hugo/
+[pypi-downloads-total]:     https://static.pepy.tech/badge/hugo/
+[pypi-downloads-monthly]:   https://static.pepy.tech/badge/hugo/month/
 [license-badge]:            https://img.shields.io/pypi/l/hugo?color=lavender
 [license-link]:             https://apache.org/licenses/LICENSE-2.0
 [hugo-badge]:               https://img.shields.io/badge/hugo-extended-pink.svg?style=flat&logo=hugo
 [hugo-link]:                https://gohugo.io/
 [docs-link]:                https://github.com/agriyakhetarpal/hugo-python-distributions/
 [docs-badge]:               https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
+
 
 | Classifiers | Description |
 | ------ | ----------- |
