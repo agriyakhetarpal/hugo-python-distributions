@@ -73,7 +73,7 @@ jobs:
 
   inspect_distributions:
     needs: [style]
-    name: Inspect contents of ${{ matrix.distribution }}}
+    name: Inspect ${{ matrix.distribution }} contents
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
