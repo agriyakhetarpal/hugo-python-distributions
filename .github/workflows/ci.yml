@@ -30,7 +30,7 @@ jobs:
       - name: Run style checks
         run: pipx run nox -s lint
 
-  build:
+  build_wheels:
     needs: [style]
     name: Wheels (${{ matrix.runs-on }} / Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.runs-on }}
@@ -70,3 +70,51 @@ jobs:
 
       - name: Test entry points for package
         run: nox -s venv
+
+  inspect_distributions:
+    needs: [style]
+    name: Inspect ${{ matrix.distribution }} contents
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution: ["sdist", "wheel"]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Build, inspect, and display contents of source distribution (SDist)
+        if: matrix.distribution == 'sdist'
+        shell: bash
+        run: |
+          pipx run build --sdist . --outdir dist/
+          pipx run twine check dist/* --strict
+
+          mkdir -p output/sdist
+          tar -xf dist/*.tar.gz -C output/sdist
+
+          echo -e '## View source distribution (SDist) contents\n' >> $GITHUB_STEP_SUMMARY
+          echo -e '```\n' >> $GITHUB_STEP_SUMMARY
+          (cd output/sdist && tree -a * | sed 's/^/    /' | tee -a $GITHUB_STEP_SUMMARY)
+          echo -e '\n```\n' >> $GITHUB_STEP_SUMMARY
+
+      - name: Build, inspect, and display contents of binary distribution (wheel)
+        if: matrix.distribution == 'wheel'
+        shell: bash
+        run: |
+          pipx run build --wheel . --outdir wheelhouse/
+          pipx run twine check wheelhouse/* --strict
+
+          mkdir -p output/wheel
+          pipx run wheel unpack wheelhouse/*.whl -d output/wheel
+
+          echo -e '## View binary distribution (wheel) contents\n' >> $GITHUB_STEP_SUMMARY
+          echo -e '```\n' >> $GITHUB_STEP_SUMMARY
+          (cd output/wheel && tree -a * | sed 's/^/    /' | tee -a $GITHUB_STEP_SUMMARY)
+          echo -e '\n```\n' >> $GITHUB_STEP_SUMMARY

@@ -294,15 +294,12 @@ setup(
         "clean": Cleaner,
         "bdist_wheel": HugoWheel,
     },
-    packages=["hugo", "hugo.binaries"],
     package_data={
         "hugo": [
             f"binaries/hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
             + FILE_EXT
         ],
     },
-    include_package_data=True,
-    entry_points={"console_scripts": ["hugo=hugo.cli:__call"]},
     # has to be kept in sync with the version in hugo/cli.py
     version=HUGO_VERSION,
 )

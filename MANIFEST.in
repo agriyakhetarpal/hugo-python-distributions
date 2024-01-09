@@ -1,3 +1,7 @@
-include licenses/LICENSE-hugo.txt
-include hugo/binaries/*
+graft hugo
+prune scripts
+
+include LICENSE LICENSE-hugo.txt README.md pyproject.toml setup.py setup.cfg
 exclude hugo/binaries/hugo-*
+
+global-exclude __pycache__ *.py[cod] *.so *.dylib .DS_Store .venv

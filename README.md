@@ -182,7 +182,7 @@ This package is designed to be used in the following scenarios:
 
 ### Licensing
 
-This project is licensed under the terms of the [Apache 2.0 license](LICENSE). Hugo is available under Apache 2.0 (see [the Hugo license](licenses/LICENSE-hugo.txt)) as well.
+This project is licensed under the terms of the [Apache 2.0 license](LICENSE). Hugo is available under Apache 2.0 (see [the Hugo license](LICENSE-hugo.txt)) as well.
 
 ### Footnotes
 

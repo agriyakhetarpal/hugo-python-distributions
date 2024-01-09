@@ -43,6 +43,9 @@ Homepage = "https://github.com/agriyakhetarpal/hugo-python-distributions"
 Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
+[tool.setuptools.packages.find]
+include = ["hugo", "hugo.*"]
+
 [tool.ruff]
 src = ["hugo"]
 extend-select = [
