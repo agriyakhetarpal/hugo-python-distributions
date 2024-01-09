@@ -71,10 +71,14 @@ jobs:
       - name: Test entry points for package
         run: nox -s venv
 
-  build_sdist:
+  inspect_distributions:
     needs: [style]
-    name: Build and inspect source distribution (SDist)
+    name: Inspect contents of ${{ matrix.distribution }}}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution: ["sdist", "wheel"]
 
     steps:
       - uses: actions/checkout@v4
@@ -85,19 +89,32 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Build SDist
-        run: pipx run build --sdist . --outdir dist/
-
-      - name: Inspect SDist
-        run: pipx run twine check dist/* --strict
-
-      - name: Display contents of SDist
+      - name: Build, inspect, and display contents of source distribution (SDist)
+        if: matrix.distribution == 'sdist'
         shell: bash
         run: |
+          pipx run build --sdist . --outdir dist/
+          pipx run twine check dist/* --strict
+
           mkdir -p output/sdist
           tar -xf dist/*.tar.gz -C output/sdist
 
-          echo -e '## View SDist contents\n' >> $GITHUB_STEP_SUMMARY
+          echo -e '## View source distribution (SDist) contents\n' >> $GITHUB_STEP_SUMMARY
           echo -e '```\n' >> $GITHUB_STEP_SUMMARY
           (cd output/sdist && tree -a * | sed 's/^/    /' | tee -a $GITHUB_STEP_SUMMARY)
+          echo -e '\n```\n' >> $GITHUB_STEP_SUMMARY
+
+      - name: Build, inspect, and display contents of binary distribution (wheel)
+        if: matrix.distribution == 'wheel'
+        shell: bash
+        run: |
+          pipx run build --wheel . --outdir wheelhouse/
+          pipx run twine check wheelhouse/* --strict
+
+          mkdir -p output/wheel
+          pipx run wheel unpack wheelhouse/*.whl -d output/wheel
+
+          echo -e '## View binary distribution (wheel) contents\n' >> $GITHUB_STEP_SUMMARY
+          echo -e '```\n' >> $GITHUB_STEP_SUMMARY
+          (cd output/wheel && tree -a * | sed 's/^/    /' | tee -a $GITHUB_STEP_SUMMARY)
           echo -e '\n```\n' >> $GITHUB_STEP_SUMMARY
