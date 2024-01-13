@@ -1,6 +1,7 @@
 # hugo-python-distributions
 
 [actions-badge]:            https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CI/badge.svg
+[cd-badge]:                 https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CD/badge.svg
 [actions-link]:             https://github.com/agriyakhetarpal/hugo-python-distributions/actions
 [pypi-link]:                https://pypi.org/project/hugo/
 [pypi-platforms]:           https://img.shields.io/pypi/pyversions/hugo/
@@ -14,11 +15,10 @@
 [docs-link]:                https://github.com/agriyakhetarpal/hugo-python-distributions/
 [docs-badge]:               https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
 
-
 | Classifiers | Description |
 | ------ | ----------- |
-| Builds | [![Actions Status][actions-badge]][actions-link] |
-| Package | [![PyPI version][pypi-version]][pypi-link] [![PyPI platforms][pypi-platforms]][pypi-platforms] [![PyPI downloads][pypi-downloads-total]][pypi-downloads-total] [![PyPI downloads (monthly)][pypi-downloads-monthly]][pypi-downloads-monthly] |
+| Builds | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] |
+| Package | [![PyPI version](https://badge.fury.io/py/hugo.svg)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) ![PyPI - Downloads](https://img.shields.io/pypi/dm/hugo) |
 | Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] |
 
 Binaries for the extended version of the Hugo static site generator, installable via `pip`
