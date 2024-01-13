@@ -17,11 +17,18 @@ HUGO_VERSION = "0.121.2"
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
 )
+# Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
+# Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
+HUGO_RElEASE_COMMIT_HASH = "6d5b44305eaa9d0a157946492a6f319da38de154"
 # The pooch tool will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
 HUGO_SHA256 = "bbefa92a7ae9442f7acd082df3dca64f0d872264bb0ffb8bc582def4d5690a1b"
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
+
+# The vendor name is used to set the vendorInfo variable in the Hugo binary
+# TODO: include this in the build command, doesn't work right now
+HUGO_VENDOR_NAME = "hugo-python-distributions"
 
 # Normalise platform strings to match the Go toolchain
 HUGO_PLATFORM = {
@@ -118,10 +125,19 @@ class HugoBuilder(build_ext):
         # Delete hugo_cache/bin/ + files inside, it left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
 
+        # ldflags are passed to the go linker to set variables at runtime
+        # Note: the Homebrew version of Hugo sets extra ldflags such as the build
+        # date. We do not set that here, we only set the vendorInfo variable.
+        ldflags = [
+            f"-X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}",
+        ]
+
         subprocess.check_call(
             [
                 "go",
                 "install",
+                "-ldflags",
+                *ldflags,
                 "-tags",
                 "extended",
             ],
