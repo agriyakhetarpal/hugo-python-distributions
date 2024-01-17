@@ -27,7 +27,6 @@ HUGO_SHA256 = "bbefa92a7ae9442f7acd082df3dca64f0d872264bb0ffb8bc582def4d5690a1b"
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 # The vendor name is used to set the vendorInfo variable in the Hugo binary
-# TODO: include this in the build command, doesn't work right now
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
 # Normalise platform strings to match the Go toolchain
@@ -44,6 +43,12 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
 }[platform.machine()]
+
+# Name of the Hugo binary that will be built
+HUGO_BINARY_NAME = (
+    f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
+    + FILE_EXT
+)
 
 
 class HugoBuilder(build_ext):
@@ -131,6 +136,28 @@ class HugoBuilder(build_ext):
         ldflags = [
             f"-X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}",
         ]
+
+        # Check for compilers, toolchains, etc. and raise helpful errors if they
+        # are not found.
+        try:
+            subprocess.check_call(["go", "version"])
+        except OSError as err:
+            error_message = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
+            raise OSError(error_message) from err
+
+        try:
+            subprocess.check_call(["gcc", "--version"])
+        except OSError:
+            try:
+                subprocess.check_call(["clang", "--version"])
+            except OSError as err:
+                error_message = "GCC/Clang not found. Please install GCC or Clang via your package manager."
+                raise OSError(error_message) from err
+        try:
+            subprocess.check_call(["git", "--version"])
+        except OSError as err:
+            error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
+            raise OSError(error_message) from err
 
         subprocess.check_call(
             [
@@ -276,15 +303,7 @@ class HugoWheel(bdist_wheel):
 
         # ensure that the binary is copied into the binaries/ folder and then
         # into the wheel.
-        hugo_binary = (
-            Path(__file__).parent
-            / "hugo"
-            / "binaries"
-            / (
-                f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
-                + FILE_EXT
-            )
-        )
+        hugo_binary = Path(__file__).parent / "hugo" / "binaries" / HUGO_BINARY_NAME
 
         # if the binary does not exist, then we need to build it, so invoke
         # the build_ext command again and proceed to build the binary
@@ -300,8 +319,7 @@ setup(
         Extension(
             name="hugo.build",
             sources=[
-                f"hugo/binaries/hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
-                + FILE_EXT
+                f"hugo/binaries/{HUGO_BINARY_NAME}",
             ],
         )
     ],
@@ -312,8 +330,7 @@ setup(
     },
     package_data={
         "hugo": [
-            f"binaries/hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
-            + FILE_EXT
+            f"binaries/{HUGO_BINARY_NAME}",
         ],
     },
     # has to be kept in sync with the version in hugo/cli.py
