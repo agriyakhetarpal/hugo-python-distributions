@@ -114,6 +114,10 @@ class HugoBuilder(build_ext):
         os.environ["GOPATH"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
         # it must be absolute (Go requirement)
 
+        # Set GOCACHE to the hugo_cache/ directory so that the Go toolchain
+        # caches the build artifacts there for future use.
+        os.environ["GOCACHE"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
+
         os.environ["GOOS"] = self.hugo_platform
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
         # i.e., allow override if GOARCH is set!
