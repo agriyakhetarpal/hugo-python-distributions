@@ -15,11 +15,15 @@
 [docs-link]:                https://github.com/agriyakhetarpal/hugo-python-distributions/
 [docs-badge]:               https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
 
+<div align="center">
+
 | Classifiers | Description |
-| ------ | ----------- |
-| Builds | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] |
+| ------ | ---------------- |
+| Builds | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main) |
 | Package | [![PyPI version](https://badge.fury.io/py/hugo.svg)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) ![PyPI - Downloads](https://img.shields.io/pypi/dm/hugo) |
-| Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] |
+| Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) |
+
+</div>
 
 Binaries for the extended version of the Hugo static site generator, installable via `pip`
 
@@ -51,7 +55,12 @@ python -m virtualenv venv  # (or your preferred method of creating virtual envir
 pip install hugo
 ```
 
-This places a `hugo` executable in a `binaries` directory in your virtual environment and adds an entry point to it.
+This places a `hugo` installation with an executable in your virtual environment and adds an entry point to it in your virtual environment's `bin` directory. You can use the `hugo` command as you would normally:
+
+```bash
+hugo version
+hugo env --logLevel info
+```
 
 Alternatively, you can install the package globally on your system:
 
@@ -61,7 +70,15 @@ py -m pip install hugo         # Windows
 ```
 
 > [!TIP]
-> It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system. Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
+> It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system. i.e.,
+```bash
+pipx install hugo      # install and run Hugo through pipx
+```
+or
+```bash
+pipx run hugo==0.121.2 # run a specific version of Hugo through pipx, even if a different version is installed in whatever environment you are in
+```
+Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
 
 Then, you can use the `hugo` commands as you would normally:
 
@@ -79,7 +96,7 @@ hugo --printI18nWarnings server
 ...
 ```
 
-Virtual environments can allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package (please refer to the section [_What version of `hugo` do I install?_](#what-version-of-hugo-do-i-install) for more information):
+Standard virtual environments can allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package (please refer to the section [_What version of `hugo` do I install?_](#what-version-of-hugo-do-i-install) for more information):
 
 ```bash
 pip install "hugo==0.121.2"
@@ -98,8 +115,8 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 | Linux    | amd64           | ✅                              |
 | Linux    | arm64           | ✅                              |
 | Windows  | x86_64          | ✅                              |
-| Windows  | i686            | ❌ Will not receive support[^1] |
 | Windows  | arm64           | 💡 Probable[^3]                 |
+| Windows  | i686            | ❌ Will not receive support[^1] |
 | DragonFlyBSD | amd64       | ❌ Will not receive support[^2] |
 | FreeBSD  | amd64           | ❌ Will not receive support[^2] |
 | OpenBSD  | amd64           | ❌ Will not receive support[^2] |
@@ -114,11 +131,11 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 
 Building the extended version of Hugo from source requires the following dependencies:
 
-- [Go](https://go.dev/doc/install) toolchain
-- [Git](https://git-scm.com/downloads)
+- The [Go](https://go.dev/doc/install) toolchain
+- The [Git](https://git-scm.com/downloads) version control system
 - A C/C++ compiler, such as [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/)
 
-Windows users can use the [Chocolatey package manager](https://chocolatey.org/) and use the [MinGW compiler](https://chocolatey.org/packages/mingw). After installing Chocolatey, run the following command in an elevated terminal prompt:
+Windows users can use the [Chocolatey package manager](https://chocolatey.org/) in order to use the [MinGW compiler](https://chocolatey.org/packages/mingw). After installing Chocolatey, run the following command in an elevated terminal prompt:
 
 ```bash
 choco install mingw
