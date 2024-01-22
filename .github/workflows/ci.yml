@@ -63,7 +63,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ./hugo_cache/
           key: ${{ runner.os }}-hugo-${{ hashFiles('**/setup.py') }}-${{ steps.setup-go.outputs.go-version }}
@@ -79,7 +79,7 @@ jobs:
         run: nox -s venv
 
       - name: Save Hugo builder cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ./hugo_cache/
           key: ${{ runner.os }}-hugo-${{ hashFiles('**/setup.py') }}-${{ steps.setup-go.outputs.go-version }}
