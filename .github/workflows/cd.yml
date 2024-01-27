@@ -62,9 +62,8 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21.x'
+          go-version: '1.21.6'
           cache: false
-          check-latest: true
 
       - name: Install MinGW compiler(s)
         run: choco install mingw
@@ -109,9 +108,9 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_ALL_LINUX: >
             yum install -y wget &&
-            wget https://golang.org/dl/go1.21.5.linux-amd64.tar.gz &&
+            wget https://golang.org/dl/go1.21.6.linux-amd64.tar.gz &&
             mkdir $HOME/go_installed &&
-            tar -C $HOME/go_installed/ -xzf go1.21.5.linux-amd64.tar.gz &&
+            tar -C $HOME/go_installed/ -xzf go1.21.6.linux-amd64.tar.gz &&
             export PATH="$HOME/go_installed/go/bin:$PATH" &&
             go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
@@ -219,7 +218,7 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21.x'
+          go-version: '1.21.6'
           cache: false
           check-latest: true
 
@@ -259,7 +258,7 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21.x'
+          go-version: '1.21.6'
           cache: false
           check-latest: true
 
