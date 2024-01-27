@@ -7,9 +7,9 @@ yum install -y wget
 arch=$(uname -m)
 
 if [ "$arch" == "x86_64" ]; then
-    tarball="go1.21.5.linux-amd64.tar.gz"
+    tarball="go1.21.6.linux-amd64.tar.gz"
 elif [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
-    tarball="go1.21.5.linux-arm64.tar.gz"
+    tarball="go1.21.6.linux-arm64.tar.gz"
 else
     echo "Unsupported architecture: $arch"
     exit 1
