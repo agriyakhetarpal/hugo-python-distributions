@@ -244,7 +244,7 @@ jobs:
     strategy:
       fail-fast: false
     name: macOS wheels (arm64)
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
         with:
@@ -268,9 +268,6 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_MACOS: arm64
-          # These are needed to build arm64 binaries on x86_64 macOS
-          CIBW_ENVIRONMENT_MACOS: >
-            GOARCH="arm64"
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_TEST_COMMAND: >
             hugo version
