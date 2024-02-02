@@ -45,9 +45,7 @@ jobs:
           path: dist
 
   windows_wheels:
-    strategy:
-      fail-fast: false
-    name: Windows wheels
+    name: Windows wheels (amd64)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -68,7 +66,7 @@ jobs:
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -86,8 +84,6 @@ jobs:
           if-no-files-found: error
 
   linux_amd64_wheels:
-    strategy:
-      fail-fast: false
     name: Linux wheels (amd64)
     runs-on: ubuntu-latest
     steps:
@@ -100,7 +96,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -127,8 +123,6 @@ jobs:
           if-no-files-found: error
 
   linux_aarch64_wheels:
-    strategy:
-      fail-fast: false
     name: Linux wheels (aarch64)
     runs-on: ubuntu-latest
     steps:
@@ -146,7 +140,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -201,8 +195,6 @@ jobs:
           if-no-files-found: error
 
   macos_x86_64_wheels:
-    strategy:
-      fail-fast: false
     name: macOS wheels (x86_64)
     runs-on: macos-latest
     steps:
@@ -222,7 +214,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -241,8 +233,6 @@ jobs:
           if-no-files-found: error
 
   macos_arm64_wheels:
-    strategy:
-      fail-fast: false
     name: macOS wheels (arm64)
     runs-on: macos-14
     steps:
@@ -253,7 +243,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
 
       - name: Set up Go toolchain
         uses: actions/setup-go@v5
@@ -262,11 +252,12 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
           CIBW_ARCHS_MACOS: arm64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_TEST_COMMAND: >
