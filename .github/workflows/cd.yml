@@ -68,7 +68,7 @@ jobs:
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -100,7 +100,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -146,7 +146,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -222,7 +222,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -262,7 +262,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.4
+      - uses: pypa/cibuildwheel@v2.16.5
         with:
           package-dir: .
           output-dir: wheelhouse
