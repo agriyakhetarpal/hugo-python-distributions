@@ -222,7 +222,7 @@ jobs:
           # Cross-compile for arm64 on macOS x86_64 with Python 3.8 for now
           # See https://github.com/pypa/cibuildwheel/issues/1278
           GOARCH: arm64
-          CIBW_PYTHON_REQUIRES: ">=3.8,<3.9"
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.8,<3.9"
           CIBW_ARCHS_MACOS: x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_TEST_COMMAND: >
@@ -261,7 +261,6 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
-          CIBW_PYTHON_REQUIRES: ">=3.9"
           CIBW_ARCHS_MACOS: x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_TEST_COMMAND: >
