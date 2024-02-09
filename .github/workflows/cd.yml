@@ -43,6 +43,7 @@ jobs:
         with:
           name: source_distribution
           path: dist
+          if-no-files-found: error
 
   windows_wheels:
     name: Windows wheels (amd64)
@@ -222,17 +223,14 @@ jobs:
           # Cross-compile for arm64 on macOS x86_64 with Python 3.8 for now
           # See https://github.com/pypa/cibuildwheel/issues/1278
           GOARCH: arm64
+          CIBW_ARCHS_MACOS: arm64
           CIBW_PROJECT_REQUIRES_PYTHON: ">=3.8,<3.9"
-          CIBW_ARCHS_MACOS: x86_64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
-          CIBW_TEST_COMMAND: >
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: macos_x86_64_py38_wheel
+          name: macos_arm64_cp38_hotfix
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
@@ -335,8 +333,15 @@ jobs:
           mkdir wheelhouse_arm64
           mkdir wheelhouse_x86_64
           mkdir wheelhouse_universal2
+          echo "Files in macos_x86_64_wheels:"
+          ls macos_x86_64_wheels
+          echo "Files in macos_arm64_wheels:"
+          ls macos_arm64_wheels
+          echo "Files in macos_arm64_cp38_hotfix:"
+          ls macos_arm64_cp38_hotfix
           cp macos_x86_64_wheels/*.whl wheelhouse_x86_64/
           cp macos_arm64_wheels/*.whl wheelhouse_arm64/
+          cp macos_arm64_cp38_hotfix/*.whl wheelhouse_arm64/
           python -m pip install delocate
           python scripts/ci/tools/macos/fuse_wheels.py ./wheelhouse_x86_64 ./wheelhouse_arm64 ./wheelhouse_universal2
 
