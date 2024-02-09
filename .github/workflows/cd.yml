@@ -43,11 +43,10 @@ jobs:
         with:
           name: source_distribution
           path: dist
+          if-no-files-found: error
 
   windows_wheels:
-    strategy:
-      fail-fast: false
-    name: Windows wheels
+    name: Windows wheels (amd64)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -86,8 +85,6 @@ jobs:
           if-no-files-found: error
 
   linux_amd64_wheels:
-    strategy:
-      fail-fast: false
     name: Linux wheels (amd64)
     runs-on: ubuntu-latest
     steps:
@@ -127,8 +124,6 @@ jobs:
           if-no-files-found: error
 
   linux_aarch64_wheels:
-    strategy:
-      fail-fast: false
     name: Linux wheels (aarch64)
     runs-on: ubuntu-latest
     steps:
@@ -200,9 +195,46 @@ jobs:
           path: ./repaired_linux_wheels/*.whl
           if-no-files-found: error
 
+  macos_arm64_cp38_hotfix:
+    name: macOS wheels (arm64) with Python 3.8
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: Set up Go toolchain
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21.6'
+          cache: false
+          check-latest: true
+
+      - uses: pypa/cibuildwheel@v2.16.5
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          # Cross-compile for arm64 on macOS x86_64 with Python 3.8 for now
+          # See https://github.com/pypa/cibuildwheel/issues/1278
+          GOARCH: arm64
+          CIBW_ARCHS_MACOS: arm64
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.8,<3.9"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos_arm64_cp38_hotfix
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
   macos_x86_64_wheels:
-    strategy:
-      fail-fast: false
     name: macOS wheels (x86_64)
     runs-on: macos-latest
     steps:
@@ -241,8 +273,6 @@ jobs:
           if-no-files-found: error
 
   macos_arm64_wheels:
-    strategy:
-      fail-fast: false
     name: macOS wheels (arm64)
     runs-on: macos-14
     steps:
@@ -253,7 +283,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
 
       - name: Set up Go toolchain
         uses: actions/setup-go@v5
@@ -267,6 +297,7 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.9"
           CIBW_ARCHS_MACOS: arm64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_TEST_COMMAND: >
@@ -283,7 +314,7 @@ jobs:
   combined_macos_wheels:
     name: Combine macOS wheels
     runs-on: macos-latest
-    needs: [macos_x86_64_wheels, macos_arm64_wheels]
+    needs: [macos_x86_64_wheels, macos_arm64_cp38_hotfix, macos_arm64_wheels]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -302,8 +333,15 @@ jobs:
           mkdir wheelhouse_arm64
           mkdir wheelhouse_x86_64
           mkdir wheelhouse_universal2
+          echo "Files in macos_x86_64_wheels:"
+          ls macos_x86_64_wheels
+          echo "Files in macos_arm64_wheels:"
+          ls macos_arm64_wheels
+          echo "Files in macos_arm64_cp38_hotfix:"
+          ls macos_arm64_cp38_hotfix
           cp macos_x86_64_wheels/*.whl wheelhouse_x86_64/
           cp macos_arm64_wheels/*.whl wheelhouse_arm64/
+          cp macos_arm64_cp38_hotfix/*.whl wheelhouse_arm64/
           python -m pip install delocate
           python scripts/ci/tools/macos/fuse_wheels.py ./wheelhouse_x86_64 ./wheelhouse_arm64 ./wheelhouse_universal2
 
