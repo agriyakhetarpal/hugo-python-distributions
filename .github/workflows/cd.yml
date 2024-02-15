@@ -103,13 +103,7 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_BEFORE_ALL_LINUX: >
-            yum install -y wget &&
-            wget https://golang.org/dl/go1.21.6.linux-amd64.tar.gz &&
-            mkdir $HOME/go_installed &&
-            tar -C $HOME/go_installed/ -xzf go1.21.6.linux-amd64.tar.gz &&
-            export PATH="$HOME/go_installed/go/bin:$PATH" &&
-            go version
+          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
           CIBW_TEST_COMMAND: >
@@ -158,6 +152,49 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux_aarch64_wheels
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  linux_aarch64_wheels_dockcross:
+    name: Linux wheels (aarch64) (cross-compiled)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - uses: pypa/cibuildwheel@v2.16.5
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          # Cross-compile for aarch64 on x86_64 using dockcross/manylinux2014-aarch64 image
+          CIBW_MANYLINUX_X86_64_IMAGE: dockcross/manylinux2014-aarch64
+          # This is the host architecture of the manylinux image, but the wheels will be for aarch64 because of the Go toolchain
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_BEFORE_ALL_LINUX: >
+            bash scripts/ci/tools/linux/install_go.sh &&
+            echo "Installing cross-compilation toolchain" &&
+            yum install -y epel-release &&
+            yum install -y gcc-aarch64-linux-gnu &&
+            yum install -y gcc-c++-aarch64-linux-gnu &&
+            yum groupinstall -y 'Development Tools'
+            # yum install -y centos-release-scl &&
+            # yum install -y glibc-devel.aarch64
+          # From https://github.com/gohugoio/hugo/blob/master/hugoreleaser.toml
+          # CIBW_ENVIRONMENT_LINUX: PATH="$PATH:$HOME/go_installed/go/bin" CC="aarch64-linux-gnu-gcc" CXX="aarch64-linux-gnu-g++" GOARCH="arm64"
+          CIBW_ENVIRONMENT_LINUX: PATH="$PATH:$HOME/go_installed/go/bin" GOARCH="arm64"
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: ''
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux_aarch64_wheels_dockcross
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
