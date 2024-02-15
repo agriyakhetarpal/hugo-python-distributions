@@ -15,7 +15,7 @@ else
     exit 1
 fi
 
-wget https://golang.org/dl/$tarball
+wget -q https://golang.org/dl/$tarball
 mkdir $HOME/go_installed/
 tar -C $HOME/go_installed/ -xzf $tarball
 export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
