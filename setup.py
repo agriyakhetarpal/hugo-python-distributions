@@ -13,17 +13,17 @@ from setuptools.command.build_ext import build_ext
 from wheel.bdist_wheel import bdist_wheel, get_platform
 
 # Has to be kept in sync with the version in hugo/cli.py and incantation of setup()
-HUGO_VERSION = "0.123.0"
+HUGO_VERSION = "0.123.1"
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
 )
 # Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
 # Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
-HUGO_RElEASE_COMMIT_HASH = "3c8a4713908e48e6523f058ca126710397aa4ed5"
+HUGO_RElEASE_COMMIT_HASH = "3f8434a62fc91a50f4e5bd43a4435d2d301844ff"
 # The pooch tool will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
-HUGO_SHA256 = "877f4d8246053d6e577fc57d85291c8b1e88635e2711d00ba5708c3782cef89e"
+HUGO_SHA256 = "2ef7ced2864abc5449508a260f54aa7deeb59a46b5328c4e2cb6d4dea15a2392"
 FILE_EXT = ".exe" if sys.platform == "win32" else ""
 
 # The vendor name is used to set the vendorInfo variable in the Hugo binary
