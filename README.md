@@ -20,7 +20,7 @@
 | Classifiers | Description |
 | ------ | ---------------- |
 | Builds | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main) |
-| Package | [![PyPI version](https://badge.fury.io/py/hugo.svg)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) ![PyPI - Downloads](https://img.shields.io/pypi/dm/hugo) |
+| Package | [![PyPI version](https://badge.fury.io/py/hugo.svg)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) [![Downloads per month](https://static.pepy.tech/badge/hugo/month)](https://pepy.tech/project/hugo) [![Downloads](https://static.pepy.tech/badge/hugo/week)](https://pepy.tech/project/hugo) |
 | Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) |
 
 </div>
