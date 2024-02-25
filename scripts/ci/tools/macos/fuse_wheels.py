@@ -1,9 +1,48 @@
 #!/usr/bin/env python3
-# A wrapper script over delocate-fuse for creating universal2 wheels
-# from x86_64 and arm64 wheels, with basic command-line argument parsing
-
-# Usage: fuse_wheels.py <x86_64_wheels_dir> <arm64_wheels_dir> <output_dir>
-# Note: these directories must be created beforehand before running this script.
+#
+#                            ,---.           ,---.
+#                           / /"`.\.--"""--./,'"\ \
+#                           \ \    _       _    / /
+#                            `./  / __   __ \  \,'
+#                             /    /_O)_(_O\    \
+#                             |  .-'  ___  `-.  |
+#                          .--|       \_/       |--.
+#                        ,'    \   \   |   /   /    `.
+#                       /       `.  `--^--'  ,'       \
+#                    .-"""""-.    `--.___.--'     .-"""""-.
+#       .-----------/         \------------------/         \--------------.
+#       | .---------\         /----------------- \         /------------. |
+#       | |          `-`--`--'                    `--'--'-'             | |
+#       | |                                                             | |
+#       | |                                                             | |
+#       | |    This script is currently not in use. It is kept for      | |
+#       | |    future reference in case we need to ship universal       | |
+#       | |    binaries that target both macOS Intel and macOS ARM      | |
+#       | |    architectures again.                                     | |
+#       | |                                                             | |
+#       | |    It is to be noted that the issue with universal2         | |
+#       | |    wheels up to Hugo v0.123.3 is not only their size,       | |
+#       | |    i.e., 90+ MB owing to ZIP compression rather than        | |
+#       | |    TGZ, but also that they contain executables for          | |
+#       | |    both architectures rather than a single binary that      | |
+#       | |    has been merged with tools like LIPO.                    | |
+#       | |                                                             | |
+#       | |_____________________________________________________________| |
+#       |_________________________________________________________________|
+#                          )__________|__|__________(
+#                         |            ||            |
+#                         |____________||____________|
+#                           ),-----.(      ),-----.(
+#                         ,'   ==.   \    /  .==    `.
+#                        /            )  (            \
+#                        `==========='    `==========='  hjw
+#
+#
+#   A wrapper script over delocate-fuse for creating universal2 wheels
+#   from x86_64 and arm64 wheels, with basic command-line argument parsing
+#
+#   Usage: fuse_wheels.py <x86_64_wheels_dir> <arm64_wheels_dir> <output_dir>
+#   Note: these directories must be created beforehand before running this script.
 
 import os
 import shutil
@@ -57,6 +96,7 @@ for wheel_name in os.listdir(out_dir):
     src_path = Path(out_dir) / wheel_name
     dest_path = Path(out_dir) / wheel_name_new
 
-    print(f"Renamed wheel {wheel_name} to {wheel_name_new}")
-
+    wheel_name_string = f"\033[33m{wheel_name}\033[0m"
+    wheel_name_new_string = f"\033[33m{wheel_name_new}\033[0m"
+    print(f"✨ Renamed wheel {wheel_name_string} to {wheel_name_new_string} 🎉")
     Path(src_path).rename(dest_path)
