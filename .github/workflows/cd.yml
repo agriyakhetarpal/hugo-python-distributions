@@ -305,49 +305,8 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
-  combined_macos_wheels:
-    name: Combine macOS wheels
-    runs-on: macos-latest
-    needs: [macos_x86_64_wheels, macos_arm64_cp38_hotfix, macos_arm64_wheels]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download macOS wheels for both architectures
-        uses: actions/download-artifact@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-
-      - name: Combine macOS wheels
-        run: |
-          mkdir wheelhouse_arm64
-          mkdir wheelhouse_x86_64
-          mkdir wheelhouse_universal2
-          echo "Files in macos_x86_64_wheels:"
-          ls macos_x86_64_wheels
-          echo "Files in macos_arm64_wheels:"
-          ls macos_arm64_wheels
-          echo "Files in macos_arm64_cp38_hotfix:"
-          ls macos_arm64_cp38_hotfix
-          cp macos_x86_64_wheels/*.whl wheelhouse_x86_64/
-          cp macos_arm64_wheels/*.whl wheelhouse_arm64/
-          cp macos_arm64_cp38_hotfix/*.whl wheelhouse_arm64/
-          python -m pip install delocate
-          python scripts/ci/tools/macos/fuse_wheels.py ./wheelhouse_x86_64 ./wheelhouse_arm64 ./wheelhouse_universal2
-
-      - name: Upload combined macOS wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: combined_macos_wheels
-          path: ./wheelhouse_universal2/*.whl
-          if-no-files-found: error
-
   publish:
-    needs: [sdist, windows_wheels, repair_linux_wheels, combined_macos_wheels]
+    needs: [sdist, windows_wheels, repair_linux_wheels, macos_arm64_cp38_hotfix, macos_x86_64_wheels, macos_arm64_wheels]
     name: Publish to PyPI or TestPyPI
     environment: release
     permissions:
@@ -362,7 +321,7 @@ jobs:
       - name: Move all artifacts to upload directory
         run: |
           mkdir upload
-          mv source_distribution/* windows_wheels/* repaired_linux_wheels/* combined_macos_wheels/* upload/
+          mv source_distribution/* windows_wheels/* repaired_linux_wheels/* macos_arm64_cp38_hotfix/* macos_x86_64_wheels/* macos_arm64_wheels/* upload/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         if: github.event_name == 'release' && github.event.action == 'published'
