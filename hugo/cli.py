@@ -14,7 +14,7 @@ from subprocess import check_call
 from sys import argv
 from sys import platform as sysplatform
 
-HUGO_VERSION = "0.123.3"
+HUGO_VERSION = "0.123.4"
 
 FILE_EXT = ".exe" if sysplatform == "win32" else ""
 
