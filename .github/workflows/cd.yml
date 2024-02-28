@@ -330,3 +330,9 @@ jobs:
           # Remove this line to publish to PyPI
           # repository-url: https://test.pypi.org/legacy/
           packages-dir: upload
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'release' && github.event.action == 'published'
+        with:
+          files: upload/*

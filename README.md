@@ -29,6 +29,9 @@ Binaries for the extended version of the Hugo static site generator, installable
 
 This package provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for Python versions 3.8–3.12.
 
+> [!WARNING]
+> Owing to the limitations of overall sizing available on PyPI for `hugo`, only the most recent (up to nine or ten) versions of Hugo are available for download through `pip`. If you need an older version of Hugo, please consider using the wheels that have been uploaded to the [GitHub releases](https://github.com/agriyakhetarpal/hugo-python-distributions/releases) page or the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
+
 ## What is Hugo?
 
 [Hugo](https://gohugo.io/) is a static site generator written in [Go](https://golang.org/). It is designed to be fast and flexible, and it is used by many people and organizations for their websites, documentation, and personal blogs.
