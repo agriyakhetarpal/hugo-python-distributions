@@ -333,7 +333,7 @@ jobs:
           packages-dir: upload
 
       - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.0.2
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           files: upload/*
