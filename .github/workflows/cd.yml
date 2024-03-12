@@ -67,7 +67,7 @@ jobs:
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -97,7 +97,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -135,7 +135,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -209,7 +209,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -248,7 +248,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -286,7 +286,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@v2.16.5
+      - uses: pypa/cibuildwheel@v2.17.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -333,7 +333,7 @@ jobs:
           packages-dir: upload
 
       - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v2.0.2
+        uses: softprops/action-gh-release@v2.0.3
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           files: upload/*
