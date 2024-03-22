@@ -10,9 +10,9 @@ from pathlib import Path
 import pooch
 from setuptools import Command, Extension, setup
 from setuptools.command.build_ext import build_ext
-from wheel.bdist_wheel import bdist_wheel, get_platform
+from setuptools.command.build_py import build_py
+from wheel.bdist_wheel import bdist_wheel
 
-# Has to be kept in sync with the version in hugo/cli.py
 HUGO_VERSION = "0.124.1"
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
@@ -49,6 +49,27 @@ HUGO_BINARY_NAME = (
     f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
     + FILE_EXT
 )
+
+
+class HugoWriter(build_py):
+    """
+    A custom pre-installation command that writes the version of Hugo being built
+    to hugo/VERSION so that the version is available to read at runtime.
+    """
+
+    def initialize_options(self) -> None:
+        return super().initialize_options()
+
+    def finalize_options(self) -> None:
+        return super().finalize_options()
+
+    def run(self) -> None:
+        """Write the version of Hugo being built to hugo/VERSION."""
+        with open("hugo/VERSION", "w") as version_file:  # noqa: PTH123
+            version_file.write(HUGO_VERSION)
+            version_file.write("\n")
+
+        super().run()
 
 
 class HugoBuilder(build_ext):
@@ -142,7 +163,8 @@ class HugoBuilder(build_ext):
         ]
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
-        # are not found.
+        # are not found. These are essentially smoke tests to ensure that the
+        # build environment is set up correctly.
         try:
             subprocess.check_call(["go", "version"])
         except OSError as err:
@@ -269,36 +291,41 @@ class HugoWheel(bdist_wheel):
         super().initialize_options()
 
     def finalize_options(self):
-        # plat_name is essentially the {platform tag} at the end of the wheel name.
-        # Note to self: the wheel name will look like this:
-        # {distribution}-{version}(-{build tag})?-{python tag}-{abi tag}-{platform tag}.whl
-        # # on macOS, if GOARCH is set to arm64 on an x86_64 machine, or if GOARCH is set to
-        # amd64 on an arm64 machine, we need to set the platform tag to macosx_X_Y_arm64 or
-        # macosx_X_Y_x86_64 respectively.
-        #
-        # TODO: FIXME: look at how Linux and Windows tags are set later
+        super().finalize_options()
 
+    def get_tag(self):
+        python_tag, abi_tag, platform_tag = bdist_wheel.get_tag(self)
+        # Build for all Python versions and set ABI tag to "none" because
+        # the Hugo binary is not a CPython extension, it is self-contained
+        python_tag, abi_tag = "py3", "none"
+
+        # Handle cross-compilation on macOS via the Xcode toolchain
+        # =========================================================
+        # Also, ensure correct platform tags for macOS arm64 and macOS x86_64
+        # since macOS 3.12 Python runners are mislabelling the platform tag to be
+        # universal2, see: https://github.com/pypa/wheel/issues/57
         if sys.platform == "darwin":
-            platform_tag = get_platform("_")
-            # ensure correct platform tag for macOS arm64 and macOS x86_64
-            # macOS 3.12 Python runners are mislabelling the platform tag to be
-            # universal2
-            # see: https://github.com/pypa/wheel/issues/573. we will explicitly rename
-            # the universal2 tag to macosx_X_Y_arm64 or macosx_X_Y_x86_64 respectively,
-            # since we fuse the wheels together later anyway.
-            if (("arm64" in platform_tag) or ("univeral2" in platform_tag)) and (
-                os.environ.get("GOARCH") == "amd64"
+            if (os.environ.get("GOARCH") == "arm64") and (
+                ("x86_64" in platform_tag) or ("universal2" in platform_tag)
             ):
-                self.plat_name = platform_tag.replace("arm64", "x86_64").replace(
-                    "universal2", "x86_64"
-                )
-            if (("x86_64" in platform_tag) or ("universal2" in platform_tag)) and (
-                os.environ.get("GOARCH") == "arm64"
-            ):
-                self.plat_name = platform_tag.replace("x86_64", "arm64").replace(
+                # replace x86_64 or universal2 in plat with arm64
+                # for arm64, replace 10.9 with 11.0, except when running under cibuildwheel
+                # because it already does it for us
+                platform_tag = platform_tag.replace("x86_64", "arm64").replace(
                     "universal2", "arm64"
                 )
-        super().finalize_options()
+                if os.environ.get("CIBUILDWHEEL") != "1" and "10_9" in platform_tag:
+                    platform_tag = platform_tag.replace("10_9", "11_0")
+
+            elif (os.environ.get("GOARCH") == "amd64") and (
+                ("arm64" in platform_tag) or ("universal2" in platform_tag)
+            ):
+                # Replace arm64 or universal2 in plat with x86_64
+                platform_tag = platform_tag.replace("arm64", "x86_64").replace(
+                    "universal2", "x86_64"
+                )
+
+        return python_tag, abi_tag, platform_tag
 
     def run(self):
         self.root_is_pure = False  # ensure that the wheel is tagged as a binary wheel
@@ -328,6 +355,7 @@ setup(
         )
     ],
     cmdclass={
+        "build_py": HugoWriter,
         "build_ext": HugoBuilder,
         "clean": Cleaner,
         "bdist_wheel": HugoWheel,

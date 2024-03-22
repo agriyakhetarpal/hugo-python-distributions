@@ -14,7 +14,8 @@ from subprocess import check_call
 from sys import argv
 from sys import platform as sysplatform
 
-HUGO_VERSION = "0.124.1"
+with open(path.join(path.dirname(__file__), "VERSION")) as f:  # noqa: PTH123, PTH120, PTH118
+    HUGO_VERSION = f.read().strip()
 
 FILE_EXT = ".exe" if sysplatform == "win32" else ""
 
