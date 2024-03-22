@@ -19,11 +19,8 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: 3.12
 
@@ -32,32 +29,28 @@ jobs:
 
   build_wheels:
     needs: [style]
-    name: Wheels (${{ matrix.runs-on }} / Python ${{ matrix.python-version }})
+    name: ${{ matrix.runs-on }}-python-${{ matrix.python-version }}
     runs-on: ${{ matrix.runs-on }}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        runs-on: [ubuntu-latest, macos-latest, macos-14, windows-latest]
+        python-version: ["3.8", "3.12", "3.13"]
+        runs-on: [ubuntu-latest, macos-13, macos-14, windows-latest]
         exclude:
+          # https://github.com/actions/setup-python/issues/808
           - python-version: "3.8"
-            runs-on: macos-14
-          - python-version: "3.9"
             runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
         with:
           go-version: "1.22.1"
           cache: false
@@ -68,7 +61,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
         with:
           path: ./hugo_cache/
           key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
@@ -83,37 +76,24 @@ jobs:
       - name: Test entry points for package
         run: nox -s venv
 
-      - name: Save Hugo builder cache
-        uses: actions/cache/save@v4
-        with:
-          path: ./hugo_cache/
-          key: ${{ runner.os }}-hugo-${{ steps.setup-go.outputs.go-version }}
-
   inspect_distributions:
     needs: [style]
-    name: Inspect ${{ matrix.distribution }} contents
+    name: inspect-sdist-wheel-contents
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        distribution: ["sdist", "wheel"]
-
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: 3.12
 
-      - name: Build, inspect, and display contents of source distribution (SDist)
-        if: matrix.distribution == 'sdist'
-        shell: bash
+      - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
-          pipx run build --sdist . --outdir dist/
+          pipx run build --sdist --wheel . --outdir dist/
           pipx run twine check dist/* --strict
 
+      - name: Build, inspect, and display contents of distributions
+        shell: bash
+        run: |
           mkdir -p output/sdist
           tar -xf dist/*.tar.gz -C output/sdist
 
@@ -122,15 +102,8 @@ jobs:
           (cd output/sdist && tree -a * | sed 's/^/    /' | tee -a $GITHUB_STEP_SUMMARY)
           echo -e '\n```\n' >> $GITHUB_STEP_SUMMARY
 
-      - name: Build, inspect, and display contents of binary distribution (wheel)
-        if: matrix.distribution == 'wheel'
-        shell: bash
-        run: |
-          pipx run build --wheel . --outdir wheelhouse/
-          pipx run twine check wheelhouse/* --strict
-
           mkdir -p output/wheel
-          pipx run wheel unpack wheelhouse/*.whl -d output/wheel
+          pipx run wheel unpack dist/*.whl -d output/wheel
 
           echo -e '## View binary distribution (wheel) contents\n' >> $GITHUB_STEP_SUMMARY
           echo -e '```\n' >> $GITHUB_STEP_SUMMARY
