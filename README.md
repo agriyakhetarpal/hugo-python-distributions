@@ -25,9 +25,12 @@
 
 </div>
 
-Binaries for the extended version of the Hugo static site generator, installable via `pip`
+Binaries for the **extended version** of the Hugo static site generator, installable via `pip`
 
-This package provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for Python versions 3.8–3.12.
+This package provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for all Python 3 versions.
+
+> [!NOTE]
+> Only the latest, stable, and to-be EOL Python versions are tested regularly. If you encounter any issues with the package on a specific Python version, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new).
 
 ## What is Hugo?
 
@@ -40,7 +43,7 @@ This package provides wheels for [Hugo](https://gohugo.io/) so that it can be us
 
 This package, `hugo` is versioned alongside the Hugo releases and is aligned with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
 
-Binaries for `hugo` through these wheels are available for Hugo versions **0.121.2** and above. If you need an older version of `hugo` that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
+Binaries for `hugo` through these wheels are available for Hugo versions **0.121.2** and above, through PyPI or through releases on GitHubr. If you need an older version of `hugo` that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
 
 Please refer to the section on [Supported platforms](#supported-platforms) for a list of wheels available for supported platforms and architectures. If it does, jump to the [Quickstart](#quickstart) section to get started.
 
@@ -102,7 +105,7 @@ hugo --printI18nWarnings server
 Standard virtual environments can allow multiple versions of Hugo to be installed and used side-by-side. To use a specific version of Hugo, you can specify the version when installing the package (please refer to the section [_What version of `hugo` do I install?_](#what-version-of-hugo-do-i-install) for more information):
 
 ```bash
-pip install "hugo==0.121.2"
+pip install "hugo==0.X.Y"
 ```
 
 For more information on using Hugo and its command-line interface, please refer to the [Hugo documentation](https://gohugo.io/documentation/) and [Hugo CLI documentation](https://gohugo.io/commands/).
@@ -160,7 +163,7 @@ pip install .                 # regular installation
 > [!NOTE]
 > This functionality is implemented just for macOS at the moment, but it can be extended to other platforms as well in the near future.
 
-This package is capable of cross-compiling Hugo binaries for the same platform but different architectures and it can be used as follows.
+This package is capable of cross-compiling Hugo binaries for the same platform but different architectures and it can be used as follows. Cross-compilation is provided and tested on macOS for the `arm64` and `amd64` architectures via the Xcode toolchain.
 
 Say, on an Intel-based (x86_64) macOS machine:
 
