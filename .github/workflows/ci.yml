@@ -88,6 +88,7 @@ jobs:
 
       - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
+          git apply scripts/ci/tools/patches/0001-use-temporary-directory-to-store-eggs.patch
           pipx run build --sdist --wheel . --outdir dist/
           pipx run twine check dist/* --strict
 
