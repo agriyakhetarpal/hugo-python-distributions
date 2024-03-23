@@ -13,7 +13,7 @@ concurrency:
 env:
   FORCE_COLOR: 3
   CIBW_BUILD_VERBOSITY: 2
-  CIBW_BUILD_FRONTEND: "pip"
+  CIBW_BUILD_FRONTEND: "pip"  # use pip for now, not build – missing buildDate otherwise
   CIBW_BUILD: "cp312-*"
   CIBW_SKIP: "pp* *musllinux*"
   CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
@@ -24,11 +24,7 @@ jobs:
     name: sdist
     runs-on: ubuntu-latest
     steps:
-
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
-        with:
-          fetch-depth: 0
-
       - name: Set up Python 3.12
         uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
@@ -36,6 +32,7 @@ jobs:
 
       - name: Build source distribution
         run: |
+          git apply scripts/ci/tools/patches/0001-use-temporary-directory-to-store-eggs.patch
           pipx run build --sdist --outdir dist/
 
       - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
