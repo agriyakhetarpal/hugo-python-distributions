@@ -11,7 +11,7 @@ from functools import lru_cache
 from os import execvp, path
 from platform import machine
 from subprocess import check_call
-from sys import argv
+from sys import argv, maxsize
 from sys import platform as sysplatform
 
 with open(path.join(path.dirname(__file__), "VERSION")) as f:  # noqa: PTH123, PTH120, PTH118
@@ -30,7 +30,15 @@ HUGO_ARCH = {
     "arm64": "arm64",
     "AMD64": "amd64",
     "aarch64": "arm64",
+    "x86": "386",
 }[machine()]
+
+# platform.machine returns AMD64 on Windows because the architecture is
+# 64-bit (even if one is running a 32-bit Python interpreter). Therefore
+# we use sys. maxsize to handle this special case on Windows
+
+if not (maxsize > 2**32) and sysplatform == "win32":
+    HUGO_ARCH = "386"
 
 
 @lru_cache(maxsize=1)

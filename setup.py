@@ -42,6 +42,7 @@ HUGO_ARCH = {
     "arm64": "arm64",
     "AMD64": "amd64",
     "aarch64": "arm64",
+    "x86": "386",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
@@ -165,12 +166,24 @@ class HugoBuilder(build_ext):
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
         # build environment is set up correctly.
+
+        # Go toolchain is required for building Hugo
         try:
             subprocess.check_call(["go", "version"])
         except OSError as err:
             error_message = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
             raise OSError(error_message) from err
 
+        # Zig compiler is required for cross-compilation on Linux and Windows, but we will
+        # check for this only if we are cross-compiling and not on macOS (where Xcode is used).
+        # if (os.environ.get("GOARCH") != self.hugo_arch) and (sys.platform != "darwin"):
+        #     try:
+        #         subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
+        #     except OSError as err:
+        #         error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
+        #         raise OSError(error_message) from err
+
+        # GCC/Clang is required for building Hugo because CGO is enabled
         try:
             subprocess.check_call(["gcc", "--version"])
         except OSError:
@@ -179,6 +192,8 @@ class HugoBuilder(build_ext):
             except OSError as err:
                 error_message = "GCC/Clang not found. Please install GCC or Clang via your package manager."
                 raise OSError(error_message) from err
+
+        # Git is required for building Hugo to fetch dependencies from various Git repositories
         try:
             subprocess.check_call(["git", "--version"])
         except OSError as err:
@@ -324,6 +339,33 @@ class HugoWheel(bdist_wheel):
                 platform_tag = platform_tag.replace("arm64", "x86_64").replace(
                     "universal2", "x86_64"
                 )
+
+        # Handle cross-compilation on Linux via the Zig compiler
+        # ======================================================
+        # Ensure correct platform tags for Linux arm64 and Linux x86_64
+        # Note: this cross build is one-way only for now, i.e., from x86_64 to arm64
+        # because the other way requires QEMU emulation on CI providers and is quite
+        # slow. We can add it later if needed.
+        if sys.platform == "linux":
+            if (os.environ.get("GOARCH") == "arm64") and ("x86_64" in platform_tag):
+                # replace x86_64 in plat with aarch64
+                platform_tag = platform_tag.replace("x86_64", "aarch64")
+
+        # Handle cross-compilation on Windows via the Zig compiler
+        # ========================================================
+        # Ensure correct platform tags for Windows arm64 and Windows x86_64
+        # Note: this cross build is one-way only for now for the same reasons as Linux
+        # above, because CI providers are scarce with Windows arm64 runners.
+        if sys.platform == "win32":
+            if (os.environ.get("GOARCH") == "arm64") and ("amd64" in platform_tag):
+                # replace amd64 in plat with arm64
+                platform_tag = platform_tag.replace("amd64", "arm64")
+
+            # Similarly, ensure correct platform tags for 32-bit Windows
+            if os.environ.get("GOARCH") == "386":
+                # A 32-bit Windows looks like cmake-3.28.4-py3-none-win32.whl
+                # So we need to replace win_amd64 with win32
+                platform_tag = platform_tag.replace("win_amd64", "win32")
 
         return python_tag, abi_tag, platform_tag
 

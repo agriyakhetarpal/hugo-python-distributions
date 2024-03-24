@@ -27,7 +27,7 @@
 
 Binaries for the **extended version** of the Hugo static site generator, installable via `pip`
 
-This package provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for all Python 3 versions.
+This project provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for all Python 3 versions.
 
 > [!NOTE]
 > Only the latest, stable, and to-be EOL Python versions are tested regularly. If you encounter any issues with the package on a specific Python version, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new).
@@ -41,7 +41,7 @@ This package provides wheels for [Hugo](https://gohugo.io/) so that it can be us
 
 ## What version of `hugo` do I install?
 
-This package, `hugo` is versioned alongside the Hugo releases and is aligned with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
+This project, `hugo` is versioned alongside the Hugo releases and is aligned with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
 
 Binaries for `hugo` through these wheels are available for Hugo versions **0.121.2** and above, through PyPI or through releases on GitHubr. If you need an older version of `hugo` that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
 
@@ -114,24 +114,24 @@ For more information on using Hugo and its command-line interface, please refer 
 
 A subset of the platforms supported by Hugo itself are supported by these wheels for `hugo` via `hugo-python-distributions`. The plan is to support as many platforms as possible with Python wheels and platform tags. Please refer to the following table for a list of supported platforms and architectures:
 
-| Platform | Architecture    | Supported                       |
+| Platform | Architecture    | Support                         |
 | -------- | --------------- | ------------------------------- |
 | macOS    | x86_64 (Intel)  | ✅                              |
 | macOS    | arm64 (Silicon) | ✅                              |
 | Linux    | amd64           | ✅                              |
 | Linux    | arm64           | ✅                              |
 | Windows  | x86_64          | ✅                              |
-| Windows  | arm64           | 💡 Probable[^3]                 |
-| Windows  | i686            | ❌ Will not receive support[^1] |
+| Windows  | arm64           | 💡 Experimental support [^1]    |
+| Windows  | x86             | 💡 Experimental support [^1]    |
 | DragonFlyBSD | amd64       | ❌ Will not receive support[^2] |
 | FreeBSD  | amd64           | ❌ Will not receive support[^2] |
 | OpenBSD  | amd64           | ❌ Will not receive support[^2] |
 | NetBSD   | amd64           | ❌ Will not receive support[^2] |
 | Solaris  | amd64           | ❌ Will not receive support[^2] |
 
-[^1]: Windows 32-bit support is possible to include, but hasn't been included due to the diminishing popularity of i686 instruction set-based systems and the lack of resources to test and build for it. If you need support for Windows 32-bit, please consider either using the official Hugo binaries or compiling from [HugoReleaser](https://github.com/gohugoio/hugoreleaser).
+[^1]: Support for 32-bit (i686) and arm64 architectures on Windows is made possible through the use of the [Zig compiler toolchain](https://ziglang.org/) that uses the LLVM ecosystem. These wheels are experimental owing to the use of `cibuildwheel` and cross-compilation and may not be stable or reliable for all use cases, and are not officially supported by the Hugo project at this time. Please refer to the [Building from source](#building-from-source) section for more information on how to build Hugo for these platforms and architectures, since these wheels are not currently pushed to PyPI for general availability – however, they are tested regularly in CI. If you need support for these platforms, please consider building from source or through a CI provider.
+
 [^2]: Support for these platforms is not possible to include because of i. the lack of resources to test and build for them and ii. the lack of support for these platform specifications in Python packaging standards and tooling. If you need support for these platforms, please consider downloading the [official Hugo binaries](https://github.com/gohugoio/hugo/releases)
-[^3]: Support for Windows ARM64 is possible to include, but `cibuildwheel` support for it is currently experimental. Hugo does not officially support Windows ARM64 at the moment, but it should be possible to build from source for it and can receive support in the future through this package.
 
 ### Building from source
 
@@ -161,9 +161,17 @@ pip install .                 # regular installation
 #### Cross-compiling for different architectures
 
 > [!NOTE]
-> This functionality is implemented just for macOS at the moment, but it can be extended to other platforms as well in the near future.
+> Cross-compilation is experimental and may not be stable or reliable for all use cases. If you encounter any issues with cross-compilation, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new).
 
-This package is capable of cross-compiling Hugo binaries for the same platform but different architectures and it can be used as follows. Cross-compilation is provided and tested on macOS for the `arm64` and `amd64` architectures via the Xcode toolchain.
+This project is capable of cross-compiling Hugo binaries for various platforms and architectures and it can be used as follows. Cross-compilation is provided for the following platforms:
+
+1. macOS for the `arm64` and `amd64` architectures via the Xcode toolchain,
+2. Linux for the `arm64` and `amd64` architectures via the Zig toolchain, and
+3. Windows for the `arm64`, and `x86` architectures via the Zig toolchain.
+
+Please refer to the examples below for more information on how to cross-compile Hugo for different architectures:
+
+##### macOS
 
 Say, on an Intel-based (x86_64) macOS machine:
 
@@ -172,22 +180,81 @@ export GOARCH="arm64"
 pip install .  # or pip install -e .
 ```
 
-This will build a macOS arm64 binary distribution of Hugo that can be used on Apple Silicon-based (arm64) macOS machines. To build a binary distribution for the _target_ Intel-based (x86_64) macOS platform on the _host_ Apple Silicon-based (arm64) macOS machine, you can use the following command:
+This will build a macOS `arm64` binary distribution of Hugo that can be used on Apple Silicon-based (`arm64`) macOS machines. To build a binary distribution for the _target_ Intel-based (`x86_64`) macOS platform on the _host_ Apple Silicon-based (`arm64`) macOS machine, you can use the following command:
 
 ```bash
 export GOARCH="amd64"
 pip install .  # or pip install -e .
 ```
 
+##### Linux
+
+First, install [Zig](https://ziglang.org/download/) on your Linux machine, and set these environment variables prior to installing the package:
+
+Say, on an `amd64` Linux machine:
+
+```bash
+export CC="zig cc -target aarch64-linux-gnu"
+export CXX="zig c++ -target aarch64-linux-gnu"
+export GOARCH="arm64"
+pip install .  # or pip install -e .
+```
+
+will cross-compile a Linux arm64 binary distribution of Hugo that can be used on the targeted arm64 Linux machines. To build a binary distribution for the _target_ `amd64` Linux platform on the _host_ `arm64` Linux machine, set the targets differently:
+
+```bash
+export CC="zig cc -target x86_64-linux-gnu"
+export CXX="zig c++ -target x86_64-linux-gnu"
+export GOARCH="amd64"
+pip install .  # or pip install -e .
+```
+
+This creates dynamic linkage for the built Hugo binary with a system-provided GLIBC. If you wish to statically link the binary with MUSL, change the `CC` and `CXX` environment variables as follows:
+
+```bash
+export CC="zig cc -target x86_64-linux-musl"
+export CXX="zig c++ -target x86_64-linux-musl"
+```
+
+Linkage against MUSL is not tested in CI at this time, but it should work in theory. The official Hugo binaries do not link against MUSL for a variety of reasons including but not limited to the size of the binary and the popularity of the GLIBC C standard library and its conventions.
+
+##### Windows
+
+First, install [Zig](https://ziglang.org/download/) on your Windows machine, and set these environment variables prior to installing the package:
+
+Say, on an `amd64` Windows machine:
+
+```bash
+set CC="zig cc -target aarch64-windows-gnu"
+set CXX="zig c++ -target aarch64-windows-gnu"
+set GOARCH="arm64"
+pip install .  # or pip install -e .
+```
+
+will cross-compile a Windows `arm64` binary distribution of Hugo that can be used on the targeted `arm64` Windows machines (note the use of `set` instead of `export` on Windows), and so on for the `x86` architecture:
+
+```bash
+set CC="zig cc -target x86-windows-gnu"
+set CXX="zig c++ -target x86-windows-gnu"
+set GOARCH="386"
+pip install .  # or pip install -e .
+```
+
+For a list of supported distributions for Go, please run the `go tool dist list` command on your system. For a list of supported targets for Zig, please refer to the [Zig documentation](https://ziglang.org/documentation/) for more information or run the `zig targets` command on your system.
+
+> [!NOTE]
+> Cross-compilation for a target platform and architecture from a different host platform and architecture should be possible, but remains largely untested at this time.
+
+
 ### Background
 
 Binaries for the Hugo static site generator are available for download from the [Hugo releases page](https://github.com/gohugoio/hugo/releases). These binaries have to be downloaded and placed in an appropriate location on the system manually and the PATH environment variable has to be updated to include said location.
 
-This package provides wheels for Hugo to be used with `pip` on macOS, Linux, and Windows. This allows Hugo to be installed and used in a virtual environment, which allows multiple versions of Hugo to be installed and used side-by-side in different virtual environments, where Hugo can be used as a command-line tool (a Python API is not provided at this time given the lack of such a demand for it).
+This project provides wheels for Hugo to be used with `pip` on macOS, Linux, and Windows. This allows Hugo to be installed and used in a virtual environment, which allows multiple versions of Hugo to be installed and used side-by-side in different virtual environments, where Hugo can be used as a command-line tool (a Python API is not provided at this time given the lack of such a demand for it).
 
 #### Use cases
 
-This package is designed to be used in the following scenarios:
+This project is designed to be used in the following scenarios:
 
 - You want to use Hugo as a command-line tool, but you don't want it to be installed globally on your system or do not have the necessary permissions to do so.
 - You cannot or do not want to use the official Hugo binaries
@@ -200,8 +267,8 @@ This package is designed to be used in the following scenarios:
 
 #### (Known) limitations
 
-- It is difficult to provide wheels for all platforms and architectures (see [Supported platforms](#supported-platforms)), so this package only provides wheels for the most common ones—those supported by Python platform tags, packaging standards and tooling—it is not reasonable to do so and provide releases for other platforms owing to the limited resources available on CI systems, in this case, GitHub Actions runners. For extra platforms and architectures, please refer to the [Building from source](#building-from-source) section or consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases) for your purpose.
-- This package does not provide a Python API for Hugo, it just wraps its own command-line interface. The packaging infrastructure for this Python package is not designed to provide a Python API for Hugo, and it is not the goal of this package to provide one. If you need a Python API for Hugo, please refer to the [Hugo documentation](https://gohugo.io/documentation/) for further resources on how to use Hugo programmatically as needed.
+- It is difficult to provide wheels for all platforms and architectures (see [Supported platforms](#supported-platforms)), so this project only provides wheels for the most common ones—those supported by Python platform tags, packaging standards and tooling—it is not reasonable to do so and provide releases for other platforms owing to the limited resources available on CI systems, in this case, GitHub Actions runners. For extra platforms and architectures, please refer to the [Building from source](#building-from-source) section or consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases) for your purpose.
+- This project does not provide a Python API for Hugo, it just wraps its own command-line interface. The packaging infrastructure for this Python package is not designed to provide a Python API for Hugo, and it is not the goal of this project to provide one. If you need a Python API for Hugo, please refer to the [Hugo documentation](https://gohugo.io/documentation/) for further resources on how to use Hugo programmatically as needed.
 
 ### Licensing
 
