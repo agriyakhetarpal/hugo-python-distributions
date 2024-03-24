@@ -84,10 +84,13 @@ jobs:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-latest, windows-latest]
-        architecture: [arm64]
+        architecture: [arm64, i686]
         python-version: [3.8, 3.12, 3.13]
-        # Test just one Python version on Windows
+        # Exclude i686 on Linux for all Python versions
+        # Test just one Python version on Windows for now
         exclude:
+          - runs-on: ubuntu-latest
+            architecture: i686
           - python-version: "3.8"
             runs-on: windows-latest
           - python-version: "3.13"
@@ -123,14 +126,14 @@ jobs:
           CC: zig cc -target aarch64-linux-gnu
           CXX: zig c++ -target aarch64-linux-gnu
         run: |
-          python -m build --wheel . --outdir dist/
-        # can't repair arm64 wheels on Linux x86_64
+          python -m build --wheel . --outdir wheelhouse/
+        # can't repair arm64 wheels on Linux x86_64 right now
         # auditwheel repair --plat manylinux_2_28_aarch64 -w wheelhouse/ dist/*.whl
 
-      - name: Build binary distribution (wheel) on Windows
-        if: matrix.runs-on == 'windows-latest'
+      - name: Build binary distribution (wheel) on Windows (arm64)
+        if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # We need to use cibuildwheel because it has experimental support for cross-compiling
-        # and setup-python does not have arm64 support on Windows right now
+        # to arm64 and setup-python does not have arm64 support on Windows right now
         uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
         with:
           package-dir: .
@@ -141,9 +144,28 @@ jobs:
           # We are on Windows amd64, so set target as arm64
           CC: zig cc -target aarch64-windows-gnu
           CXX: zig c++ -target aarch64-windows-gnu
-          CIBW_SKIP: "pp* *musllinux*"
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
+          CIBW_TEST_SKIP: "*-win_arm64"
+
+        # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
+        # do not need to do that manually unless we use setup-python instead.
+      - name: Build binary distribution (wheel) on Windows (i686)
+        if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
+        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        # Cross-compile for i686 target via Zig toolchain
+        env:
+          GOARCH: 386
+          CC: zig cc -target x86-windows-gnu
+          CXX: zig c++ -target x86-windows-gnu
+          CIBW_BUILD: "cp312-*"
+          CIBW_ARCHS_WINDOWS: x86
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
         uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
