@@ -173,12 +173,14 @@ class HugoBuilder(build_ext):
             error_message = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
             raise OSError(error_message) from err
 
-        # Zig compiler is required for cross-compilation on Linux
-        try:
-            subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
-        except OSError as err:
-            error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
-            raise OSError(error_message) from err
+        # Zig compiler is required for cross-compilation on Linux and Windows, but we will
+        # check for this only if we are cross-compiling and not on macOS (where Xcode is used).
+        if (os.environ.get("GOARCH") != self.hugo_arch) and (sys.platform != "darwin"):
+            try:
+                subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
+            except OSError as err:
+                error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
+                raise OSError(error_message) from err
 
         # GCC/Clang is required for building Hugo because CGO is enabled
         try:
@@ -345,8 +347,18 @@ class HugoWheel(bdist_wheel):
         # slow. We can add it later if needed.
         if sys.platform == "linux":
             if (os.environ.get("GOARCH") == "arm64") and ("x86_64" in platform_tag):
-                # replace x86_64 in plat with aaarch64
+                # replace x86_64 in plat with aarch64
                 platform_tag = platform_tag.replace("x86_64", "aarch64")
+
+        # Handle cross-compilation on Windows via the Zig compiler
+        # ========================================================
+        # Ensure correct platform tags for Windows arm64 and Windows x86_64
+        # Note: this cross build is one-way only for now for the same reasons as Linux
+        # above, because CI providers are scarce with Windows arm64 runners.
+        if sys.platform == "win32":
+            if (os.environ.get("GOARCH") == "arm64") and ("amd64" in platform_tag):
+                # replace amd64 in plat with arm64
+                platform_tag = platform_tag.replace("amd64", "arm64")
 
         return python_tag, abi_tag, platform_tag
 
