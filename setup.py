@@ -42,6 +42,7 @@ HUGO_ARCH = {
     "arm64": "arm64",
     "AMD64": "amd64",
     "aarch64": "arm64",
+    "x86": "386",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
