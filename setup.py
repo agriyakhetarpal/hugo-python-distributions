@@ -175,12 +175,12 @@ class HugoBuilder(build_ext):
 
         # Zig compiler is required for cross-compilation on Linux and Windows, but we will
         # check for this only if we are cross-compiling and not on macOS (where Xcode is used).
-        if (os.environ.get("GOARCH") != self.hugo_arch) and (sys.platform != "darwin"):
-            try:
-                subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
-            except OSError as err:
-                error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
-                raise OSError(error_message) from err
+        # if (os.environ.get("GOARCH") != self.hugo_arch) and (sys.platform != "darwin"):
+        #     try:
+        #         subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
+        #     except OSError as err:
+        #         error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
+        #         raise OSError(error_message) from err
 
         # GCC/Clang is required for building Hugo because CGO is enabled
         try:
