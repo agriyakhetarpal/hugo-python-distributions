@@ -78,13 +78,20 @@ jobs:
 
   experimental:
     needs: [style]
-    name: ubuntu-${{ matrix.architecture }}-python-${{ matrix.python-version }}
-    # TODO: try for Windows arm64 too?
-    runs-on: ubuntu-latest
+    name: ${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
+    runs-on: ${{ matrix.runs-on }}
     strategy:
+      fail-fast: false
       matrix:
+        runs-on: [ubuntu-latest, windows-latest]
         architecture: [arm64]
         python-version: [3.8, 3.12, 3.13]
+        # Test just one Python version on Windows
+        exclude:
+          - python-version: "3.8"
+            runs-on: windows-latest
+          - python-version: "3.13"
+            runs-on: windows-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11      # v4.1.1
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
@@ -105,19 +112,44 @@ jobs:
           version: 0.11.0
 
       - name: Install Python dependencies
-        run: python -m pip install build virtualenv nox
+        run: python -m pip install build virtualenv nox auditwheel
 
-      - name: Build binary distribution (wheel)
+      - name: Build binary distribution (wheel) on Linux
+        if: matrix.runs-on == 'ubuntu-latest'
         # Cross-compile for arm64 target via Zig toolchain
         env:
           GOARCH: arm64
           # We are on ubuntu amd64, so set target as arm64
           CC: zig cc -target aarch64-linux-gnu
           CXX: zig c++ -target aarch64-linux-gnu
-
         run: |
-          python -m build --wheel . --outdir wheelhouse/
+          python -m build --wheel . --outdir dist/
+        # can't repair arm64 wheels on Linux x86_64
+        # auditwheel repair --plat manylinux_2_28_aarch64 -w wheelhouse/ dist/*.whl
 
+      - name: Build binary distribution (wheel) on Windows
+        if: matrix.runs-on == 'windows-latest'
+        # We need to use cibuildwheel because it has experimental support for cross-compiling
+        # and setup-python does not have arm64 support on Windows right now
+        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        # Cross-compile for arm64 target via Zig toolchain
+        env:
+          GOARCH: arm64
+          # We are on Windows amd64, so set target as arm64
+          CC: zig cc -target aarch64-windows-gnu
+          CXX: zig c++ -target aarch64-windows-gnu
+          CIBW_SKIP: "pp* *musllinux*"
+          CIBW_BUILD: "cp312-*"
+          CIBW_ARCHS_WINDOWS: ARM64
+
+      - name: Upload artifacts for debugging
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        with:
+            name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
+            path: ./wheelhouse/*.whl
 
   inspect_distributions:
     needs: [style]
