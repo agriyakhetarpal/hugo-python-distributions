@@ -360,6 +360,12 @@ class HugoWheel(bdist_wheel):
                 # replace amd64 in plat with arm64
                 platform_tag = platform_tag.replace("amd64", "arm64")
 
+            # Similarly, ensure correct platform tags for 32-bit Windows
+            if os.environ.get("GOARCH") == "386":
+                # A 32-bit Windows looks like cmake-3.28.4-py3-none-win32.whl
+                # So we need to replace win_amd64 with win32
+                platform_tag = platform_tag.replace("win_amd64", "win32")
+
         return python_tag, abi_tag, platform_tag
 
     def run(self):
