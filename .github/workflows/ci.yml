@@ -19,7 +19,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: 3.12
@@ -42,7 +42,7 @@ jobs:
             runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: ${{ matrix.python-version }}
@@ -98,7 +98,7 @@ jobs:
           - python-version: "3.13"
             runs-on: windows-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: ${{ matrix.python-version }}
@@ -115,6 +115,12 @@ jobs:
       - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d  # v2.2.0
         with:
           version: 0.11.0
+
+      - name: Restore Hugo builder cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        with:
+          path: ./hugo_cache/
+          key: ${{ matrix.runs-on }}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
 
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox auditwheel
@@ -180,7 +186,7 @@ jobs:
     name: inspect-sdist-wheel-contents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
       - uses: actions/setup-python@0a5c61591373683505ea898e09a3ea4f39ef2b9c  # v5.0.0
         with:
           python-version: 3.12
