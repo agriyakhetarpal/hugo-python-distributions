@@ -274,6 +274,16 @@ This project is designed to be used in the following scenarios:
 
 This project is licensed under the terms of the [Apache 2.0 license](LICENSE). Hugo is available under Apache 2.0 (see [the Hugo license](LICENSE-hugo.txt)) as well.
 
+## Security
+
+Please refer to the [Security policy](SECURITY.md) for this project for more information.
+
+## Code of Conduct
+
+This repository aims to follow the Hugo project in striving to provide a welcoming and inclusive environment for all contributors, regardless of their background and identity. Please refer to the [Code of Conduct](CODE_OF_CONDUCT.md) for more information that applies to all interactions in this repository and its associated spaces. It is reliant on the [Contributor Covenant](https://www.contributor-covenant.org/) for its guidelines and conforms to version 2.1.
+
+For requesting help, reporting bugs, or requesting features that are specific to Hugo's functionalities, please refer to the [Hugo Discourse forum](https://discourse.gohugo.io/t/requesting-help/9132). For requesting help for `hugo-python-distributions`, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new) in this repository.
+
 ### Footnotes
 
 - This project is currently not affiliated with the official Hugo project. Please refer to the [Hugo documentation](https://gohugo.io/documentation/) for more information on Hugo.
