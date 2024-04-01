@@ -19,12 +19,14 @@ HUGO_RELEASE = (
 )
 # Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
 # Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
-HUGO_RElEASE_COMMIT_HASH = "db083b05f16c945fec04f745f0ca8640560cf1ec"
+HUGO_RELEASE_COMMIT_HASH = "db083b05f16c945fec04f745f0ca8640560cf1ec"
 # The pooch tool will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
 HUGO_SHA256 = "0beb0436f6bd90abb425523229a37f1d31e2e9c7ba9fac4556a72aab3b11bfef"
-FILE_EXT = ".exe" if sys.platform == "win32" else ""
+FILE_EXT = (
+    ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
+)
 
 # The vendor name is used to set the vendorInfo variable in the Hugo binary
 HUGO_VENDOR_NAME = "hugo-python-distributions"
@@ -140,7 +142,7 @@ class HugoBuilder(build_ext):
         # caches the build artifacts there for future use.
         os.environ["GOCACHE"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
 
-        os.environ["GOOS"] = self.hugo_platform
+        os.environ["GOOS"] = os.environ.get("GOOS", self.hugo_platform)
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
         # i.e., allow override if GOARCH is set!
 
@@ -223,13 +225,39 @@ class HugoBuilder(build_ext):
         # we need to go into the GOOS_GOARCH/bin folder to find the binary rather than
         # the GOPATH/bin folder.
 
-        if os.environ.get("GOARCH") != self.hugo_arch:
+        # four scenarios:
+        # 1 cross compiling: GOARCH != self.hugo_arch
+        # 2 cross compiling: GOOS != self.hugo_platform
+        # 3 cross compiling: GOARCH != self.hugo_arch and GOOS != self.hugo_platform
+        # 4 not cross compiling: GOARCH == self.hugo_arch and GOOS == self.hugo_platform
+
+        # scenario 3, it checks for both GOARCH and GOOS, and if both are different
+        if (os.environ.get("GOARCH") != self.hugo_arch) and (
+            os.environ.get("GOOS") != self.hugo_platform
+        ):
             original_name = (
                 Path(os.environ.get("GOPATH"))
                 / "bin"
-                / f"{self.hugo_platform}_{os.environ.get('GOARCH')}"
+                / f"{os.environ.get('GOOS')}_{os.environ.get('GOARCH')}"
                 / ("hugo" + FILE_EXT)
             )
+        # scenario 1, here GOARCH is different
+        elif os.environ.get("GOARCH") != self.hugo_arch:
+            original_name = (
+                Path(os.environ.get("GOPATH"))
+                / "bin"
+                / (f"{self.hugo_platform}_{os.environ.get('GOARCH')}")
+                / ("hugo" + FILE_EXT)
+            )
+        # scenario 2, here GOOS is different
+        elif os.environ.get("GOOS") != self.hugo_platform:
+            original_name = (
+                Path(os.environ.get("GOPATH"))
+                / "bin"
+                / (f"{os.environ.get('GOOS')}_{self.hugo_arch}")
+                / ("hugo" + FILE_EXT)
+            )
+        # scenario 4, here GOARCH and GOOS both are the same
         else:
             original_name = Path(os.environ.get("GOPATH")) / "bin" / ("hugo" + FILE_EXT)
 
@@ -237,7 +265,7 @@ class HugoBuilder(build_ext):
             Path(os.environ.get("GOPATH"))
             / "bin"
             / (
-                f"hugo-{HUGO_VERSION}-{self.hugo_platform}-{os.environ.get('GOARCH', self.hugo_arch)}"
+                f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', self.hugo_platform)}-{os.environ.get('GOARCH', self.hugo_arch)}"
                 + FILE_EXT
             )
         )
@@ -311,61 +339,70 @@ class HugoWheel(bdist_wheel):
     def get_tag(self):
         python_tag, abi_tag, platform_tag = bdist_wheel.get_tag(self)
         # Build for all Python versions and set ABI tag to "none" because
-        # the Hugo binary is not a CPython extension, it is self-contained
+        # the Hugo binary is not a CPython extension, it is a self-contained
+        # non-Pythonic binary.
         python_tag, abi_tag = "py3", "none"
 
-        # Handle cross-compilation on macOS via the Xcode toolchain
-        # =========================================================
-        # Also, ensure correct platform tags for macOS arm64 and macOS x86_64
-        # since macOS 3.12 Python runners are mislabelling the platform tag to be
-        # universal2, see: https://github.com/pypa/wheel/issues/57
-        if sys.platform == "darwin":
-            if (os.environ.get("GOARCH") == "arm64") and (
-                ("x86_64" in platform_tag) or ("universal2" in platform_tag)
-            ):
-                # replace x86_64 or universal2 in plat with arm64
-                # for arm64, replace 10.9 with 11.0, except when running under cibuildwheel
-                # because it already does it for us
-                platform_tag = platform_tag.replace("x86_64", "arm64").replace(
-                    "universal2", "arm64"
-                )
-                if os.environ.get("CIBUILDWHEEL") != "1" and "10_9" in platform_tag:
-                    platform_tag = platform_tag.replace("10_9", "11_0")
-
-            elif (os.environ.get("GOARCH") == "amd64") and (
-                ("arm64" in platform_tag) or ("universal2" in platform_tag)
-            ):
-                # Replace arm64 or universal2 in plat with x86_64
-                platform_tag = platform_tag.replace("arm64", "x86_64").replace(
-                    "universal2", "x86_64"
-                )
+        # Handle platform tags during cross-compilation from one platform to another
+        # ==========================================================================
+        # Here we will check for the GOOS environment variable and if it doesn't match
+        # HUGO_PLATFORM: if it doesn't match, we are cross-compiling, so we need to set
+        # the platform tag to the correct value.
+        #
+        # We have the following scenarios:
+        #
+        # 1. Cross-compiling from macOS arm64/x86_64 to Linux arm64/x86_64
+        # 2. Cross-compiling from macOS arm64/x86_64 to Windows arm64/x86_64/x86
+        # 3. Cross-compiling from Linux arm64/x86_64 to macOS arm64/x86_64
+        # 4. Cross-compiling from Linux arm64/x86_64 to Windows arm64/x86_64/x86
+        # 5. Cross-compiling from Windows arm64/x86_64/x86 to macOS arm64/x86_64
+        # 6. Cross-compiling from Windows arm64/x86_64/x86 to Linux arm64/x86_64
+        #
+        # These checks will be activated only when GOOS is set. If GOOS is not set,
+        # we will use the platform tag as is based on the above checks.
 
         # Handle cross-compilation on Linux via the Zig compiler
         # ======================================================
-        # Ensure correct platform tags for Linux arm64 and Linux x86_64
-        # Note: this cross build is one-way only for now, i.e., from x86_64 to arm64
-        # because the other way requires QEMU emulation on CI providers and is quite
-        # slow. We can add it later if needed.
-        if sys.platform == "linux":
-            if (os.environ.get("GOARCH") == "arm64") and ("x86_64" in platform_tag):
-                # replace x86_64 in plat with aarch64
-                platform_tag = platform_tag.replace("x86_64", "aarch64")
+        if (os.environ.get("GOOS") == "linux") or (sys.platform == "linux"):
+            if os.environ.get("GOARCH") == "arm64":
+                platform_tag = "linux_aarch64"
+            elif os.environ.get("GOARCH") == "amd64":
+                platform_tag = "linux_x86_64"
+            else:
+                msg = "Invalid GOARCH value for cross-compilation to Linux, must be arm64 or amd64"
+                raise ValueError(msg)
 
-        # Handle cross-compilation on Windows via the Zig compiler
-        # ========================================================
-        # Ensure correct platform tags for Windows arm64 and Windows x86_64
-        # Note: this cross build is one-way only for now for the same reasons as Linux
-        # above, because CI providers are scarce with Windows arm64 runners.
-        if sys.platform == "win32":
-            if (os.environ.get("GOARCH") == "arm64") and ("amd64" in platform_tag):
-                # replace amd64 in plat with arm64
-                platform_tag = platform_tag.replace("amd64", "arm64")
+        # Handle cross-compilation on/to Windows via the Zig compiler
+        # ===========================================================
+        if os.environ.get("GOOS") == "windows" or (sys.platform == "win32"):
+            if os.environ.get("GOARCH") == "arm64":
+                platform_tag = "win_arm64"
+            elif os.environ.get("GOARCH") == "amd64":
+                platform_tag = "win_amd64"
+            elif os.environ.get("GOARCH") == "386":
+                platform_tag = "win32"
+            else:
+                msg = "Invalid GOARCH value for cross-compilation to Windows, must be arm64, amd64, or 386"
+                raise ValueError(msg)
 
-            # Similarly, ensure correct platform tags for 32-bit Windows
-            if os.environ.get("GOARCH") == "386":
-                # A 32-bit Windows looks like cmake-3.28.4-py3-none-win32.whl
-                # So we need to replace win_amd64 with win32
-                platform_tag = platform_tag.replace("win_amd64", "win32")
+        # Cross-compiling to macOS or on macOS via the Zig or Xcode toolchains
+        # ====================================================================
+        # Also, ensure correct platform tags for macOS arm64 and macOS x86_64
+        # since macOS 3.12 Python GH Actionsrunners are mislabelling the platform
+        # tag to be universal2, see: https://github.com/pypa/wheel/issues/573
+        # Also, let cibuildwheel handle the platform tags if it is being used,
+        # since that is where we won't cross-compile at all but use the native
+        # GitHub Actions runners.
+        if ((os.environ.get("GOOS") == "darwin") or (sys.platform == "darwin")) and (
+            os.environ.get("CIBUILDWHEEL") != "1"
+        ):
+            if os.environ.get("GOARCH") == "arm64":
+                platform_tag = "macosx_11_0_arm64"
+            elif os.environ.get("GOARCH") == "amd64":
+                platform_tag = "macosx_10_9_x86_64"
+            else:
+                msg = "Invalid GOARCH value for cross-compilation to macOS, must be arm64 or amd64"
+                raise ValueError(msg)
 
         return python_tag, abi_tag, platform_tag
 
@@ -376,7 +413,12 @@ class HugoWheel(bdist_wheel):
 
         # ensure that the binary is copied into the binaries/ folder and then
         # into the wheel.
-        hugo_binary = Path(__file__).parent / "hugo" / "binaries" / HUGO_BINARY_NAME
+        hugo_binary = (
+            Path(__file__).parent
+            / "hugo"
+            / "binaries"
+            / f"{os.environ.get('GOOS', HUGO_PLATFORM)}_{os.environ.get('GOARCH', HUGO_ARCH)}{FILE_EXT}"
+        )
 
         # if the binary does not exist, then we need to build it, so invoke
         # the build_ext command again and proceed to build the binary

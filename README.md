@@ -242,9 +242,8 @@ pip install .  # or pip install -e .
 
 For a list of supported distributions for Go, please run the `go tool dist list` command on your system. For a list of supported targets for Zig, please refer to the [Zig documentation](https://ziglang.org/documentation/) for more information or run the `zig targets` command on your system.
 
-> [!NOTE]
-> Cross-compilation for a target platform and architecture from a different host platform and architecture should be possible, but remains largely untested at this time.
-
+> [!TIP]
+> Cross-compilation for a target platform and architecture from a different host platform and architecture is also possible, but it remains largely untested at this time. Currently, the [Zig compiler toolchain](https://ziglang.org/) is known to work for cross-platform, cross-architecture compilation.
 
 ### Background
 
