@@ -232,20 +232,19 @@ jobs:
           path: upload/
           merge-multiple: true
 
+      - uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450  # v1.8.14
+        if: github.event_name == 'release' && github.event.action == 'published'
+        with:
+          # Comment this line out to publish to PyPI
+          # repository-url: https://test.pypi.org/legacy/
+          packages-dir: upload
+
       - name: Sign artifacts with Sigstore
-        uses: sigstore/gh-action-sigstore-python@61f6a500bbfdd9a2a339cf033e5421951fbc1cd2
+        uses: sigstore/gh-action-sigstore-python@61f6a500bbfdd9a2a339cf033e5421951fbc1cd2  # v2.1.1
         with:
           inputs: >-
             ./upload/*.whl
             ./upload/*.tar.gz
-
-      - uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450  # v1.8.14
-        if: github.event_name == 'release' && github.event.action == 'published'
-        with:
-          # Remember to tell (test-)pypi about this repo before publishing
-          # Comment this line out to publish to PyPI
-          # repository-url: https://test.pypi.org/legacy/
-          packages-dir: upload
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564  # v2.0.4
