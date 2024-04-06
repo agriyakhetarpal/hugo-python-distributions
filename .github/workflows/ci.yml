@@ -254,3 +254,44 @@ jobs:
           echo -e '```\n' >> $GITHUB_STEP_SUMMARY
           (cd output/wheel && tree -a * | sed 's/^/    /' | tee -a $GITHUB_STEP_SUMMARY)
           echo -e '\n```\n' >> $GITHUB_STEP_SUMMARY
+
+  # FIXME: when ready, move this to a separate workflow or make it run on
+  # just the main branch (after a PR is merged)
+  docs:
+    needs: [style]
+    name: documentation-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
+        with:
+          fetch-depth: 0
+          submodules: 'recursive'
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+        with:
+          go-version: "1.22.1"
+          cache: false
+          check-latest: true
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+        with:
+          python-version: 3.12
+
+      - name: Install Hugo
+        run: pip install -e .
+
+        # TODO: refactor to use nox or just remove nox later
+      - name: Build documentation website
+        run: |
+          cd docs
+          hugo --minify
+
+      - name: Deploy documentation website
+        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847  # v3.9.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/public/
+          publish_branch: gh-pages
+          user_name: "agriyakhetarpal"
+          user_email: "74401230+agriyakhetarpal@users.noreply.github.com"
+          keep_files: false
