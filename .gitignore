@@ -184,3 +184,8 @@ hugo_cache/
 
 # Hugo version file
 hugo/VERSION
+
+# Documentation
+/docs/public
+/docs/resources
+*.lock
