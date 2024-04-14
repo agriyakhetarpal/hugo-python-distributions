@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '0 0 * * sun'
+    - cron: '0 12 * * wed'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -269,6 +272,7 @@ jobs:
           fetch-depth: 0
           submodules: 'recursive'
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+        id: setup-go
         with:
           go-version: "1.22.1"
           cache: false
@@ -276,6 +280,13 @@ jobs:
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: 3.12
+
+      - name: Restore cache for Hugo
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        with:
+          path: ./hugo_cache/
+          # This should pick up the same cache as the build_wheels job
+          key: ubuntu-latest-hugo-${{ steps.setup-go.outputs.go-version }}
 
       - name: Install Hugo
         run: pip install -e .
