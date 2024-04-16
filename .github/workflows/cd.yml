@@ -53,7 +53,7 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
         with:
-          go-version: '1.22.1'
+          go-version: '1.22.2'
           cache: false
 
       - name: Install MinGW compiler(s)
@@ -149,7 +149,7 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
         with:
-          go-version: '1.22.1'
+          go-version: '1.22.2'
           cache: false
           check-latest: true
 
@@ -183,7 +183,7 @@ jobs:
       - name: Set up Go toolchain
         uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
         with:
-          go-version: '1.22.1'
+          go-version: '1.22.2'
           cache: false
           check-latest: true
 
