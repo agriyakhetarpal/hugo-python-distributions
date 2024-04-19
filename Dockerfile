@@ -9,25 +9,27 @@ RUN apt-get update && \
         git \
         wget \
         dos2unix \
+        xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-COPY scripts/ci/tools/linux/install_go.sh /install_go.sh
-RUN chmod +x /install_go.sh && \
-    dos2unix /install_go.sh && \
-    /install_go.sh
+RUN wget https://golang.org/dl/go1.22.1.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.22.1.linux-amd64.tar.gz && \
+    rm go1.22.1.linux-amd64.tar.gz
 
-COPY scripts/ci/tools/linux/install_zig.sh /install_zig.sh
-RUN chmod +x /install_zig.sh && \
-    dos2unix /install_zig.sh && \
-    /install_zig.sh
+ENV PATH="${PATH}:/usr/local/go/bin"
 
-RUN git clone https://github.com/agriyakhetarpal/hugo-python-distributions@main && \
+RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.11.0.tar.xz && \
+    tar -C /usr/local -xf zig-linux-x86_64-0.11.0.tar.xz && \
+    rm zig-linux-x86_64-0.11.0.tar.xz
+
+ENV PATH="${PATH}:/usr/local/zig-linux-x86_64-0.11.0"
+
+RUN git clone https://github.com/agriyakhetarpal/hugo-python-distributions && \
     cd hugo-python-distributions && \
     python -m venv venv && \
-    source venv/bin/activate && \
-    pip install -e . && \
-    pip install .
+    /hugo-python-distributions/venv/bin/python -m pip install -e . && \
+    /hugo-python-distributions/venv/bin/python -m pip install .
 
 WORKDIR /hugo-python-distributions
 
-CMD ["source", "venv/bin/activate"]
+CMD ["/hugo-python-distributions/venv/bin/python", "-m", "venv/bin/activate"]
