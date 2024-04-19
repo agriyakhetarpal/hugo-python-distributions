@@ -1,15 +1,15 @@
-#!/bin/bash
+# !#/bin/bash
 
 # Small script to install Golang into a PyPA manylinux2014 Docker container
 
-apt-get update && apt-get install -y wget
+yum install -y wget
 
 arch=$(uname -m)
 
 if [ "$arch" == "x86_64" ]; then
-    tarball="go1.22.1.linux-amd64.tar.gz"
-elif [ "$arch" == "aarch64" ] || [ "$arch" == "arm64" ]; then
-    tarball="go1.22.1.linux-arm64.tar.gz"
+    tarball="go1.22.2.linux-amd64.tar.gz"
+elif [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
+    tarball="go1.22.2.linux-arm64.tar.gz"
 else
     echo "Unsupported architecture: $arch"
     exit 1
