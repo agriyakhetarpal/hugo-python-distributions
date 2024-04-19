@@ -5,6 +5,7 @@ WORKDIR /
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         gcc \
+        g++ \
         clang \
         git \
         wget \
