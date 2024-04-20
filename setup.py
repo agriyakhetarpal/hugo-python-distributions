@@ -13,17 +13,17 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
 from wheel.bdist_wheel import bdist_wheel
 
-HUGO_VERSION = "0.125.1"
+HUGO_VERSION = "0.125.2"
 HUGO_RELEASE = (
     f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
 )
 # Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
 # Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
-HUGO_RELEASE_COMMIT_HASH = "68c5ad638c2072969e47262926b912e80fd71a77"
+HUGO_RELEASE_COMMIT_HASH = "4e483f5d4abae136c4312d397a55e9e1d39148df"
 # The pooch tool will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
-HUGO_SHA256 = "dc902d7a2983925b218e17d21e510867a97e0b8c0e0093e4a6a22dabdb21c230"
+HUGO_SHA256 = "e38dc022aa9fff51216e95baffb7add75387aad07f00380ea3f74481bb9643d9"
 FILE_EXT = (
     ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
 )
