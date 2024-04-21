@@ -1,13 +1,12 @@
+import datetime
 import glob
 import os
 import platform
 import shutil
 import subprocess
 import sys
-import tarfile
 from pathlib import Path
 
-import pooch
 from setuptools import Command, Extension, setup
 from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
@@ -20,10 +19,14 @@ HUGO_RELEASE = (
 # Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
 # Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
 HUGO_RELEASE_COMMIT_HASH = "4e483f5d4abae136c4312d397a55e9e1d39148df"
-# The pooch tool will download the tarball into the hugo_cache/ directory.
+# The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
 HUGO_SHA256 = "e38dc022aa9fff51216e95baffb7add75387aad07f00380ea3f74481bb9643d9"
+# The build date should be in ISO 8601 format, exactly like 2024-04-20T15:29:44Z
+HUGO_BUILD_DATE = (
+    datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
+)[:-6] + "Z"
 FILE_EXT = (
     ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
 )
@@ -112,18 +115,9 @@ class HugoBuilder(build_ext):
         # the name so that it is unique to the version of Hugo being built.
         """
 
-        # Download Hugo source tarball, place into hugo_cache/ directory
-        hugo_targz = pooch.retrieve(
-            url=HUGO_RELEASE,
-            known_hash=HUGO_SHA256,
-            path=HUGO_CACHE_DIR,
-            progressbar=True,
-        )
-
-        # Extract Hugo source tarball into a folder hugo-HUGO_VERSION/
-        # inside hugo_cache/
-        with tarfile.open(hugo_targz) as tar:
-            tar.extractall(path=HUGO_CACHE_DIR)
+        # If Hugo cache does not exist, create it
+        if not Path(HUGO_CACHE_DIR).exists():
+            Path(HUGO_CACHE_DIR).mkdir(parents=True)
 
         # The binary is put into GOBIN, which is set to the package directory
         # (hugo/binaries/) for use in editable mode. The binary is copied
@@ -157,13 +151,6 @@ class HugoBuilder(build_ext):
 
         # Delete hugo_cache/bin/ + files inside, it left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
-
-        # ldflags are passed to the go linker to set variables at runtime
-        # Note: the Homebrew version of Hugo sets extra ldflags such as the build
-        # date. We do not set that here, we only set the vendorInfo variable.
-        ldflags = [
-            f"-X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}",
-        ]
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
@@ -202,16 +189,22 @@ class HugoBuilder(build_ext):
             error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
             raise OSError(error_message) from err
 
+        # These ldflags are passed to the Go linker to set variables at runtime
+        ldflags = [
+            f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME} -X github.com/gohugoio/hugo/common/hugo.commitHash={HUGO_RELEASE_COMMIT_HASH} -X github.com/gohugoio/hugo/common/hugo.buildDate={HUGO_BUILD_DATE}"
+        ]
+
         subprocess.check_call(
             [
                 "go",
                 "install",
                 "-ldflags",
-                *ldflags,
+                " ".join(ldflags),
                 "-tags",
                 "extended",
+                f"github.com/gohugoio/hugo@{HUGO_RELEASE_COMMIT_HASH}",
             ],
-            cwd=os.path.abspath(os.path.join(HUGO_CACHE_DIR, f"hugo-{HUGO_VERSION}")),  # noqa: PTH118, PTH100
+            cwd=os.path.abspath(HUGO_CACHE_DIR),  # noqa: PTH100
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
