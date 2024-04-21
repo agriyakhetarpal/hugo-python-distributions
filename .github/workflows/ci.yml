@@ -79,15 +79,10 @@ jobs:
   build_wheels_linux_aarch64:
     needs: [style]
     name: linux-aarch64-buildjet
-    if: >-
-      contains(github.event.head_commit.message, '[buildjet]') &&
-      github.repository == 'agriyakhetarpal/hugo-python-distributions'
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
     steps:
       - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: buildjet/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
-        with:
-          python-version: 3.12
+      - uses: buildjet/setup-python@v5
 
       - name: Set up Go toolchain
         id: setup-go
