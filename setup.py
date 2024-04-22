@@ -187,19 +187,19 @@ class HugoBuilder(build_ext):
         ldflags = [
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
-
-        subprocess.check_call(
-            [
-                "git",
-                "clone",
-                "https://github.com/gohugoio/hugo.git",
-                "--depth=1",
-                "--single-branch",
-                "--branch",
-                f"v{HUGO_VERSION}",
-                Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
-            ]
-        )
+        if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
+            subprocess.check_call(
+                [
+                    "git",
+                    "clone",
+                    "https://github.com/gohugoio/hugo.git",
+                    "--depth=1",
+                    "--single-branch",
+                    "--branch",
+                    f"v{HUGO_VERSION}",
+                    Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
+                ]
+            )
         subprocess.check_call(
             [
                 "go",
