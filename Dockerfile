@@ -30,10 +30,9 @@ ENV PATH="${PATH}:/usr/local/zig-linux-x86_64-${ZIG_VERSION}"
 
 RUN git clone https://github.com/agriyakhetarpal/hugo-python-distributions && \
     cd hugo-python-distributions && \
-    python -m venv venv && \
-    /hugo-python-distributions/venv/bin/python -m pip install -e . && \
-    /hugo-python-distributions/venv/bin/python -m pip install .
+    pip install -e . && \
+    pip install .
 
 WORKDIR /hugo-python-distributions
 
-CMD ["/bin/bash", "--rcfile", "/hugo-python-distributions/venv/bin/activate"]
+CMD ["/bin/bash"]
