@@ -1,5 +1,8 @@
 FROM python:3.11.9-slim
 
+ENV GO_VERSION=1.22.1
+ENV ZIG_VERSION=0.11.0
+
 WORKDIR /
 
 RUN apt-get update && \
@@ -13,17 +16,17 @@ RUN apt-get update && \
         xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://golang.org/dl/go1.22.1.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.22.1.linux-amd64.tar.gz && \
-    rm go1.22.1.linux-amd64.tar.gz
+RUN wget "https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz" && \
+    tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz" && \
+    rm "go${GO_VERSION}.linux-amd64.tar.gz"
 
 ENV PATH="${PATH}:/usr/local/go/bin"
 
-RUN wget https://ziglang.org/builds/zig-linux-x86_64-0.11.0.tar.xz && \
-    tar -C /usr/local -xf zig-linux-x86_64-0.11.0.tar.xz && \
-    rm zig-linux-x86_64-0.11.0.tar.xz
+RUN wget "https://ziglang.org/builds/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" && \
+    tar -C /usr/local -xf "zig-linux-x86_64-${ZIG_VERSION}.tar.xz" && \
+    rm "zig-linux-x86_64-${ZIG_VERSION}.tar.xz"
 
-ENV PATH="${PATH}:/usr/local/zig-linux-x86_64-0.11.0"
+ENV PATH="${PATH}:/usr/local/zig-linux-x86_64-${ZIG_VERSION}"
 
 RUN git clone https://github.com/agriyakhetarpal/hugo-python-distributions && \
     cd hugo-python-distributions && \
@@ -33,4 +36,4 @@ RUN git clone https://github.com/agriyakhetarpal/hugo-python-distributions && \
 
 WORKDIR /hugo-python-distributions
 
-CMD ["/hugo-python-distributions/venv/bin/python", "-m", "venv/bin/activate"]
+CMD ["/bin/bash", "--rcfile", "/hugo-python-distributions/venv/bin/activate"]
