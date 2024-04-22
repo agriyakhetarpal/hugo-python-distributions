@@ -140,11 +140,11 @@ class HugoBuilder(build_ext):
         #
         # Once built this the files are cached into GOPATH for future use
 
-        # Delete hugo_cache/bin/ + git clone + files inside, if left over from a previous build
+        # Delete hugo_cache/bin/ + files inside, if left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
-        shutil.rmtree(
-            Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}", ignore_errors=True
-        )
+        # shutil.rmtree(
+        #     Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}", ignore_errors=True
+        # )
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
@@ -187,19 +187,21 @@ class HugoBuilder(build_ext):
         ldflags = [
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
-        # Clone the Hugo repository at each invocation to ensure a fresh, non-corrupt source.
-        subprocess.check_call(
-            [
-                "git",
-                "clone",
-                "https://github.com/gohugoio/hugo.git",
-                "--depth=1",
-                "--single-branch",
-                "--branch",
-                f"v{HUGO_VERSION}",
-                Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
-            ]
-        )
+
+        if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
+            subprocess.check_call(
+                [
+                    "git",
+                    "clone",
+                    "https://github.com/gohugoio/hugo.git",
+                    "--depth=1",
+                    "--single-branch",
+                    "--branch",
+                    f"v{HUGO_VERSION}",
+                    Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
+                ]
+            )
+
         subprocess.check_call(
             [
                 "go",
