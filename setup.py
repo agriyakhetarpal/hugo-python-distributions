@@ -187,19 +187,19 @@ class HugoBuilder(build_ext):
         ldflags = [
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
-        if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
-            subprocess.check_call(
-                [
-                    "git",
-                    "clone",
-                    "https://github.com/gohugoio/hugo.git",
-                    "--depth=1",
-                    "--single-branch",
-                    "--branch",
-                    f"v{HUGO_VERSION}",
-                    Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
-                ]
-            )
+        # Clone the Hugo repository at each invocation to ensure a fresh, non-corrupt source.
+        subprocess.check_call(
+            [
+                "git",
+                "clone",
+                "https://github.com/gohugoio/hugo.git",
+                "--depth=1",
+                "--single-branch",
+                "--branch",
+                f"v{HUGO_VERSION}",
+                Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
+            ]
+        )
         subprocess.check_call(
             [
                 "go",
@@ -324,7 +324,7 @@ class HugoWheel(bdist_wheel):
     """
     A customised wheel build command that sets the platform tags to accommodate
     the varieties of the GOARCH and GOOS environment variables when cross-compiling
-    the Hugo binary. Currently used for macOS arm64 and macOS x86_64.
+    the Hugo binary with any available cross-compilation toolchain.
     """
 
     def initialize_options(self):
@@ -405,7 +405,7 @@ class HugoWheel(bdist_wheel):
             Path(__file__).parent
             / "hugo"
             / "binaries"
-            / f"{os.environ.get('GOOS', HUGO_PLATFORM)}_{os.environ.get('GOARCH', HUGO_ARCH)}{FILE_EXT}"
+            / f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', HUGO_PLATFORM)}-{os.environ.get('GOARCH', HUGO_ARCH)}{FILE_EXT}"
         )
 
         # if the binary does not exist, then we need to build it, so invoke
