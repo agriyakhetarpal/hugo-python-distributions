@@ -1,4 +1,3 @@
-import datetime
 import glob
 import os
 import platform
@@ -12,25 +11,15 @@ from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
 from wheel.bdist_wheel import bdist_wheel
 
+# ------ Hugo build configuration and constants ------------------------------------
+
 HUGO_VERSION = "0.125.2"
-HUGO_RELEASE = (
-    f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
-)
-# Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
-# Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
-HUGO_RELEASE_COMMIT_HASH = "4e483f5d4abae136c4312d397a55e9e1d39148df"
 # The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
-HUGO_SHA256 = "e38dc022aa9fff51216e95baffb7add75387aad07f00380ea3f74481bb9643d9"
-# The build date should be in ISO 8601 format, exactly like 2024-04-20T15:29:44Z
-HUGO_BUILD_DATE = (
-    datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat()
-)[:-6] + "Z"
 FILE_EXT = (
     ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
 )
-
 # The vendor name is used to set the vendorInfo variable in the Hugo binary
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
@@ -55,6 +44,8 @@ HUGO_BINARY_NAME = (
     f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
     + FILE_EXT
 )
+
+# ----------------------------------------------------------------------------------
 
 
 class HugoWriter(build_py):
@@ -129,12 +120,12 @@ class HugoBuilder(build_ext):
         #     os.path.dirname(os.path.abspath(__file__)), "hugo", "binaries"
         # )
         os.environ["CGO_ENABLED"] = "1"
-        os.environ["GOPATH"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
+        os.environ["GOPATH"] = str(Path(HUGO_CACHE_DIR).resolve())
         # it must be absolute (Go requirement)
 
         # Set GOCACHE to the hugo_cache/ directory so that the Go toolchain
         # caches the build artifacts there for future use.
-        os.environ["GOCACHE"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
+        os.environ["GOCACHE"] = str(Path(HUGO_CACHE_DIR).resolve())
 
         os.environ["GOOS"] = os.environ.get("GOOS", self.hugo_platform)
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
@@ -149,8 +140,11 @@ class HugoBuilder(build_ext):
         #
         # Once built this the files are cached into GOPATH for future use
 
-        # Delete hugo_cache/bin/ + files inside, it left over from a previous build
+        # Delete hugo_cache/bin/ + git clone + files inside, if left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
+        shutil.rmtree(
+            Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}", ignore_errors=True
+        )
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
@@ -191,9 +185,21 @@ class HugoBuilder(build_ext):
 
         # These ldflags are passed to the Go linker to set variables at runtime
         ldflags = [
-            f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME} -X github.com/gohugoio/hugo/common/hugo.commitHash={HUGO_RELEASE_COMMIT_HASH} -X github.com/gohugoio/hugo/common/hugo.buildDate={HUGO_BUILD_DATE}"
+            f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
 
+        subprocess.check_call(
+            [
+                "git",
+                "clone",
+                "https://github.com/gohugoio/hugo.git",
+                "--depth=1",
+                "--single-branch",
+                "--branch",
+                f"v{HUGO_VERSION}",
+                Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
+            ]
+        )
         subprocess.check_call(
             [
                 "go",
@@ -202,9 +208,8 @@ class HugoBuilder(build_ext):
                 " ".join(ldflags),
                 "-tags",
                 "extended",
-                f"github.com/gohugoio/hugo@{HUGO_RELEASE_COMMIT_HASH}",
             ],
-            cwd=os.path.abspath(HUGO_CACHE_DIR),  # noqa: PTH100
+            cwd=(Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}").resolve(),
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
@@ -314,8 +319,7 @@ class Cleaner(Command):
 
 
 # Mock setuptools into thinking that we are building a target binary on a host machine
-# so that the wheel gets tagged correctly. We can fuse the arm64 and amd64 wheels
-# together later using delocate.
+# so that the wheel gets tagged correctly when building or cross-compiling.
 class HugoWheel(bdist_wheel):
     """
     A customised wheel build command that sets the platform tags to accommodate
