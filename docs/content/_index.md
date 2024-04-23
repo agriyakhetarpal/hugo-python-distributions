@@ -15,12 +15,12 @@ channel for the extended version of the Hugo static site generator through `pip`
 ## Table of contents
 
 - [Quickstart](#quickstart)
-- [Supported platforms](#supported-platforms)
+- [Supported platforms](supported-platforms/)
 - [Building from sources](building-from-sources/)
-  - [Cross-compiling for different architectures](#cross-compiling-for-different-architectures)
-    - [macOS](#macos)
-    - [Linux](#linux)
-    - [Windows](#windows)
+  - [Cross-compiling for different architectures](supported-platforms/#cross-compiling-for-different-architectures)
+    - [macOS](supported-platforms/#macos)
+    - [Linux](supported-platforms/#linux)
+    - [Windows](supported-platforms/#windows)
 
 
 ### Quickstart
