@@ -83,7 +83,7 @@ jobs:
     name: linux-aarch64-buildjet-python-3.12
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
+      - uses: actions/checkout@1d96c772d19495a3b5c517cd2bc0cb401ea0529f  # v4.1.3
       - uses: buildjet/setup-python@v5
       - uses: buildjet/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
         with:
@@ -206,7 +206,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
-        uses: actions/upload-artifact@1746f4ab65b179e0ea60a494b83293b640dd5bba  # v4.3.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4.3.3
         with:
             name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
             path: ./wheelhouse/*.whl
