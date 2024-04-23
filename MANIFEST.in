@@ -1,5 +1,6 @@
 graft hugo
 prune scripts
+prune docs
 
 include LICENSE LICENSE-hugo.txt README.md CODE_OF_CONDUCT.md SECURITY.md pyproject.toml setup.py setup.cfg
 exclude hugo/binaries/hugo-*
