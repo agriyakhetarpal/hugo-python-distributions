@@ -29,6 +29,15 @@ jobs:
       - name: Run style checks
         run: pipx run nox -s lint
 
+  check_commit_message:
+    needs: [style]
+    name: Check for skips
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[buildjet]')
+    steps:
+      - name: Run BuildJet runners
+        run: echo "Running BuildJet runners"
+
   build_wheels:
     needs: [style]
     name: ${{ matrix.runs-on }}-python-${{ matrix.python-version }}
@@ -79,7 +88,7 @@ jobs:
         run: nox -s venv
 
   build_wheels_linux_aarch64:
-    needs: [style]
+    needs: [check_commit_message]
     name: linux-aarch64-buildjet-python-3.12
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
     steps:
