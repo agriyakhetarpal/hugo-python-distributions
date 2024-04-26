@@ -31,6 +31,7 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
+    "s390x": "s390x",
 }[machine()]
 
 # platform.machine returns AMD64 on Windows because the architecture is
