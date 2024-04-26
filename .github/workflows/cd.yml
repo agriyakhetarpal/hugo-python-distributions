@@ -5,6 +5,8 @@ on:
   release:
     types:
       - published
+  schedule:
+    - cron: '0 0 * * 1'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -71,7 +73,7 @@ jobs:
           if-no-files-found: error
 
   linux_amd64_wheels:
-    name: amd64-linux
+    name: amd64-manylinux
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
