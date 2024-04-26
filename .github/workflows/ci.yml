@@ -28,7 +28,7 @@ jobs:
           python-version: 3.12
 
       - name: Run style checks
-        run: pipx run nox -s lint
+        run: pipx run pre-commit run --all-files
 
   check_commit_message:
     needs: [style]
