@@ -286,7 +286,7 @@ class HugoBuilder(build_ext):
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",
-                "extended",
+                "extended,nodeploy",
             ],
             cwd=(Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}").resolve(),
         )
