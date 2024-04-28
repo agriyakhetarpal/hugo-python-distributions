@@ -160,6 +160,42 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
+  linux_ppc64le_wheels:
+    name: ppc64le-manylinux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
+      - uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3  # v3.0.0
+        with:
+          platforms: all
+
+      - name: Build binary distribution (wheel) on Linux (ppc64le)
+        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: ppc64le
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.22.2.linux-ppc64le.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
+          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
+          CIBW_TEST_COMMAND: >
+            hugo version
+            hugo env --logLevel debug
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4.3.3
+        with:
+          name: wheels_linux_ppc64le
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
   macos_amd64_wheels:
     name: amd64-macos
     runs-on: macos-13
@@ -226,7 +262,8 @@ jobs:
       macos_arm64_wheels,
       linux_amd64_wheels,
       linux_arm64_wheels,
-      linux_s390x_wheels
+      linux_s390x_wheels,
+      linux_ppc64le_wheels
     ]
 
     name: Publish to PyPI or TestPyPI
