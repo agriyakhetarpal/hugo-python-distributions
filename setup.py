@@ -38,6 +38,7 @@ HUGO_ARCH = {
     "aarch64": "arm64",
     "x86": "386",
     "s390x": "s390x",
+    "ppc64le": "ppc64le",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
@@ -83,7 +84,7 @@ class HugoBuilder(build_ext):
         self.hugo_arch = None
 
     def finalize_options(self):
-        # Platforms and architectures that we will build Hugo for are:
+        # Platforms and architectures that we will build Hugo natively for are:
         # i.e., a subset of "go tool dist list":
         # 1. darwin/amd64
         # 2. darwin/arm64
@@ -200,6 +201,9 @@ class HugoBuilder(build_ext):
                     "--branch",
                     f"v{HUGO_VERSION}",
                     Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
+                    # disable warning about detached HEAD
+                    "-c",
+                    "advice.detachedHead=false",
                 ]
             )
 
@@ -207,6 +211,7 @@ class HugoBuilder(build_ext):
             [
                 "go",
                 "install",
+                "-v",
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",
@@ -368,6 +373,8 @@ class HugoWheel(bdist_wheel):
                 platform_tag = "linux_aarch64"
             elif os.environ.get("GOARCH") == "amd64":
                 platform_tag = "linux_x86_64"
+            elif os.environ.get("GOARCH") == "ppc64le":
+                platform_tag = "linux_ppc64le"
 
         # Handle cross-compilation on/to Windows via the Zig compiler
         # ===========================================================
