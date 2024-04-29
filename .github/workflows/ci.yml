@@ -194,6 +194,8 @@ jobs:
           CXX: zig c++ -target aarch64-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_SKIP: "*-win_arm64"
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
@@ -211,6 +213,8 @@ jobs:
           CXX: zig c++ -target x86-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: x86
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: >
             hugo version
             hugo env --logLevel debug
