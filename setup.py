@@ -39,6 +39,7 @@ HUGO_ARCH = {
     "x86": "386",
     "s390x": "s390x",
     "ppc64le": "ppc64le",
+    "armv7l": "arm",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
@@ -132,6 +133,9 @@ class HugoBuilder(build_ext):
         os.environ["GOOS"] = os.environ.get("GOOS", self.hugo_platform)
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
         # i.e., allow override if GOARCH is set!
+
+        if os.environ.get("GOARCH") == "arm" and os.environ.get("GOOS") == "linux":
+            os.environ["GOARM"] = os.environ.get("GOARM", "7")
 
         # Build Hugo from source using the Go toolchain, place it into GOBIN
         # Requires the following dependencies:
