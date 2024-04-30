@@ -194,6 +194,15 @@ class HugoBuilder(build_ext):
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
 
+        # Build a static binary on Windows to avoid missing DLLs from MinGW,
+        # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
+        BUILDING_FOR_WINDOWS = (
+            os.environ.get("GOOS") == "windows" or sys.platform == "win32"
+        )
+
+        if BUILDING_FOR_WINDOWS:
+            ldflags.append("-extldflags '-static'")
+
         if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
             subprocess.check_call(
                 [
