@@ -13,7 +13,7 @@ from wheel.bdist_wheel import bdist_wheel
 
 # ------ Hugo build configuration and constants ------------------------------------
 
-HUGO_VERSION = "0.125.4"
+HUGO_VERSION = "0.125.5"
 # The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
@@ -381,7 +381,7 @@ class HugoWheel(bdist_wheel):
 
         # Handle cross-compilation on Linux via the Zig compiler
         # ======================================================
-        if (os.environ.get("GOOS") == "linux") or (sys.platform == "linux"):
+        if os.environ.get("GOOS") == "linux":
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "linux_aarch64"
             elif os.environ.get("GOARCH") == "amd64":
@@ -391,7 +391,7 @@ class HugoWheel(bdist_wheel):
 
         # Handle cross-compilation on/to Windows via the Zig compiler
         # ===========================================================
-        if os.environ.get("GOOS") == "windows" or (sys.platform == "win32"):
+        elif os.environ.get("GOOS") == "windows":
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "win_arm64"
             elif os.environ.get("GOARCH") == "amd64":
@@ -407,7 +407,7 @@ class HugoWheel(bdist_wheel):
         # Also, let cibuildwheel handle the platform tags if it is being used,
         # since that is where we won't cross-compile at all but use the native
         # GitHub Actions runners.
-        if ((os.environ.get("GOOS") == "darwin") or (sys.platform == "darwin")) and (
+        elif (os.environ.get("GOOS") == "darwin") and (
             os.environ.get("CIBUILDWHEEL") != "1"
         ):
             if os.environ.get("GOARCH") == "arm64":
