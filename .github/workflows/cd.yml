@@ -83,7 +83,14 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.22.2.linux-amd64.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_TEST_COMMAND: |
             hugo version
@@ -111,7 +118,14 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.22.2.linux-arm64.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_TEST_COMMAND: |
             hugo version
