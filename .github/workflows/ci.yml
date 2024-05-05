@@ -15,7 +15,7 @@ env:
   FORCE_COLOR: 3
   CIBW_BUILD_VERBOSITY: 2
   CIBW_SKIP: "pp* *musllinux*"
-  CIBW_BUILD_FRONTEND: "pip"  # use pip for now, not build – missing buildDate otherwise
+  CIBW_BUILD_FRONTEND: "build"
 
 jobs:
   style:
@@ -237,7 +237,6 @@ jobs:
 
       - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
-          git apply scripts/ci/tools/patches/0001-use-temporary-directory-to-store-eggs.patch
           pipx run build --sdist --wheel . --outdir dist/
           pipx run twine check dist/* --strict
 
