@@ -63,7 +63,7 @@ jobs:
           CIBW_ARCHS_WINDOWS: AMD64
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
@@ -87,7 +87,7 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
@@ -115,7 +115,7 @@ jobs:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
@@ -151,7 +151,7 @@ jobs:
             export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
             go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
@@ -187,7 +187,7 @@ jobs:
             export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
             go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
@@ -215,7 +215,7 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_MACOS: x86_64
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
@@ -243,7 +243,7 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_MACOS: arm64
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
