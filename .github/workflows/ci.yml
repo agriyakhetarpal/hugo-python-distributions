@@ -22,7 +22,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b  # v4.1.5
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: 3.12
@@ -54,7 +54,7 @@ jobs:
             runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b  # v4.1.5
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
@@ -93,9 +93,9 @@ jobs:
     name: linux-aarch64-buildjet-python-3.12
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b  # v4.1.5
       - uses: buildjet/setup-python@v5
-      - uses: buildjet/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+      - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89  # v5.0.0
         with:
           go-version: '1.22.2'
           cache: false
@@ -138,7 +138,7 @@ jobs:
           - python-version: "3.13"
             runs-on: windows-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b  # v4.1.5
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: ${{ matrix.python-version }}
@@ -230,7 +230,7 @@ jobs:
     name: inspect-sdist-wheel-contents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
+      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b  # v4.1.5
       - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
         with:
           python-version: 3.12
