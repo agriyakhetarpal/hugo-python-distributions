@@ -310,7 +310,7 @@ jobs:
             ./upload/*.tar.gz
 
       - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564  # v2.0.4
+        uses: softprops/action-gh-release@69320dbe05506a9a39fc8ae11030b214ec2d1f87  # v2.0.5
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           # This will contain not only the wheel and sdist, but also the signature files
