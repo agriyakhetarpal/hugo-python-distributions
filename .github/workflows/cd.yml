@@ -53,7 +53,7 @@ jobs:
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b  # v4.1.5
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -112,7 +112,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -148,7 +148,7 @@ jobs:
           platforms: all
 
       - name: Build binary distribution (wheel) on Linux (s390x)
-        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -184,7 +184,7 @@ jobs:
           platforms: all
 
       - name: Build binary distribution (wheel) on Linux (ppc64le)
-        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -221,7 +221,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -249,7 +249,7 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@711a3d017d0729f3edde18545fee967f03d65f65  # v2.18.0
         with:
           package-dir: .
           output-dir: wheelhouse
