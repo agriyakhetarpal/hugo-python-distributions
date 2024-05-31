@@ -13,7 +13,7 @@ from wheel.bdist_wheel import bdist_wheel
 
 # ------ Hugo build configuration and constants ------------------------------------
 
-HUGO_VERSION = "0.125.2"
+HUGO_VERSION = "0.126.2"
 # The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
@@ -37,6 +37,9 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
+    "s390x": "s390x",
+    "ppc64le": "ppc64le",
+    "armv7l": "arm",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
@@ -82,7 +85,7 @@ class HugoBuilder(build_ext):
         self.hugo_arch = None
 
     def finalize_options(self):
-        # Platforms and architectures that we will build Hugo for are:
+        # Platforms and architectures that we will build Hugo natively for are:
         # i.e., a subset of "go tool dist list":
         # 1. darwin/amd64
         # 2. darwin/arm64
@@ -130,6 +133,9 @@ class HugoBuilder(build_ext):
         os.environ["GOOS"] = os.environ.get("GOOS", self.hugo_platform)
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
         # i.e., allow override if GOARCH is set!
+
+        if os.environ.get("GOARCH") == "arm" and os.environ.get("GOOS") == "linux":
+            os.environ["GOARM"] = os.environ.get("GOARM", "7")
 
         # Build Hugo from source using the Go toolchain, place it into GOBIN
         # Requires the following dependencies:
@@ -188,6 +194,15 @@ class HugoBuilder(build_ext):
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
 
+        # Build a static binary on Windows to avoid missing DLLs from MinGW,
+        # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
+        BUILDING_FOR_WINDOWS = (
+            os.environ.get("GOOS") == "windows" or sys.platform == "win32"
+        )
+
+        if BUILDING_FOR_WINDOWS:
+            ldflags.append("-extldflags '-static'")
+
         if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
             subprocess.check_call(
                 [
@@ -199,6 +214,9 @@ class HugoBuilder(build_ext):
                     "--branch",
                     f"v{HUGO_VERSION}",
                     Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
+                    # disable warning about detached HEAD
+                    "-c",
+                    "advice.detachedHead=false",
                 ]
             )
 
@@ -206,6 +224,7 @@ class HugoBuilder(build_ext):
             [
                 "go",
                 "install",
+                "-v",
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",
@@ -362,15 +381,17 @@ class HugoWheel(bdist_wheel):
 
         # Handle cross-compilation on Linux via the Zig compiler
         # ======================================================
-        if (os.environ.get("GOOS") == "linux") or (sys.platform == "linux"):
+        if os.environ.get("GOOS") == "linux":
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "linux_aarch64"
             elif os.environ.get("GOARCH") == "amd64":
                 platform_tag = "linux_x86_64"
+            elif os.environ.get("GOARCH") == "ppc64le":
+                platform_tag = "linux_ppc64le"
 
         # Handle cross-compilation on/to Windows via the Zig compiler
         # ===========================================================
-        if os.environ.get("GOOS") == "windows" or (sys.platform == "win32"):
+        elif os.environ.get("GOOS") == "windows":
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "win_arm64"
             elif os.environ.get("GOARCH") == "amd64":
@@ -386,7 +407,7 @@ class HugoWheel(bdist_wheel):
         # Also, let cibuildwheel handle the platform tags if it is being used,
         # since that is where we won't cross-compile at all but use the native
         # GitHub Actions runners.
-        if ((os.environ.get("GOOS") == "darwin") or (sys.platform == "darwin")) and (
+        elif (os.environ.get("GOOS") == "darwin") and (
             os.environ.get("CIBUILDWHEEL") != "1"
         ):
             if os.environ.get("GOARCH") == "arm64":

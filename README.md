@@ -43,7 +43,7 @@ This project provides wheels for [Hugo](https://gohugo.io/) so that it can be us
 
 This project, `hugo` is versioned alongside the Hugo releases and is aligned with the versioning of Hugo itself, which uses `SemVer` – but is likely versioned according to [0ver](https://0ver.org/) software standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
 
-Binaries for `hugo` through these wheels are available for Hugo versions **0.121.2** and above, through PyPI or through releases on GitHubr. If you need an older version of `hugo` that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
+Binaries for `hugo` through these wheels are available for Hugo versions **0.121.2** and above, through PyPI or through releases on GitHub. If you need an older version of `hugo` that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
 
 Please refer to the section on [Supported platforms](#supported-platforms) for a list of wheels available for supported platforms and architectures. If it does, jump to the [Quickstart](#quickstart) section to get started.
 
@@ -120,6 +120,8 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 | macOS    | arm64 (Silicon) | ✅                              |
 | Linux    | amd64           | ✅                              |
 | Linux    | arm64           | ✅                              |
+| Linux    | s390x           | ✅                              |
+| Linux    | ppc64le         | ✅                              |
 | Windows  | x86_64          | ✅                              |
 | Windows  | arm64           | 💡 Experimental support [^1]    |
 | Windows  | x86             | 💡 Experimental support [^1]    |

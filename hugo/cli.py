@@ -8,7 +8,7 @@ from __future__ import annotations
 
 # Reduce expenses for various imports
 from functools import lru_cache
-from os import execvp, path
+from os import execv, path
 from platform import machine
 from subprocess import check_call
 from sys import argv, maxsize
@@ -31,6 +31,8 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
+    "s390x": "s390x",
+    "ppc64le": "ppc64le",
 }[machine()]
 
 # platform.machine returns AMD64 on Windows because the architecture is
@@ -68,4 +70,4 @@ def __call():
         check_call([hugo_executable(), *argv[1:]])
     else:
         print(f"\033[95m{MESSAGE}\033[0m")
-        execvp(hugo_executable(), ["hugo", *argv[1:]])
+        execv(hugo_executable(), ["hugo", *argv[1:]])
