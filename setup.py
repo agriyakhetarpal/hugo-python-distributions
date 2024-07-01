@@ -13,7 +13,7 @@ from wheel.bdist_wheel import bdist_wheel
 
 # ------ Hugo build configuration and constants ------------------------------------
 
-HUGO_VERSION = "0.126.3"
+HUGO_VERSION = "0.128.0"
 # The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
@@ -196,10 +196,12 @@ class HugoBuilder(build_ext):
 
         # Build a static binary on Windows to avoid missing DLLs from MinGW,
         # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
-        BUILD_STATIC = "linux-musl" in os.environ.get(
-            "CC", ""
-        ) or "linux-musl" in os.environ.get("CXX", "")
-
+        BUILD_STATIC = (
+            os.environ.get("GOOS") == "windows"
+            or sys.platform == "win32"
+            or "linux-musl" in os.environ.get("CC", "")
+            or "linux-musl" in os.environ.get("CXX", "")
+        )
         if BUILD_STATIC:
             ldflags.append("-extldflags '-static'")
 
