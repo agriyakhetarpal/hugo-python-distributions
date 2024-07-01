@@ -35,8 +35,13 @@ jobs:
                 context: .
                 file: Dockerfile
                 tags: agriyakhetarpal/hugo:latest # To be updated with exact Docker Hub username and image name
-                push: true
+                push: false
                 platforms: linux/amd64, linux/arm64
+
+            - name: Run tests inside the built Docker image
+              run: |
+                docker run --rm agriyakhetarpal/hugo:latest hugo version
+                docker run --rm agriyakhetarpal/hugo:latest hugo env
 
             - name: List built image(s)
               run: docker images
