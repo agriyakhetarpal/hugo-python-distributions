@@ -196,11 +196,13 @@ class HugoBuilder(build_ext):
 
         # Build a static binary on Windows to avoid missing DLLs from MinGW,
         # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
-        BUILDING_FOR_WINDOWS = (
-            os.environ.get("GOOS") == "windows" or sys.platform == "win32"
+        BUILD_STATIC = (
+            os.environ.get("GOOS") == "windows"
+            or sys.platform == "win32"
+            or "linux-musl" in os.environ.get("CC", "")
+            or "linux-musl" in os.environ.get("CXX", "")
         )
-
-        if BUILDING_FOR_WINDOWS:
+        if BUILD_STATIC:
             ldflags.append("-extldflags '-static'")
 
         if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
