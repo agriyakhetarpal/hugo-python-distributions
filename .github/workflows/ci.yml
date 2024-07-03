@@ -182,7 +182,7 @@ jobs:
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@932529cab190fafca8c735a551657247fa8f8eaf  # v2.19.1
+        uses: pypa/cibuildwheel@7e5a838a63ac8128d71ab2dfd99e4634dd1bca09  # v2.19.2
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -202,7 +202,7 @@ jobs:
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
-        uses: pypa/cibuildwheel@932529cab190fafca8c735a551657247fa8f8eaf  # v2.19.1
+        uses: pypa/cibuildwheel@7e5a838a63ac8128d71ab2dfd99e4634dd1bca09  # v2.19.2
         with:
           package-dir: .
           output-dir: wheelhouse
