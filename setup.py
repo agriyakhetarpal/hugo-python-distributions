@@ -224,6 +224,7 @@ class HugoBuilder(build_ext):
             [
                 "go",
                 "install",
+                "-trimpath",
                 "-v",
                 "-ldflags",
                 " ".join(ldflags),
