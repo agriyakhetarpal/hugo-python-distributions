@@ -4,7 +4,7 @@ This project has a security policy that aims to cover various potential attack v
 
 It is to be noted that:
 
-1. The PyPI releases as well as GitHub Releases artifacts are signed with Sigstore via GitHub Actions prior to uploads. To verify the authenticity of the release, please refer to the [Sigstore documentation](https://github.com/sigstore/sigstore-python#verifying-signatures-from-github-actions).
+1. The PyPI releases as well as GitHub Releases artifacts are signed with Sigstore via GitHub Actions with uploads, and also with [GitHub Actions Attestations](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds). To verify the authenticity of the release, please refer to the [Sigstore documentation](https://github.com/sigstore/sigstore-python#verifying-signatures-from-github-actions) and the [GitHub Actions Attestations documentation](https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
 2. All releases are built from the upstream Hugo source code, and the build process is automated via GitHub Actions. The build process is reproducible, and the source code is fetched from the upstream repository.
 3. Interactions with this project do not collect any user data, and the only data that is collected is by GitHub and PyPI for the purposes of maintaining the project and based on their terms of service and privacy policies.
 4. The project does not contain any telemetry or tracking code, and no data is sent to any third-party servers upon usage of the project.
