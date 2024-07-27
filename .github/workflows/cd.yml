@@ -285,6 +285,8 @@ jobs:
       id-token: write
       # Required to upload artifacts to a GitHub release identifier
       contents: write
+      # For GHA Attestations
+      attestations: write
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
 
@@ -308,6 +310,13 @@ jobs:
           inputs: >-
             ./upload/*.whl
             ./upload/*.tar.gz
+
+      - name: Generate artifact attestation(s)
+        uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0  # v1.3.3
+        with:
+          subject-path: |
+            upload/*.whl
+            upload/*.tar.gz
 
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191  # v2.0.8
