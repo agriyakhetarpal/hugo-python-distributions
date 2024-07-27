@@ -32,11 +32,23 @@ jobs:
 
   check_commit_message:
     needs: [style]
-    name: Check for skips
+    name: Check commit message
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, '[buildjet]')
+    outputs:
+      trigger: ${{ steps.check-commit-message.outputs.trigger }}
     steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - name: Check commit message
+        id: check-commit-message
+        run: |
+          set -e -x
+          COMMIT_MESSAGE=$(git log --no-merges -1 --oneline)
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ||
+                "$COMMIT_MSG" =~ \[buildjet\] ]]; then
+              echo "trigger=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Run BuildJet runners
+        if: steps.check-commit-message.outputs.trigger == 'true'
         run: echo "Running BuildJet runners"
 
   build_wheels:
@@ -92,9 +104,10 @@ jobs:
     needs: [check_commit_message]
     name: linux-aarch64-buildjet-python-3.12
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    if: ${{ needs.check_commit_message.outputs.trigger == 'true' }}
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: buildjet/setup-python@v5
+      - uses: buildjet/setup-python@v5.1.1
       - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89  # v5.0.0
         with:
           go-version: '1.22.2'
@@ -108,14 +121,18 @@ jobs:
         env:
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.22.2.linux-arm64.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_SKIP: "pp* *musllinux*"
-          CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
           CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
-
   experimental:
     needs: [style]
     name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
