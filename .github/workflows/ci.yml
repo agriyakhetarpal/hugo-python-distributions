@@ -15,15 +15,15 @@ env:
   FORCE_COLOR: 3
   CIBW_BUILD_VERBOSITY: 2
   CIBW_SKIP: "pp* *musllinux*"
-  CIBW_BUILD_FRONTEND: "pip"  # use pip for now, not build – missing buildDate otherwise
+  CIBW_BUILD_FRONTEND: "build"
 
 jobs:
   style:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v5.1.1
         with:
           python-version: 3.12
 
@@ -32,11 +32,23 @@ jobs:
 
   check_commit_message:
     needs: [style]
-    name: Check for skips
+    name: Check commit message
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, '[buildjet]')
+    outputs:
+      trigger: ${{ steps.check-commit-message.outputs.trigger }}
     steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - name: Check commit message
+        id: check-commit-message
+        run: |
+          set -e -x
+          COMMIT_MESSAGE=$(git log --no-merges -1 --oneline)
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ||
+                "$COMMIT_MSG" =~ \[buildjet\] ]]; then
+              echo "trigger=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Run BuildJet runners
+        if: steps.check-commit-message.outputs.trigger == 'true'
         run: echo "Running BuildJet runners"
 
   build_wheels:
@@ -54,15 +66,15 @@ jobs:
             runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
         with:
           go-version: '1.22.2'
           cache: false
@@ -92,10 +104,11 @@ jobs:
     needs: [check_commit_message]
     name: linux-aarch64-buildjet-python-3.12
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    if: ${{ needs.check_commit_message.outputs.trigger == 'true' }}
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
-      - uses: buildjet/setup-python@v5
-      - uses: buildjet/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: buildjet/setup-python@v5.1.1
+      - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89  # v5.0.0
         with:
           go-version: '1.22.2'
           cache: false
@@ -108,14 +121,18 @@ jobs:
         env:
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.22.2.linux-arm64.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_SKIP: "pp* *musllinux*"
-          CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
-
   experimental:
     needs: [style]
     name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
@@ -138,15 +155,15 @@ jobs:
           - python-version: "3.13"
             runs-on: windows-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
         with:
           go-version: '1.22.2'
           cache: false
@@ -182,7 +199,7 @@ jobs:
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        uses: pypa/cibuildwheel@7e5a838a63ac8128d71ab2dfd99e4634dd1bca09  # v2.19.2
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -194,13 +211,15 @@ jobs:
           CXX: zig c++ -target aarch64-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_SKIP: "*-win_arm64"
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
-        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        uses: pypa/cibuildwheel@7e5a838a63ac8128d71ab2dfd99e4634dd1bca09  # v2.19.2
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -211,12 +230,14 @@ jobs:
           CXX: zig c++ -target x86-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: x86
-          CIBW_TEST_COMMAND: >
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808  # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b  # v4.3.4
         with:
             name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
             path: ./wheelhouse/*.whl
@@ -226,14 +247,13 @@ jobs:
     name: inspect-sdist-wheel-contents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b  # v4.1.4
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/setup-python@39cd14951b08e74b54015e9e001cdefcf80e669f  # v5.1.1
         with:
           python-version: 3.12
 
       - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
-          git apply scripts/ci/tools/patches/0001-use-temporary-directory-to-store-eggs.patch
           pipx run build --sdist --wheel . --outdir dist/
           pipx run twine check dist/* --strict
 

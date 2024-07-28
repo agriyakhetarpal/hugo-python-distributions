@@ -121,6 +121,7 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 | Linux    | amd64           | ✅                              |
 | Linux    | arm64           | ✅                              |
 | Linux    | s390x           | ✅                              |
+| Linux    | ppc64le         | ✅                              |
 | Windows  | x86_64          | ✅                              |
 | Windows  | arm64           | 💡 Experimental support [^1]    |
 | Windows  | x86             | 💡 Experimental support [^1]    |
