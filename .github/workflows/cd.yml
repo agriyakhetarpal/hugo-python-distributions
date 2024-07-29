@@ -105,7 +105,8 @@ jobs:
 
   linux_arm64_wheels:
     name: arm64-manylinux
-    runs-on: ubuntu-latest
+    runs-on: buildjet-2vcpu-ubuntu-2204-arm
+    if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf  # v3.2.0
