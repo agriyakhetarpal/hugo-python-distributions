@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
         with:
-          go-version: '1.22.5'
+          go-version: '1.22.6'
           cache: false
 
       - name: Install MinGW compiler(s)
@@ -84,7 +84,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.22.5.linux-amd64.tar.gz"
+            tarball="go1.22.6.linux-amd64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -120,7 +120,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.22.5.linux-arm64.tar.gz"
+            tarball="go1.22.6.linux-arm64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -156,7 +156,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: s390x
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.22.5.linux-s390x.tar.gz"
+            tarball="go1.22.6.linux-s390x.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -192,7 +192,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: ppc64le
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.22.5.linux-ppc64le.tar.gz"
+            tarball="go1.22.6.linux-ppc64le.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -218,7 +218,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
         with:
-          go-version: '1.22.5'
+          go-version: '1.22.6'
           cache: false
           check-latest: true
 
@@ -246,7 +246,7 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
         with:
-          go-version: '1.22.5'
+          go-version: '1.22.6'
           cache: false
           check-latest: true
 
