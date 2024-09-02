@@ -43,7 +43,7 @@ jobs:
         run: |
           set -e -x
           COMMIT_MESSAGE=$(git log --no-merges -1 --oneline)
-          if [[ "$GITHUB_EVENT_NAME" == pull_request ||
+          if [[ "$GITHUB_EVENT_NAME" == pull_request &&
                 "$COMMIT_MSG" =~ \[buildjet\] ]]; then
               echo "trigger=true" >> "$GITHUB_OUTPUT"
           fi
