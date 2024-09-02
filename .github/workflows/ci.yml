@@ -43,7 +43,7 @@ jobs:
         run: |
           set -e -x
           COMMIT_MESSAGE=$(git log --no-merges -1 --oneline)
-          if [[ "$GITHUB_EVENT_NAME" == pull_request ||
+          if [[ "$GITHUB_EVENT_NAME" == pull_request &&
                 "$COMMIT_MSG" =~ \[buildjet\] ]]; then
               echo "trigger=true" >> "$GITHUB_OUTPUT"
           fi
@@ -237,7 +237,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
-        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a  # v4.3.6
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
         with:
             name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
             path: ./wheelhouse/*.whl
