@@ -133,6 +133,7 @@ jobs:
           CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
+
   experimental:
     needs: [style]
     name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
@@ -171,13 +172,13 @@ jobs:
 
       - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d  # v2.2.0
         with:
-          version: 0.11.0
+          version: 0.13.0
 
       - name: Restore Hugo builder cache
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
         with:
           path: ./hugo_cache/
-          key: ${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
+          key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
 
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox auditwheel
