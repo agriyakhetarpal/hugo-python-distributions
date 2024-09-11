@@ -1,27 +1,27 @@
 # hugo-python-distributions
 
-[actions-badge]:            https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CI/badge.svg
-[cd-badge]:                 https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CD/badge.svg
-[actions-link]:             https://github.com/agriyakhetarpal/hugo-python-distributions/actions
-[pypi-link]:                https://pypi.org/project/hugo/
-[pypi-platforms]:           https://img.shields.io/pypi/pyversions/hugo/
-[pypi-version]:             https://img.shields.io/pypi/v/hugo/
-[pypi-downloads-total]:     https://static.pepy.tech/badge/hugo/
-[pypi-downloads-monthly]:   https://static.pepy.tech/badge/hugo/month/
-[license-badge]:            https://img.shields.io/pypi/l/hugo?color=lavender
-[license-link]:             https://apache.org/licenses/LICENSE-2.0
-[hugo-badge]:               https://img.shields.io/badge/hugo-extended-pink.svg?style=flat&logo=hugo
-[hugo-link]:                https://gohugo.io/
-[docs-link]:                https://github.com/agriyakhetarpal/hugo-python-distributions/
-[docs-badge]:               https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
+[actions-badge]: https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CI/badge.svg
+[cd-badge]: https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CD/badge.svg
+[actions-link]: https://github.com/agriyakhetarpal/hugo-python-distributions/actions
+[pypi-link]: https://pypi.org/project/hugo/
+[pypi-platforms]: https://img.shields.io/pypi/pyversions/hugo/
+[pypi-version]: https://img.shields.io/pypi/v/hugo/
+[pypi-downloads-total]: https://static.pepy.tech/badge/hugo/
+[pypi-downloads-monthly]: https://static.pepy.tech/badge/hugo/month/
+[license-badge]: https://img.shields.io/pypi/l/hugo?color=lavender
+[license-link]: https://apache.org/licenses/LICENSE-2.0
+[hugo-badge]: https://img.shields.io/badge/hugo-extended-pink.svg?style=flat&logo=hugo
+[hugo-link]: https://gohugo.io/
+[docs-link]: https://github.com/agriyakhetarpal/hugo-python-distributions/
+[docs-badge]: https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
 
 <div align="center">
 
-| Classifiers | Description |
-| ------ | ---------------- |
-| Builds | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main) |
-| Package | [![PyPI version](https://badge.fury.io/py/hugo.svg)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) [![Downloads per month](https://static.pepy.tech/badge/hugo/month)](https://pepy.tech/project/hugo) [![Downloads](https://static.pepy.tech/badge/hugo/week)](https://pepy.tech/project/hugo) |
-| Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) |
+| Classifiers | Description                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Builds      | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main)                                                                                                                          |
+| Package     | [![PyPI version](https://img.shields.io/pypi/v/hugo?color=CD007B)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) [![Downloads per month](https://static.pepy.tech/badge/hugo/month)](https://pepy.tech/project/hugo) [![Downloads](https://static.pepy.tech/badge/hugo/week)](https://pepy.tech/project/hugo) |
+| Meta        | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)        |
 
 </div>
 
@@ -77,13 +77,17 @@ py -m pip install hugo         # Windows
 
 > [!TIP]
 > It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system. i.e.,
+
 ```bash
 pipx install hugo      # install and run Hugo through pipx
 ```
+
 or
+
 ```bash
 pipx run hugo==0.121.2 # run a specific version of Hugo through pipx, even if a different version is installed in whatever environment you are in
 ```
+
 Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
 
 Then, you can use the `hugo` commands as you would normally:
@@ -114,26 +118,25 @@ For more information on using Hugo and its command-line interface, please refer 
 
 A subset of the platforms supported by Hugo itself are supported by these wheels for `hugo` via `hugo-python-distributions`. The plan is to support as many platforms as possible with Python wheels and platform tags. Please refer to the following table for a list of supported platforms and architectures:
 
-| Platform | Architecture    | Support                         |
-| -------- | --------------- | ------------------------------- |
-| macOS    | x86_64 (Intel)  | ✅                              |
-| macOS    | arm64 (Silicon) | ✅                              |
-| Linux    | amd64           | ✅                              |
-| Linux    | arm64           | ✅                              |
-| Linux    | s390x           | ✅                              |
-| Linux    | ppc64le         | ✅                              |
-| Windows  | x86_64          | ✅                              |
-| Windows  | arm64           | 💡 Experimental support [^1]    |
-| Windows  | x86             | 💡 Experimental support [^1]    |
-| DragonFlyBSD | amd64       | ❌ Will not receive support[^2] |
-| FreeBSD  | amd64           | ❌ Will not receive support[^2] |
-| OpenBSD  | amd64           | ❌ Will not receive support[^2] |
-| NetBSD   | amd64           | ❌ Will not receive support[^2] |
-| Solaris  | amd64           | ❌ Will not receive support[^2] |
+| Platform     | Architecture    | Support                             |
+| ------------ | --------------- | ----------------------------------- |
+| macOS        | x86_64 (Intel)  | ✅ macOS 10.9 (Mavericks) and later |
+| macOS        | arm64 (Silicon) | ✅ macOS 11.0 (Big Sur) and later   |
+| Linux        | amd64           | ✅ glibc 2.24 and later             |
+| Linux        | arm64           | ✅ glibc 2.24 and later             |
+| Linux        | s390x           | ✅ glibc 2.17 and later             |
+| Linux        | ppc64le         | ✅ glibc 2.17 and later             |
+| Windows      | x86_64          | ✅                                  |
+| Windows      | arm64           | ✅💡 Experimental support [^1]      |
+| Windows      | x86             | ✅💡 Experimental support [^1]      |
+| DragonFlyBSD | amd64           | ❌ Will not receive support[^2]     |
+| FreeBSD      | amd64           | ❌ Will not receive support[^2]     |
+| OpenBSD      | amd64           | ❌ Will not receive support[^2]     |
+| NetBSD       | amd64           | ❌ Will not receive support[^2]     |
+| Solaris      | amd64           | ❌ Will not receive support[^2]     |
 
-[^1]: Support for 32-bit (i686) and arm64 architectures on Windows is made possible through the use of the [Zig compiler toolchain](https://ziglang.org/) that uses the LLVM ecosystem. These wheels are experimental owing to the use of `cibuildwheel` and cross-compilation and may not be stable or reliable for all use cases, and are not officially supported by the Hugo project at this time. Hence, these are published to PyPI for general availability, but they are considered experimental. Please refer to the [Building from source](#building-from-source) section for more information on how to build Hugo for these platforms and architectures locally. If you need official support for these platforms, please consider contacting the Hugo authors by [https://github.com/gohugoio/hugo/issues/new](opening an issue).
-
-[^2]: Support for these platforms is not possible to include because of i. the lack of resources to test and build for them and ii. the lack of support for these platform specifications in Python packaging standards and tooling. If you need support for these platforms, please consider downloading the [official Hugo binaries](https://github.com/gohugoio/hugo/releases)
+[^1]: Support for 32-bit (i686) and arm64 architectures on Windows is made possible through the use of the [Zig compiler toolchain](https://ziglang.org/) that uses the LLVM ecosystem. These wheels are experimental owing to the use of cross-compilation and may not be stable or reliable for all use cases, and are not officially supported by the Hugo project at this time. Hence, while these are published to PyPI for general availability, they are considered experimental. Please refer to the [Building from source](#building-from-source) section for more information on how to build Hugo for these platforms and architectures locally. If you need official support for these platforms or face any bugs, please consider contacting the Hugo authors by [https://github.com/gohugoio/hugo/issues/new](opening an issue).
+[^2]: Support for these platforms is not possible to include because of i. the lack of resources to test and build for them and ii. the lack of support for these platform specifications in Python packaging standards and tooling. If you need support for these platforms, please consider downloading the [official Hugo binaries](https://github.com/gohugoio/hugo/releases) for their non-extended editions.
 
 ### Building from source
 
