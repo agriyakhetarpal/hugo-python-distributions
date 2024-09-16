@@ -6,7 +6,7 @@ on:
     types:
       - published
   schedule:
-    - cron: '0 0 * * 1'
+    - cron: "0 0 * * 1"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,15 +26,15 @@ jobs:
     name: sdist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: 3.12
 
       - name: Build source distribution
         run: pipx run build --sdist --outdir dist/
 
-      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+      - uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: source_distribution
           path: dist
@@ -44,16 +44,16 @@ jobs:
     name: amd64-windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
 
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -66,7 +66,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_windows_amd64
           path: ./wheelhouse/*.whl
@@ -76,21 +76,21 @@ jobs:
     name: arm64-windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
           check-latest: true
 
-      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d  # v2.2.0
+      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d # v2.2.0
         with:
           version: 0.13.0
 
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -107,7 +107,7 @@ jobs:
           CIBW_TEST_SKIP: "*-win_arm64"
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_windows_arm64
           path: ./wheelhouse/*.whl
@@ -117,20 +117,20 @@ jobs:
     name: i686-windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
 
-      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d  # v2.2.0
+      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d # v2.2.0
         with:
           version: 0.13.0
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
-        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -148,7 +148,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_windows_i686
           path: ./wheelhouse/*.whl
@@ -158,8 +158,8 @@ jobs:
     name: amd64-manylinux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -179,7 +179,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_linux_amd64
           path: ./wheelhouse/*.whl
@@ -190,12 +190,12 @@ jobs:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf  # v3.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -215,7 +215,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_linux_aarch64
           path: ./wheelhouse/*.whl
@@ -225,13 +225,13 @@ jobs:
     name: s390x-manylinux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf  # v3.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: all
 
       - name: Build binary distribution (wheel) on Linux (s390x)
-        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -251,7 +251,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_linux_s390x
           path: ./wheelhouse/*.whl
@@ -261,13 +261,13 @@ jobs:
     name: ppc64le-manylinux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf  # v3.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: all
 
       - name: Build binary distribution (wheel) on Linux (ppc64le)
-        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -287,7 +287,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_linux_ppc64le
           path: ./wheelhouse/*.whl
@@ -297,14 +297,14 @@ jobs:
     name: amd64-macos
     runs-on: macos-13
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -315,7 +315,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_macos_x86_64
           path: ./wheelhouse/*.whl
@@ -325,14 +325,14 @@ jobs:
     name: arm64-macos
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+      - uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -343,25 +343,26 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           name: wheels_macos_arm64
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
   publish:
-    needs: [
-      sdist,
-      windows_amd64_wheels,
-      windows_arm64_wheels,
-      windows_i686_wheels,
-      macos_amd64_wheels,
-      macos_arm64_wheels,
-      linux_amd64_wheels,
-      linux_arm64_wheels,
-      linux_s390x_wheels,
-      linux_ppc64le_wheels
-    ]
+    needs:
+      [
+        sdist,
+        windows_amd64_wheels,
+        windows_arm64_wheels,
+        windows_i686_wheels,
+        macos_amd64_wheels,
+        macos_arm64_wheels,
+        linux_amd64_wheels,
+        linux_arm64_wheels,
+        linux_s390x_wheels,
+        linux_ppc64le_wheels,
+      ]
 
     name: Publish to PyPI or TestPyPI
     environment: release
@@ -377,12 +378,12 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           path: upload/
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241  # v1.10.1
+      - uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241 # v1.10.1
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           # Comment this line out to publish to PyPI
@@ -390,21 +391,21 @@ jobs:
           packages-dir: upload
 
       - name: Sign artifacts with Sigstore
-        uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.0
+        uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46 # v3.0.0
         with:
           inputs: >-
             ./upload/*.whl
             ./upload/*.tar.gz
 
       - name: Generate artifact attestation(s)
-        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c  # v1.4.3
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
         with:
           subject-path: |
             upload/*.whl
             upload/*.tar.gz
 
       - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191  # v2.0.8
+        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           # This will contain not only the wheel and sdist, but also the signature files

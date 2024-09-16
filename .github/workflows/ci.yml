@@ -22,8 +22,8 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: 3.12
 
@@ -37,7 +37,7 @@ jobs:
     outputs:
       trigger: ${{ steps.check-commit-message.outputs.trigger }}
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Check commit message
         id: check-commit-message
         run: |
@@ -66,17 +66,17 @@ jobs:
             runs-on: macos-14
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
           check-latest: true
 
@@ -85,7 +85,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./hugo_cache/
           key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
@@ -106,11 +106,11 @@ jobs:
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
     if: ${{ needs.check_commit_message.outputs.trigger == 'true' }}
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - uses: buildjet/setup-python@v5.2.0
-      - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89  # v5.0.0
+      - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89 # v5.0.0
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
           check-latest: true
 
@@ -156,26 +156,26 @@ jobs:
           - python-version: "3.13"
             runs-on: windows-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32  # v5.0.2
+        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version: '1.23.0'
+          go-version: "1.23.0"
           cache: false
           check-latest: true
 
-      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d  # v2.2.0
+      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d # v2.2.0
         with:
           version: 0.13.0
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ./hugo_cache/
           key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
@@ -200,7 +200,7 @@ jobs:
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -220,7 +220,7 @@ jobs:
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
-        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad  # v2.20.0
+        uses: pypa/cibuildwheel@bd033a44476646b606efccdd5eed92d5ea1d77ad # v2.20.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -238,18 +238,18 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
-            name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
-            path: ./wheelhouse/*.whl
+          name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
 
   inspect_distributions:
     needs: [style]
     name: inspect-sdist-wheel-contents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
-      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3  # v5.2.0
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 # v5.2.0
         with:
           python-version: 3.12
 

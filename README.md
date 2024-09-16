@@ -136,6 +136,7 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 | Solaris      | amd64           | ❌ Will not receive support[^2]     |
 
 [^1]: Support for 32-bit (i686) and arm64 architectures on Windows is made possible through the use of the [Zig compiler toolchain](https://ziglang.org/) that uses the LLVM ecosystem. These wheels are experimental owing to the use of cross-compilation and may not be stable or reliable for all use cases, and are not officially supported by the Hugo project at this time. Hence, while these are published to PyPI for general availability, they are considered experimental. Please refer to the [Building from source](#building-from-source) section for more information on how to build Hugo for these platforms and architectures locally. If you need official support for these platforms or face any bugs, please consider contacting the Hugo authors by [https://github.com/gohugoio/hugo/issues/new](opening an issue).
+
 [^2]: Support for these platforms is not possible to include because of i. the lack of resources to test and build for them and ii. the lack of support for these platform specifications in Python packaging standards and tooling. If you need support for these platforms, please consider downloading the [official Hugo binaries](https://github.com/gohugoio/hugo/releases) for their non-extended editions.
 
 ### Building from source
