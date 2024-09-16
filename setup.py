@@ -403,7 +403,7 @@ class HugoWheel(bdist_wheel):
         # Cross-compiling to macOS or on macOS via the Zig or Xcode toolchains
         # ====================================================================
         # Also, ensure correct platform tags for macOS arm64 and macOS x86_64
-        # since macOS 3.12 Python GH Actionsrunners are mislabelling the platform
+        # since macOS 3.12 Python GH Actions runners are mislabelling the platform
         # tag to be universal2, see: https://github.com/pypa/wheel/issues/573
         # Also, let cibuildwheel handle the platform tags if it is being used,
         # since that is where we won't cross-compile at all but use the native
@@ -414,7 +414,7 @@ class HugoWheel(bdist_wheel):
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "macosx_11_0_arm64"
             elif os.environ.get("GOARCH") == "amd64":
-                platform_tag = "macosx_10_9_x86_64"
+                platform_tag = "macosx_10_13_x86_64"
 
         return python_tag, abi_tag, platform_tag
 
