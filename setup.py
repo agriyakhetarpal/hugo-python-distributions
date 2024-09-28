@@ -1,4 +1,3 @@
-import glob
 import os
 import platform
 import shutil
@@ -44,7 +43,7 @@ HUGO_ARCH = {
 
 # Name of the Hugo binary that will be built
 HUGO_BINARY_NAME = (
-    f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
+    f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', HUGO_PLATFORM)}-{os.environ.get('GOARCH', HUGO_ARCH)}"
     + FILE_EXT
 )
 
@@ -123,6 +122,7 @@ class HugoBuilder(build_ext):
         #     os.path.dirname(os.path.abspath(__file__)), "hugo", "binaries"
         # )
         os.environ["CGO_ENABLED"] = "1"
+        os.environ["GO111MODULE"] = "on"
         os.environ["GOPATH"] = str(Path(HUGO_CACHE_DIR).resolve())
         # it must be absolute (Go requirement)
 
@@ -165,12 +165,11 @@ class HugoBuilder(build_ext):
 
         # Zig compiler is required for cross-compilation on Linux and Windows, but we will
         # check for this only if we are cross-compiling and not on macOS (where Xcode is used).
-        # if (os.environ.get("GOARCH") != self.hugo_arch) and (sys.platform != "darwin"):
-        #     try:
-        #         subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
-        #     except OSError as err:
-        #         error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
-        #         raise OSError(error_message) from err
+        try:
+            subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
+        except OSError as err:
+            error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
+            raise OSError(error_message) from err
 
         # GCC/Clang is required for building Hugo because CGO is enabled
         try:
@@ -325,12 +324,12 @@ class Cleaner(Command):
     def run(self):
         """Clean ancillary files at runtime."""
 
-        here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))  # noqa: PTH100, PTH120
+        here = os.path.normpath(Path(__file__).parent.resolve())
         files_to_clean = "./build ./*.pyc ./*.egg-info ./__pycache__".split(" ")
 
         for path_spec in files_to_clean:
             # Make paths absolute and relative to this path
-            abs_paths = glob.glob(os.path.normpath(os.path.join(here, path_spec)))  # noqa: PTH207, PTH118
+            abs_paths = Path(here).glob(path_spec)
             for path in [str(p) for p in abs_paths]:
                 if not path.startswith(str(here)):
                     # raise error if path in files_to_clean is absolute + outside
