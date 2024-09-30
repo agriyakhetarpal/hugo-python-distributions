@@ -97,6 +97,7 @@ class HugoBuilder(build_ext):
         # The platform is used to set the GOOS environment variable, the architecture
         # is used to set the GOARCH environment variable, and they must be exactly these
         # strings for the Go toolchain to work.
+        # Note to self: go tool dist list -json | jq -r "map(select(.CgoSupported)) | .[] | .GOOS + \"/\" + .GOARCH"
         super().finalize_options()
         self.hugo_version = HUGO_VERSION
         self.hugo_platform = HUGO_PLATFORM
@@ -137,6 +138,10 @@ class HugoBuilder(build_ext):
         if os.environ.get("GOARCH") == "arm" and os.environ.get("GOOS") == "linux":
             os.environ["GOARM"] = os.environ.get("GOARM", "7")
 
+        # New: Setup Zig compiler if USE_ZIG is set
+        if os.environ.get("USE_ZIG"):
+            self._setup_zig_compiler()
+
         # Build Hugo from source using the Go toolchain, place it into GOBIN
         # Requires the following dependencies:
         #
@@ -155,38 +160,7 @@ class HugoBuilder(build_ext):
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
         # build environment is set up correctly.
-
-        # Go toolchain is required for building Hugo
-        try:
-            subprocess.check_call(["go", "version"])
-        except OSError as err:
-            error_message = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
-            raise OSError(error_message) from err
-
-        # Zig compiler is required for cross-compilation on Linux and Windows, but we will
-        # check for this only if we are cross-compiling and not on macOS (where Xcode is used).
-        try:
-            subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
-        except OSError as err:
-            error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
-            raise OSError(error_message) from err
-
-        # GCC/Clang is required for building Hugo because CGO is enabled
-        try:
-            subprocess.check_call(["gcc", "--version"])
-        except OSError:
-            try:
-                subprocess.check_call(["clang", "--version"])
-            except OSError as err:
-                error_message = "GCC/Clang not found. Please install GCC or Clang via your package manager."
-                raise OSError(error_message) from err
-
-        # Git is required for building Hugo to fetch dependencies from various Git repositories
-        try:
-            subprocess.check_call(["git", "--version"])
-        except OSError as err:
-            error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
-            raise OSError(error_message) from err
+        self._check_build_dependencies()
 
         # These ldflags are passed to the Go linker to set variables at runtime
         ldflags = [
@@ -202,6 +176,85 @@ class HugoBuilder(build_ext):
         if BUILDING_FOR_WINDOWS:
             ldflags.append("-extldflags '-static'")
 
+        self._clone_hugo_source()
+        self._build_hugo(ldflags)
+        self._rename_and_move_binary()
+
+    def _setup_zig_compiler(self):
+        goos = os.environ.get("GOOS", self.hugo_platform)
+        goarch = os.environ.get("GOARCH", self.hugo_arch)
+
+        zig_target_map = {
+            ("darwin", "amd64"): "x86_64-macos-none",
+            ("darwin", "arm64"): "aarch64-macos-none",
+            ("linux", "amd64"): "x86_64-linux-gnu",
+            ("linux", "arm64"): "aarch64-linux-gnu",
+            ("linux", "ppc64le"): "powerpc64le-linux-gnu",
+            ("linux", "s390x"): "s390x-linux-gnu",
+            ("windows", "386"): "x86-windows-gnu",
+            ("windows", "amd64"): "x86_64-windows-gnu",
+            ("windows", "arm64"): "aarch64-windows-gnu",
+        }
+
+        zig_target = zig_target_map.get((goos, goarch))
+        if zig_target:
+            os.environ["CC"] = f"zig cc -target {zig_target}"
+            os.environ["CXX"] = f"zig c++ -target {zig_target}"
+        else:
+            print(f"Warning: No Zig target found for GOOS={goos} and GOARCH={goarch}")
+
+    def _check_build_dependencies(self):
+        # Go toolchain is required for building Hugo
+        try:
+            subprocess.check_call(
+                ["go", "version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
+        except OSError as err:
+            error_message = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
+            raise OSError(error_message) from err
+
+        # Check for Zig compiler only if USE_ZIG is set
+        if os.environ.get("USE_ZIG"):
+            try:
+                subprocess.check_call(
+                    [sys.executable, "-m", "ziglang", "version"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except OSError as err:
+                error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
+                raise OSError(error_message) from err
+        else:
+            # GCC/Clang is required for building Hugo because CGO is enabled
+            try:
+                subprocess.check_call(
+                    ["gcc", "--version"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except OSError:
+                try:
+                    subprocess.check_call(
+                        ["clang", "--version"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                except OSError as err:
+                    error_message = "GCC/Clang not found. Please install GCC or Clang via your package manager."
+                    raise OSError(error_message) from err
+
+        # Git is required for building Hugo to fetch dependencies from various Git repositories
+        try:
+            subprocess.check_call(
+                ["git", "--version"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError as err:
+            error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
+            raise OSError(error_message) from err
+
+    def _clone_hugo_source(self):
         if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
             subprocess.check_call(
                 [
@@ -219,6 +272,7 @@ class HugoBuilder(build_ext):
                 ]
             )
 
+    def _build_hugo(self, ldflags):
         subprocess.check_call(
             [
                 "go",
@@ -234,6 +288,7 @@ class HugoBuilder(build_ext):
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
+    def _rename_and_move_binary(self):
         # Mangle the name of the compiled executable to include the version, the
         # platform, and the architecture of Hugo being built.
         # The binary is present in GOPATH (i.e, either at hugo_cache/bin/ or at
