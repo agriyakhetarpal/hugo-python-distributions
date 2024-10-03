@@ -96,10 +96,9 @@ jobs:
           output-dir: wheelhouse
         # Cross-compile for arm64 target via Zig toolchain
         env:
+          USE_ZIG: "1"
+          GOOS: windows
           GOARCH: arm64
-          # We are on Windows amd64, so set target as arm64
-          CC: zig cc -target aarch64-windows-gnu
-          CXX: zig c++ -target aarch64-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
@@ -136,9 +135,9 @@ jobs:
           output-dir: wheelhouse
         # Cross-compile for i686 target via Zig toolchain
         env:
+          USE_ZIG: "1"
+          GOOS: windows
           GOARCH: 386
-          CC: zig cc -target x86-windows-gnu
-          CXX: zig c++ -target x86-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: x86
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
