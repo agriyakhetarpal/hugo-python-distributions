@@ -171,9 +171,9 @@ pip install .                 # regular installation
 
 This project is capable of cross-compiling Hugo binaries for various platforms and architectures and it can be used as follows. Cross-compilation is provided for the following platforms:
 
-1. macOS for the `arm64` and `amd64` architectures via the Xcode toolchain,
-2. Linux for the `arm64` and `amd64` architectures via the Zig toolchain, and
-3. Windows for the `arm64`, and `x86` architectures via the Zig toolchain.
+1. macOS; for the `arm64` and `amd64` architectures via the Xcode toolchain,
+2. Linux; for the `arm64`, `amd64`, `s390x`, and `ppc64le` architectures via the Zig toolchain, and
+3. Windows; for the `amd64`, `arm64`, and `x86` architectures via the Zig toolchain.
 
 Please refer to the examples below for more information on how to cross-compile Hugo for different architectures:
 
@@ -195,13 +195,13 @@ pip install .  # or pip install -e .
 
 ##### Linux
 
-First, install [Zig](https://ziglang.org/download/) on your Linux machine, and set these environment variables prior to installing the package:
+First, install [Zig](https://ziglang.org/download/) on your Linux machine, and set the `USE_ZIG`, `GOOS`, and `GOARCH` environment variable prior to installing the package:
 
 Say, on an `amd64` Linux machine:
 
 ```bash
-export CC="zig cc -target aarch64-linux-gnu"
-export CXX="zig c++ -target aarch64-linux-gnu"
+export USE_ZIG="1"
+export GOOS="linux"
 export GOARCH="arm64"
 pip install .  # or pip install -e .
 ```
@@ -209,8 +209,8 @@ pip install .  # or pip install -e .
 will cross-compile a Linux arm64 binary distribution of Hugo that can be used on the targeted arm64 Linux machines. To build a binary distribution for the _target_ `amd64` Linux platform on the _host_ `arm64` Linux machine, set the targets differently:
 
 ```bash
-export CC="zig cc -target x86_64-linux-gnu"
-export CXX="zig c++ -target x86_64-linux-gnu"
+export USE_ZIG="1"
+export GOOS="linux"
 export GOARCH="amd64"
 pip install .  # or pip install -e .
 ```
@@ -231,8 +231,8 @@ First, install [Zig](https://ziglang.org/download/) on your Windows machine, and
 Say, on an `amd64` Windows machine:
 
 ```bash
-set CC="zig cc -target aarch64-windows-gnu"
-set CXX="zig c++ -target aarch64-windows-gnu"
+set USE_ZIG="1"
+set GOOS="windows"
 set GOARCH="arm64"
 pip install .  # or pip install -e .
 ```
@@ -240,8 +240,8 @@ pip install .  # or pip install -e .
 will cross-compile a Windows `arm64` binary distribution of Hugo that can be used on the targeted `arm64` Windows machines (note the use of `set` instead of `export` on Windows), and so on for the `x86` architecture:
 
 ```bash
-set CC="zig cc -target x86-windows-gnu"
-set CXX="zig c++ -target x86-windows-gnu"
+set USE_ZIG="1"
+set GOOS="windows"
 set GOARCH="386"
 pip install .  # or pip install -e .
 ```
