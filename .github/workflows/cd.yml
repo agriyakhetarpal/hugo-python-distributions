@@ -382,7 +382,7 @@ jobs:
           path: upload/
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@897895f1e160c830e369f9779632ebc134688e1b # v1.10.2
+      - uses: pypa/gh-action-pypi-publish@f7600683efdcb7656dec5b29656edb7bc586e597 # v1.10.3
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           # Comment this line out to publish to PyPI
