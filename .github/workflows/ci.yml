@@ -199,7 +199,7 @@ jobs:
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@f1859528322d7b29d4493ee241a167807661dfb4 # v2.21.2
+        uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -218,7 +218,7 @@ jobs:
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
-        uses: pypa/cibuildwheel@f1859528322d7b29d4493ee241a167807661dfb4 # v2.21.2
+        uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -236,7 +236,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
-        uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.2
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
           path: ./wheelhouse/*.whl
