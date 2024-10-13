@@ -2,3 +2,6 @@
 
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# GitHub syntax highlighting for pixi
+pixi.lock linguist-language=YAML

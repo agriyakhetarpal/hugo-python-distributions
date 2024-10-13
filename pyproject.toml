@@ -1,10 +1,12 @@
 [build-system]
 requires = [
   "setuptools>=64",
-  "wheel==0.42.0",
+  "wheel==0.43.0",
   # "ziglang>=0.11.0"
   ]
 build-backend = "setuptools.build_meta"
+
+# ------ Project metadata ---------------------------------------------------------
 
 [project]
 name = "hugo"
@@ -47,8 +49,12 @@ Homepage = "https://github.com/agriyakhetarpal/hugo-python-distributions"
 Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
+# ------ Configure the setuptools build system ------------------------------------
+
 [tool.setuptools.packages.find]
 include = ["hugo", "hugo.*"]
+
+# ------ Configure the Ruff linter and auto-formatter -----------------------------
 
 [tool.ruff]
 src = ["hugo"]
@@ -81,3 +87,30 @@ lint.ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "noxfile.py" = ["T20"]
+
+# ------ Set up a development environment with Pixi -------------------------------
+
+[tool.pixi.project]
+channels = ["conda-forge"]
+platforms = [
+  "linux-64",
+  "linux-aarch64",
+  "linux-ppc64le",
+  "osx-64",
+  "osx-arm64",
+  "win-64",
+]
+
+[tool.pixi.dependencies]
+go = "1.22.2"
+compilers = ">=1.7.0,<1.8"
+git = ">=2.45.0,<2.46"
+pre-commit = ">=3.7.0,<3.8"
+
+[tool.pixi.pypi-dependencies]
+hugo = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+lint = "pre-commit run --all-files"
+"hugo version" = "hugo version"
+"hugo env" = "hugo env --logLevel info"
