@@ -25,7 +25,7 @@
 
 </div>
 
-Binaries for the **extended version** of the Hugo static site generator, installable via `pip`
+Binaries for the **`extended` + `withdeploy` edition** of the Hugo static site generator, installable via `pip`
 
 This project provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for Python 3.9 and later.
 
@@ -141,7 +141,7 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 
 ### Building from source
 
-Building the extended version of Hugo from source requires the following dependencies:
+Building the extended + withdeploy edition of Hugo from source requires the following dependencies:
 
 - The [Go](https://go.dev/doc/install) toolchain
 - The [Git](https://git-scm.com/downloads) version control system

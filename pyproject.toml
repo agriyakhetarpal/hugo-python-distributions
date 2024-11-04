@@ -14,7 +14,7 @@ authors = [
 maintainers = [
   { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
 ]
-description = "Binaries for the Hugo static site generator, installable with pip"
+description = "Binaries for the 'extended + withdeploy' edition of the Hugo static site generator, installable with pip"
 readme = "README.md"
 license = {text = "Apache-2.0"}
 requires-python = "~=3.9"
