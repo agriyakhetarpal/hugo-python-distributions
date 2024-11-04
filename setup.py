@@ -12,7 +12,7 @@ from setuptools.command.build_py import build_py
 
 # ------ Hugo build configuration and constants ------------------------------------
 
-HUGO_VERSION = "0.136.5"
+HUGO_VERSION = "0.137.0"
 # The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
@@ -286,7 +286,7 @@ class HugoBuilder(build_ext):
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",
-                "extended,nodeploy",
+                "extended,withdeploy",
             ],
             cwd=(Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}").resolve(),
         )
