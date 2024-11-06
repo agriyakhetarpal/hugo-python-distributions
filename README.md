@@ -10,7 +10,7 @@
 [pypi-downloads-monthly]: https://static.pepy.tech/badge/hugo/month/
 [license-badge]: https://img.shields.io/pypi/l/hugo?color=lavender
 [license-link]: https://apache.org/licenses/LICENSE-2.0
-[hugo-badge]: https://img.shields.io/badge/hugo-extended-pink.svg?style=flat&logo=hugo
+[hugo-badge]: https://img.shields.io/badge/hugo-extended,withdeploy-pink.svg?style=flat&logo=hugo
 [hugo-link]: https://gohugo.io/
 [docs-link]: https://github.com/agriyakhetarpal/hugo-python-distributions/
 [docs-badge]: https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
