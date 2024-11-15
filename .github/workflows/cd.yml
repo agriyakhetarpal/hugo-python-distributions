@@ -97,11 +97,6 @@ jobs:
           cache: false
           check-latest: true
 
-      - uses: mlugg/setup-zig@a67e68dc5c8281d9608136d3d7ca1b282213e4ac # v1.2.1
-        with:
-          version: 0.13.0
-          use-cache: false
-
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
@@ -141,11 +136,6 @@ jobs:
         with:
           go-version: "1.24.0"
           cache: false
-
-      - uses: mlugg/setup-zig@a67e68dc5c8281d9608136d3d7ca1b282213e4ac # v1.2.1
-        with:
-          version: 0.13.0
-          use-cache: false
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.

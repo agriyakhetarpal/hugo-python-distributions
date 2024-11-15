@@ -204,8 +204,8 @@ class HugoBuilder(build_ext):
 
         zig_target = zig_target_map.get((goos, goarch))
         if zig_target:
-            os.environ["CC"] = f"zig cc -target {zig_target}"
-            os.environ["CXX"] = f"zig c++ -target {zig_target}"
+            os.environ["CC"] = f"{sys.executable} -m ziglang cc -target {zig_target}"
+            os.environ["CXX"] = f"{sys.executable} -m ziglang c++ -target {zig_target}"
             # Add additional flags to the linker to ensure that the binary is
             # stripped of debug information and is as small as possible for release
             os.environ["CGO_CFLAGS"] = "-g0 -O3 -ffunction-sections -fdata-sections"
