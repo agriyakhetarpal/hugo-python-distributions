@@ -206,6 +206,9 @@ class HugoBuilder(build_ext):
         if zig_target:
             os.environ["CC"] = f"{sys.executable} -m ziglang cc -target {zig_target}"
             os.environ["CXX"] = f"{sys.executable} -m ziglang c++ -target {zig_target}"
+            if zig_target == "x86-windows-gnu":
+                os.environ["CC"] += " -w"
+                os.environ["CXX"] += " -w"
             # Add additional flags to the linker to ensure that the binary is
             # stripped of debug information and is as small as possible for release
             os.environ["CGO_CFLAGS"] = "-g0 -O3 -ffunction-sections -fdata-sections"
