@@ -71,7 +71,7 @@ jobs:
         id: setup-go
         uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.4"
           cache: false
           check-latest: true
 
@@ -105,7 +105,7 @@ jobs:
       - uses: buildjet/setup-python@v5.2.0
       - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89 # v5.0.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.4"
           cache: false
           check-latest: true
 
@@ -117,7 +117,7 @@ jobs:
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.2.linux-arm64.tar.gz"
+            tarball="go1.23.4.linux-arm64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -161,7 +161,7 @@ jobs:
         id: setup-go
         uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.4"
           cache: false
           check-latest: true
 
