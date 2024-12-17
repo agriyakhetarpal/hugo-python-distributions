@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-        # https://github.com/softprops/action-gh-release/issues/556
+      # https://github.com/softprops/action-gh-release/issues/556
       - dependency-name: "softprops/action-gh-release"
         versions: ["2.2.0"]
     commit-message:
