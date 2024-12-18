@@ -34,7 +34,7 @@ jobs:
       - name: Build source distribution
         run: pipx run build --sdist --outdir dist/
 
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: source_distribution
           path: dist
@@ -66,7 +66,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_windows_amd64
           path: ./wheelhouse/*.whl
@@ -106,7 +106,7 @@ jobs:
           CIBW_TEST_SKIP: "*-win_arm64"
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_windows_arm64
           path: ./wheelhouse/*.whl
@@ -147,7 +147,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_windows_i686
           path: ./wheelhouse/*.whl
@@ -178,7 +178,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_amd64
           path: ./wheelhouse/*.whl
@@ -214,7 +214,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_aarch64
           path: ./wheelhouse/*.whl
@@ -250,7 +250,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_s390x
           path: ./wheelhouse/*.whl
@@ -286,7 +286,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_ppc64le
           path: ./wheelhouse/*.whl
@@ -314,7 +314,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_macos_x86_64
           path: ./wheelhouse/*.whl
@@ -342,7 +342,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_macos_arm64
           path: ./wheelhouse/*.whl
