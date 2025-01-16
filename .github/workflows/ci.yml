@@ -30,27 +30,6 @@ jobs:
       - name: Run style checks
         run: pipx run pre-commit run --all-files
 
-  check_commit_message:
-    needs: [style]
-    name: Check commit message
-    runs-on: ubuntu-latest
-    outputs:
-      trigger: ${{ steps.check-commit-message.outputs.trigger }}
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Check commit message
-        id: check-commit-message
-        run: |
-          set -e -x
-          COMMIT_MESSAGE=$(git log --no-merges -1 --oneline)
-          if [[ "$GITHUB_EVENT_NAME" == pull_request &&
-                "$COMMIT_MSG" =~ \[buildjet\] ]]; then
-              echo "trigger=true" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Run BuildJet runners
-        if: steps.check-commit-message.outputs.trigger == 'true'
-        run: echo "Running BuildJet runners"
-
   build_wheels:
     needs: [style]
     name: ${{ matrix.runs-on }}-python-${{ matrix.python-version }}
@@ -59,7 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.12", "3.13"]
-        runs-on: [ubuntu-latest, macos-13, macos-14, windows-latest]
+        runs-on: [ubuntu-latest,ubuntu-22.04-arm, macos-13, macos-14, windows-latest]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
@@ -95,40 +74,7 @@ jobs:
       - name: Test entry points for package
         run: nox -s venv
 
-  build_wheels_linux_aarch64:
-    needs: [check_commit_message]
-    name: linux-aarch64-buildjet-python-3.12
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
-    if: ${{ needs.check_commit_message.outputs.trigger == 'true' }}
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: buildjet/setup-python@v5.2.0
-      - uses: buildjet/setup-go@af85c03c2736c2267d5afe4d5952023a3b64bf89 # v5.0.0
-        with:
-          go-version: "1.23.4"
-          cache: false
-          check-latest: true
-
-      - name: Build binary distribution (wheel) on Linux (aarch64)
-        run: |
-          python -m pip install cibuildwheel
-          python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_BUILD: "cp312-*"
-          CIBW_ARCHS_LINUX: aarch64
-          CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.4.linux-arm64.tar.gz"
-            curl -LJO https://golang.org/dl/$tarball
-            mkdir $HOME/go_installed/
-            tar -C $HOME/go_installed/ -xzf $tarball
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
-            go version
-          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
-
+  # TODO: add aarch64 to x86_64 cross-compilation for Linux
   experimental:
     needs: [style]
     name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
