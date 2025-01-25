@@ -18,8 +18,6 @@ env:
   CIBW_BUILD_FRONTEND: "build"
   CIBW_BUILD: "cp312-*"
   CIBW_SKIP: "pp* *musllinux*"
-  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
-  CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
 
 jobs:
   sdist:
