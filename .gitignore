@@ -181,6 +181,3 @@ hugo/binaries/*
 
 # Hugo builder cache
 hugo_cache/
-
-# Hugo version file
-hugo/VERSION

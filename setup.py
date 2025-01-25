@@ -1,5 +1,6 @@
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -53,7 +54,7 @@ HUGO_BINARY_NAME = (
 class HugoWriter(build_py):
     """
     A custom pre-installation command that writes the version of Hugo being built
-    to hugo/VERSION so that the version is available to read at runtime.
+    directly to hugo/cli.py so that the version is available at runtime.
     """
 
     def initialize_options(self) -> None:
@@ -63,10 +64,13 @@ class HugoWriter(build_py):
         return super().finalize_options()
 
     def run(self) -> None:
-        """Write the version of Hugo being built to hugo/VERSION."""
-        with open("hugo/VERSION", "w") as version_file:  # noqa: PTH123
-            version_file.write(HUGO_VERSION)
-            version_file.write("\n")
+        cli_file_path = Path(__file__).parent / "hugo" / "cli.py"
+        content = cli_file_path.read_text()
+        version = re.sub(
+            r'HUGO_VERSION = "[0-9.]+"', f'HUGO_VERSION = "{HUGO_VERSION}"', content
+        )
+        with open(cli_file_path, "w") as cli_file:  # noqa: PTH123
+            cli_file.write(version)
 
         super().run()
 
