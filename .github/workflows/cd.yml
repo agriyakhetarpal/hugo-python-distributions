@@ -14,10 +14,11 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  CIBW_BUILD_VERBOSITY: 2
   CIBW_BUILD_FRONTEND: "build"
   CIBW_BUILD: "cp312-*"
   CIBW_SKIP: "pp* *musllinux*"
+  CIBW_MANYLINUX_PPC64LE_IMAGE: "manylinux_2_28"
+  CIBW_MANYLINUX_S390X_IMAGE: "manylinux_2_28"
 
 jobs:
   sdist:
