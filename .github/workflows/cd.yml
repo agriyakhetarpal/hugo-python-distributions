@@ -231,7 +231,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: s390x
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.5.linux-s390x.tar.gz"
+            tarball="go1.23.4.linux-s390x.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -267,7 +267,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: ppc64le
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.5.linux-ppc64le.tar.gz"
+            tarball="go1.23.4.linux-ppc64le.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
