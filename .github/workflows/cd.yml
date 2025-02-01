@@ -17,8 +17,6 @@ env:
   CIBW_BUILD_FRONTEND: "build"
   CIBW_BUILD: "cp312-*"
   CIBW_SKIP: "pp* *musllinux*"
-  CIBW_MANYLINUX_PPC64LE_IMAGE: "quay.io/pypa/manylinux2014_ppc64le:2025.01.31-1"
-  CIBW_MANYLINUX_S390X_IMAGE: "quay.io/pypa/manylinux2014_s390x:2025.01.31-1"
 
 jobs:
   sdist:
