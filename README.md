@@ -124,8 +124,8 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 | ------------ | --------------- | -------------------------------------- |
 | macOS        | x86_64 (Intel)  | ✅ macOS 10.13 (High Sierra) and later |
 | macOS        | arm64 (Silicon) | ✅ macOS 11.0 (Big Sur) and later      |
-| Linux        | amd64           | ✅ glibc 2.24 and later                |
-| Linux        | arm64           | ✅ glibc 2.24 and later                |
+| Linux        | amd64           | ✅ glibc 2.17 and later                |
+| Linux        | arm64           | ✅ glibc 2.17 and later                |
 | Linux        | s390x           | ✅ glibc 2.17 and later                |
 | Linux        | ppc64le         | ✅ glibc 2.17 and later                |
 | Windows      | x86_64          | ✅                                     |
