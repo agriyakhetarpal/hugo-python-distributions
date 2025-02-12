@@ -6,8 +6,10 @@
 [pypi-link]: https://pypi.org/project/hugo/
 [pypi-platforms]: https://img.shields.io/pypi/pyversions/hugo/
 [pypi-version]: https://img.shields.io/pypi/v/hugo/
-[pypi-downloads-total]: https://static.pepy.tech/badge/hugo/
-[pypi-downloads-monthly]: https://static.pepy.tech/badge/hugo/month/
+[pypi-downloads-total]: https://img.shields.io/pepy/dt/hugo
+[pypi-downloads-monthly]: https://img.shields.io/pypi/dm/hugo
+[pypi-downloads-weekly]: https://img.shields.io/pypi/dw/hugo
+[pypi-downloads-daily]: https://img.shields.io/pypi/dd/hugo
 [license-badge]: https://img.shields.io/pypi/l/hugo?color=lavender
 [license-link]: https://apache.org/licenses/LICENSE-2.0
 [hugo-badge]: https://img.shields.io/badge/hugo-extended,withdeploy-pink.svg?style=flat&logo=hugo
@@ -17,11 +19,11 @@
 
 <div align="center">
 
-| Classifiers | Description                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Builds      | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main)                                                                                                                          |
-| Package     | [![PyPI version](https://img.shields.io/pypi/v/hugo?color=CD007B)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) [![Downloads per month](https://static.pepy.tech/badge/hugo/month)](https://pepy.tech/project/hugo) [![Downloads](https://static.pepy.tech/badge/hugo/week)](https://pepy.tech/project/hugo) |
-| Meta        | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)        |
+| Classifiers | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Builds      | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main)                                                                                                                                                                                                                                                                |
+| Package     | [![PyPI version](https://img.shields.io/pypi/v/hugo?color=CD007B)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://img.shields.io/pepy/dt/hugo?color=teal)](https://pepy.tech/project/hugo) [![Downloads per month](https://img.shields.io/pypi/dm/hugo?color=teal)](https://pepy.tech/project/hugo) [![Downloads per week](https://img.shields.io/pypi/dw/hugo?color=teal)](https://pepy.tech/project/hugo) [![Downloads per day](https://img.shields.io/pypi/dd/hugo?color=teal)](https://pepy.tech/project/hugo) |
+| Meta        | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)                                                                                                                                              |
 
 </div>
 
@@ -122,8 +124,8 @@ A subset of the platforms supported by Hugo itself are supported by these wheels
 | ------------ | --------------- | -------------------------------------- |
 | macOS        | x86_64 (Intel)  | ✅ macOS 10.13 (High Sierra) and later |
 | macOS        | arm64 (Silicon) | ✅ macOS 11.0 (Big Sur) and later      |
-| Linux        | amd64           | ✅ glibc 2.24 and later                |
-| Linux        | arm64           | ✅ glibc 2.24 and later                |
+| Linux        | amd64           | ✅ glibc 2.17 and later                |
+| Linux        | arm64           | ✅ glibc 2.17 and later                |
 | Linux        | s390x           | ✅ glibc 2.17 and later                |
 | Linux        | ppc64le         | ✅ glibc 2.17 and later                |
 | Windows      | x86_64          | ✅                                     |

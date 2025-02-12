@@ -14,12 +14,9 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  CIBW_BUILD_VERBOSITY: 2
   CIBW_BUILD_FRONTEND: "build"
   CIBW_BUILD: "cp312-*"
   CIBW_SKIP: "pp* *musllinux*"
-  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
-  CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
 
 jobs:
   sdist:
@@ -34,7 +31,7 @@ jobs:
       - name: Build source distribution
         run: pipx run build --sdist --outdir dist/
 
-      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: source_distribution
           path: dist
@@ -45,15 +42,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.5"
           cache: false
 
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+      - uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -66,7 +63,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_windows_amd64
           path: ./wheelhouse/*.whl
@@ -77,16 +74,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.5"
           cache: false
           check-latest: true
+
+      - uses: mlugg/setup-zig@a67e68dc5c8281d9608136d3d7ca1b282213e4ac # v1.2.1
+        with:
+          version: 0.13.0
+          use-cache: false
 
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+        uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -102,7 +104,7 @@ jobs:
           CIBW_TEST_SKIP: "*-win_arm64"
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_windows_arm64
           path: ./wheelhouse/*.whl
@@ -110,18 +112,23 @@ jobs:
 
   windows_i686_wheels:
     name: i686-windows
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.5"
           cache: false
+
+      - uses: mlugg/setup-zig@a67e68dc5c8281d9608136d3d7ca1b282213e4ac # v1.2.1
+        with:
+          version: 0.13.0
+          use-cache: false
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
-        uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+        uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -139,7 +146,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_windows_i686
           path: ./wheelhouse/*.whl
@@ -150,14 +157,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+      - uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.2.linux-amd64.tar.gz"
+            tarball="go1.23.5.linux-amd64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -170,7 +177,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_amd64
           path: ./wheelhouse/*.whl
@@ -178,22 +185,17 @@ jobs:
 
   linux_arm64_wheels:
     name: arm64-manylinux
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
-    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
-        with:
-          platforms: all
-
-      - uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+      - uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.2.linux-arm64.tar.gz"
+            tarball="go1.23.5.linux-arm64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -206,7 +208,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_aarch64
           path: ./wheelhouse/*.whl
@@ -220,16 +222,20 @@ jobs:
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: all
+          # This should be temporary
+          # xref https://github.com/docker/setup-qemu-action/issues/188
+          # xref https://github.com/tonistiigi/binfmt/issues/215
+          image: tonistiigi/binfmt:qemu-v8.1.5
 
       - name: Build binary distribution (wheel) on Linux (s390x)
-        uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+        uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: s390x
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.2.linux-s390x.tar.gz"
+            tarball="go1.23.4.linux-s390x.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -242,7 +248,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_s390x
           path: ./wheelhouse/*.whl
@@ -256,16 +262,20 @@ jobs:
       - uses: docker/setup-qemu-action@49b3bc8e6bdd4a60e6116a5414239cba5943d3cf # v3.2.0
         with:
           platforms: all
+          # This should be temporary
+          # xref https://github.com/docker/setup-qemu-action/issues/188
+          # xref https://github.com/tonistiigi/binfmt/issues/215
+          image: tonistiigi/binfmt:qemu-v8.1.5
 
       - name: Build binary distribution (wheel) on Linux (ppc64le)
-        uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+        uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: ppc64le
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.23.2.linux-ppc64le.tar.gz"
+            tarball="go1.23.4.linux-ppc64le.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -278,7 +288,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_linux_ppc64le
           path: ./wheelhouse/*.whl
@@ -289,13 +299,13 @@ jobs:
     runs-on: macos-13
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.5"
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+      - uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -306,7 +316,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_macos_x86_64
           path: ./wheelhouse/*.whl
@@ -317,13 +327,13 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+      - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
         with:
-          go-version: "1.23.2"
+          go-version: "1.23.5"
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@7940a4c0e76eb2030e473a5f864f291f63ee879b # v2.21.3
+      - uses: pypa/cibuildwheel@ee63bf16da6cddfb925f542f2c7b59ad50e93969 # v2.22.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -334,7 +344,7 @@ jobs:
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: wheels_macos_arm64
           path: ./wheelhouse/*.whl
@@ -374,7 +384,7 @@ jobs:
           path: upload/
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc # v1.12.2
+      - uses: pypa/gh-action-pypi-publish@67339c736fd9354cd4f8cb0b744f2b82a74b5c70 # v1.12.3
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
           # Comment this line out to publish to PyPI
@@ -389,13 +399,15 @@ jobs:
             ./upload/*.tar.gz
 
       - name: Generate artifact attestation(s)
-        uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v1.4.4
+        uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
           subject-path: |
             upload/*.whl
             upload/*.tar.gz
 
       - name: Publish to GitHub Releases
+        # Wait for https://github.com/softprops/action-gh-release/issues/556 to be resolved
+        # before bumping to v2.2.0.
         uses: softprops/action-gh-release@01570a1f39cb168c169c802c3bceb9e93fb10974 # v2.1.0
         if: github.event_name == 'release' && github.event.action == 'published'
         with:
