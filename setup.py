@@ -388,7 +388,7 @@ class Cleaner(Command):
         """Clean ancillary files at runtime."""
 
         here = os.path.normpath(Path(__file__).parent.resolve())
-        files_to_clean = "./build ./*.pyc ./*.egg-info ./__pycache__".split(" ")
+        files_to_clean = ["./build", "./*.pyc", "./*.egg-info", "./__pycache__"]
 
         for path_spec in files_to_clean:
             # Make paths absolute and relative to this path
