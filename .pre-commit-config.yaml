@@ -42,3 +42,9 @@ repos:
       - id: prettier
         files: \.(html|md|toml|yml|yaml)
         args: [--prose-wrap=preserve]
+
+  - repo: https://github.com/woodruffw/zizmor-pre-commit
+    rev: "v1.5.2"
+    hooks:
+      - id: zizmor
+        args: ["--pedantic"]

@@ -16,12 +16,19 @@ env:
   CIBW_SKIP: "pp* *musllinux*"
   CIBW_BUILD_FRONTEND: "build"
 
+permissions: {}
+
 jobs:
   style:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: 3.12
@@ -33,6 +40,8 @@ jobs:
     needs: [style]
     name: ${{ matrix.runs-on }}-python-${{ matrix.python-version }}
     runs-on: ${{ matrix.runs-on }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -41,6 +50,9 @@ jobs:
           [ubuntu-latest, ubuntu-22.04-arm, macos-13, macos-14, windows-latest]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: ${{ matrix.python-version }}
@@ -79,6 +91,8 @@ jobs:
     needs: [style]
     name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
     runs-on: ${{ matrix.runs-on }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -96,6 +110,9 @@ jobs:
             runs-on: windows-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: ${{ matrix.python-version }}
@@ -187,6 +204,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
         with:
           python-version: 3.12
