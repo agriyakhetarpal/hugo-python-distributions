@@ -19,7 +19,7 @@ readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE", "LICENSE-hugo.txt"]
 requires-python = "~=3.9"
-dynamic = ["scripts", "version"]
+dynamic = ["version"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -49,6 +49,9 @@ Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releas
 
 [tool.setuptools.packages.find]
 include = ["hugo", "hugo.*"]
+
+[project.scripts]
+hugo = "hugo.cli:__call"
 
 [tool.ruff]
 src = ["hugo"]
