@@ -1,8 +1,9 @@
 [build-system]
 requires = [
   "setuptools>=77.0.3",
-  # s390x and ppc64le wheels are not yet available
-  "ziglang==0.13.0; platform_machine != 's390x' and platform_machine != 'ppc64le'",
+  # linux s390x and windows arm64 wheels are not yet available
+  "ziglang==0.14.0; platform_machine != 's390x'",
+  "ziglang==0.14.0; sys_platform != 'win32' or platform_machine != 'arm64'",
 ]
 build-backend = "setuptools.build_meta"
 
