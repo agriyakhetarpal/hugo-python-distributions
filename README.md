@@ -197,7 +197,7 @@ pip install .  # or pip install -e .
 
 ##### Linux
 
-First, install [Zig](https://ziglang.org/download/) on your Linux machine, and set the `USE_ZIG`, `GOOS`, and `GOARCH` environment variable prior to installing the package:
+Set the `USE_ZIG`, `GOOS`, and `GOARCH` environment variable prior to installing the package:
 
 Say, on an `amd64` Linux machine:
 
@@ -228,7 +228,7 @@ Linkage against MUSL is not tested in CI at this time, but it should work in the
 
 ##### Windows
 
-First, install [Zig](https://ziglang.org/download/) on your Windows machine, and set these environment variables prior to installing the package:
+Set these environment variables prior to installing the package:
 
 Say, on an `amd64` Windows machine:
 

@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from sys import platform as sysplatform
 
-HUGO_VERSION = "0.146.1"
+HUGO_VERSION = "0.146.2"
 FILE_EXT = ".exe" if sysplatform == "win32" else ""
 HUGO_PLATFORM = {"darwin": "darwin", "linux": "linux", "win32": "windows"}[sysplatform]
 

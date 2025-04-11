@@ -2,8 +2,9 @@
 requires = [
   "setuptools>=77.0.3",
   # linux s390x and windows arm64 wheels are not yet available
+  # skipping a marker for windows arm64 as nested markers are
+  # not supported in PEP 508 AFAIU
   "ziglang==0.14.0; platform_machine != 's390x'",
-  "ziglang==0.14.0; sys_platform != 'win32' or platform_machine != 'arm64'",
 ]
 build-backend = "setuptools.build_meta"
 
