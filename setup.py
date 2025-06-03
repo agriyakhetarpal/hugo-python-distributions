@@ -36,6 +36,7 @@ HUGO_PLATFORM = {
 HUGO_ARCH = {
     "x86_64": "amd64",
     "arm64": "arm64",
+    "ARM64": "arm64",
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
