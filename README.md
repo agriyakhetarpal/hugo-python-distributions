@@ -299,7 +299,32 @@ This repository aims to follow the Hugo project in striving to provide a welcomi
 
 For requesting help, reporting bugs, or requesting features that are specific to Hugo's functionalities, please refer to the [Hugo Discourse forum](https://discourse.gohugo.io/t/requesting-help/9132). For requesting help for `hugo-python-distributions`, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new) in this repository.
 
-### Footnotes
+## Inspirations for this project, and similar projects
+
+### Binaries
+
+- The official [Hugo](https://gohugo.io/) project, which is the source of the binaries provided by this project.
+
+### Naming
+
+- The [`cmake-python-distributions`](https://github.com/scikit-build/cmake-python-distributions) project by the [scikit-build](https://scikit-build.org/) team provides a similar infrastructure for building and distributing CMake as a Python package to be used as a PEP 517 build-time dependency for building packages with extension modules. I used their repository's name as an inspiration for the name of this repository.
+
+### Other distributors of Hugo
+
+- [`uhugo`](pypi.org/project/uhugo) is a Hugo binary helper that installs and updates Hugo binaries from Hugo official releases. It can be used to update the version of Hugo within Cloud providers. The difference between `uHugo` is that this project enables building Hugo from source and embeds the application binary into a wheel, while `uHugo` is a CLI to update an existing Hugo binary already present on `PATH`. It provides similar visions for installing Hugo via a command-line interface, even though the idea and the packaging code is fundamentally different.
+- [`hvm` (Hugo version manager)](https://github.com/jmooring/hvm) is a project by one of the core developers of Hugo that allows downloading multiple Hugo versions and setting different default versions by adding them to `PATH`, thereby allowing the usage of multiple versions at once, but without the extra Python scaffolding provided here (and without `pipx`'s run-without-install functionality of course).
+- [`hugo-installer`](https://github.com/dominique-mueller/hugo-installer) is a small Node.js script which you can use to fetch the correct Hugo binary for your system and install it with `npm`'s post-installation hook. It is similar to this project in that it provides a way to install Hugo binaries.
+- `conda-forge`'s [`hugo` feedstock](https://github.com/conda-forge/hugo-feedstock/) provides a way to install Hugo binaries via the `conda` package format and associated package managers.
+
+### Similar projects that distribute binaries embedded in Python packages
+
+- [`zig-pypi`](https://github.com/ziglang/zig-pypi) is a project that provides a way to distribute the Zig compiler as a Python package, which can be installed via `pip`. It provides a similar infrastructure for building and distributing binaries as this project does for Hugo, but it fetches the Zig compiler binaries from the official Zig releases and embeds them into a Python package in a reproducible manner.
+- [`nodejs-wheel`](https://pypi.org/project/nodejs-wheel/) is a project that provides a way to unofficially distribute Node.js binaries as Python packages, which can be installed via `pip`, in order to use Node.js and `npm` in an isolated Python environment.
+- The [`pip-binary-factory`](https://github.com/Bing-su/pip-binary-factory) repository provides binaries and their CLIs for various Go-based tools as Python packages.
+
+There are several other projects in this area, but are not listed here for brevity.
+
+## Footnotes
 
 - This project is currently not affiliated with the official Hugo project. Please refer to the [Hugo documentation](https://gohugo.io/documentation/) for more information on Hugo.
 - The author of this project: @agriyakhetarpal, would like to express a token of gratitude to the owner of the `Hugo` package on PyPI (@nariman) for their kind gesture of granting access to take over the package name with the underlying provisions of PEP 541. This way, it allows users to install the package using the same name as the official Hugo project, which undoubtedly provides for a better user experience and convenience to users of this package when compared to the previous package name, `python-hugo`.
