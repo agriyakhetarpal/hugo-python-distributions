@@ -78,10 +78,18 @@ py -m pip install hugo         # Windows
 ```
 
 > [!TIP]
-> It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system. i.e.,
+> It is a great idea to use [`pipx`](https://github.com/pypa/pipx) or [`uvx`](https://docs.astral.sh/uv/concepts/tools/) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system. i.e.,
 
 ```bash
-pipx install hugo      # install and run Hugo through pipx
+pipx install hugo      # install Hugo through pipx
+pipx run hugo         # run Hugo through pipx
+```
+
+or
+
+```
+uv tool install hugo  # install Hugo through uvx
+uvx hugo              # run Hugo through uvx
 ```
 
 or
@@ -90,7 +98,7 @@ or
 pipx run hugo==0.121.2 # run a specific version of Hugo through pipx, even if a different version is installed in whatever environment you are in
 ```
 
-Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
+Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) and [documentation on `uv`'s tools interface](https://docs.astral.sh/uv/concepts/tools/) for more information.
 
 Then, you can use the `hugo` commands as you would normally:
 
