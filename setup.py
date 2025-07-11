@@ -14,7 +14,7 @@ from setuptools.command.build_py import build_py
 # ------ Hugo build configuration and constants ------------------------------------
 
 # Also update hugo/cli.py
-HUGO_VERSION = "0.147.9"
+HUGO_VERSION = "0.148.1"
 
 # The Go toolchain will download the tarball into the hugo_cache/ directory.
 # We will point the build command to that location to build Hugo from source
