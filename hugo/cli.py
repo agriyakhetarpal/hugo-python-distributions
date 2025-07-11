@@ -63,9 +63,9 @@ def __call():
     if sysplatform == "win32":
         from subprocess import check_call
 
-        check_call([HUGO_EXECUTABLE] + sysargv[1:])
+        check_call([HUGO_EXECUTABLE, *sysargv[1:]])
     else:
-        os.execv(HUGO_EXECUTABLE, ["hugo"] + sysargv[1:])
+        os.execv(HUGO_EXECUTABLE, ["hugo", *sysargv[1:]])
 
 
 if __name__ == "__main__":
