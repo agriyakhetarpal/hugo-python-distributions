@@ -47,7 +47,13 @@ jobs:
       matrix:
         python-version: ["3.9", "3.12", "3.13"]
         runs-on:
-          [ubuntu-latest, ubuntu-22.04-arm, macos-13, macos-14, windows-latest]
+          [
+            ubuntu-latest,
+            ubuntu-22.04-arm,
+            macos-15-intel,
+            macos-latest,
+            windows-latest,
+          ]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
