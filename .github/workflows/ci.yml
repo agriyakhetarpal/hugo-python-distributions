@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.12", "3.13"]
+        python-version: ["3.10", "3.13", "3.14"]
         runs-on:
           [
             ubuntu-latest,
@@ -104,15 +104,15 @@ jobs:
       matrix:
         runs-on: [ubuntu-latest, windows-latest]
         architecture: [arm64, i686]
-        python-version: ["3.9", "3.12", "3.13"]
+        python-version: ["3.10", "3.13", "3.14"]
         # Exclude i686 on Linux for all Python versions
         # Test just one Python version on Windows for now
         exclude:
           - runs-on: ubuntu-latest
             architecture: i686
-          - python-version: "3.9"
+          - python-version: "3.10"
             runs-on: windows-latest
-          - python-version: "3.13"
+          - python-version: "3.14"
             runs-on: windows-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
