@@ -406,12 +406,9 @@ jobs:
     name: Publish to PyPI or TestPyPI
     environment: release
     permissions:
-      # Required by OIDC to publish to PyPI and by Sigstore to sign artifacts
-      id-token: write
-      # Required to upload artifacts to a GitHub release identifier
-      contents: write
-      # For GHA Attestations
-      attestations: write
+      id-token: write # Required by OIDC to publish to PyPI and by Sigstore to sign artifacts
+      contents: write # Required to upload signed artifacts to a GitHub release
+      attestations: write # Required to generate build provenance attestations
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
 
