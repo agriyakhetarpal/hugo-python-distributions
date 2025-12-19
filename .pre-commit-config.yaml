@@ -1,6 +1,7 @@
 ci:
   autoupdate_commit_msg: "📈 Update versions for pre-commit hooks"
   autofix_commit_msg: "🪩 Automated fixes from https://pre-commit.ci"
+  autoupdate_schedule: "weekly"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -17,7 +18,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.11.5"
+    rev: "v0.12.2"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -26,7 +27,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: "v3.19.1"
+    rev: "v3.20.0"
     hooks:
       - id: pyupgrade
 
@@ -37,14 +38,14 @@ repos:
         args: ["--skip=CODE_OF_CONDUCT.md"]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.5.3"
+    rev: "v3.6.2"
     hooks:
       - id: prettier
         files: \.(html|md|toml|yml|yaml)
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: "v1.5.2"
+    rev: "v1.18.0"
     hooks:
       - id: zizmor
         args: ["--pedantic"]

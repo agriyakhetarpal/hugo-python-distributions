@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from sys import platform as sysplatform
 
-HUGO_VERSION = "0.146.5"
+HUGO_VERSION = "0.153.0"
 FILE_EXT = ".exe" if sysplatform == "win32" else ""
 HUGO_PLATFORM = {"darwin": "darwin", "linux": "linux", "win32": "windows"}[sysplatform]
 
@@ -63,9 +63,9 @@ def __call():
     if sysplatform == "win32":
         from subprocess import check_call
 
-        check_call([HUGO_EXECUTABLE] + sysargv[1:])
+        check_call([HUGO_EXECUTABLE, *sysargv[1:]])
     else:
-        os.execv(HUGO_EXECUTABLE, ["hugo"] + sysargv[1:])
+        os.execv(HUGO_EXECUTABLE, ["hugo", *sysargv[1:]])
 
 
 if __name__ == "__main__":
