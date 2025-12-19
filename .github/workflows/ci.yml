@@ -53,6 +53,7 @@ jobs:
             macos-15-intel,
             macos-latest,
             windows-latest,
+            windows-11-arm,
           ]
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -83,11 +84,27 @@ jobs:
           key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
 
       - name: Install Python dependencies
-        run: python -m pip install build virtualenv nox
+        run: python -m pip install build virtualenv nox setuptools
+
+      - name: Checkout zig-pypi on Windows arm64
+        if: matrix.runs-on == 'windows-11-arm'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          repository: agriyakhetarpal/zig-pypi
+          path: zig-pypi
+          ref: add-windows-arm-wheels
+
+      - name: Install ziglang from zig-pypi on Windows arm64
+        if: matrix.runs-on == 'windows-11-arm'
+        working-directory: zig-pypi
+        run: |
+          pipx run make_wheels.py --platform aarch64-windows --version 0.14.0
+          pip install dist/ziglang-0.14.0-py3-none-win_arm64.whl
 
       - name: Build binary distribution (wheel)
         run: |
-          python -m build --wheel . --outdir wheelhouse/
+          python -m build --wheel . --outdir wheelhouse/ --no-isolation
 
       - name: Test entry points for package
         run: nox -s venv
