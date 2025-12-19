@@ -1,7 +1,7 @@
 ci:
   autoupdate_commit_msg: "📈 Update versions for pre-commit hooks"
   autofix_commit_msg: "🪩 Automated fixes from https://pre-commit.ci"
-  autoupdate_schedule: "quarterly"
+  autoupdate_schedule: "daily"
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -45,7 +45,7 @@ repos:
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: "v1.11.0"
+    rev: "v1.18.0"
     hooks:
       - id: zizmor
         args: ["--pedantic"]
