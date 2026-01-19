@@ -18,7 +18,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.11"
+    rev: "v0.14.13"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -38,14 +38,14 @@ repos:
         args: ["--skip=CODE_OF_CONDUCT.md"]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.7.4"
+    rev: "v3.8.0"
     hooks:
       - id: prettier
         files: \.(html|md|toml|yml|yaml)
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: "v1.20.0"
+    rev: "v1.22.0"
     hooks:
       - id: zizmor
         args: ["--pedantic"]
