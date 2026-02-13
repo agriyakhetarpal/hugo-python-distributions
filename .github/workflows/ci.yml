@@ -77,7 +77,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./hugo_cache/
           key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
@@ -133,7 +133,7 @@ jobs:
           check-latest: true
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./hugo_cache/
           key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
