@@ -5,7 +5,6 @@ This is an automated PR to update Hugo from v${CURRENT_VERSION} to v${LATEST_VER
 ### Changes
 
 - Hugo version updated from ${CURRENT_VERSION} to ${LATEST_VERSION}
-${GO_UPDATE_NOTE}
 
 ### Hugo release notes
 
