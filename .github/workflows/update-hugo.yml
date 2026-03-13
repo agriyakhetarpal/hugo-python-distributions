@@ -52,27 +52,6 @@ jobs:
             exit 0
           fi
 
-          # Resolve Go version from Hugo's go.mod, and find the latest patch release
-          GO_MOD_VERSION=$(gh api "repos/gohugoio/hugo/contents/go.mod?ref=v$LATEST_VERSION" --jq '.content' | base64 -d | grep '^go ' | awk '{print $2}')
-          echo "Hugo v$LATEST_VERSION uses Go $GO_MOD_VERSION"
-
-          GO_MAJOR_MINOR=$(echo "$GO_MOD_VERSION" | grep -oP '^\d+\.\d+')
-          GO_LATEST=$(curl -sL "https://go.dev/dl/?mode=json" | python3 -c "
-          import json, sys
-          releases = json.load(sys.stdin)
-          prefix = 'go${GO_MAJOR_MINOR}'
-          for r in releases:
-              if r['version'].startswith(prefix):
-                  print(r['version'].removeprefix('go'))
-                  break
-          else:
-              print('${GO_MOD_VERSION}')
-          ")
-          echo "Latest Go toolchain: $GO_LATEST"
-
-          CURRENT_GO=$(grep -oP 'go-version: "\K[0-9.]+' .github/workflows/ci.yml | head -1)
-          echo "Current Go version in workflows: $CURRENT_GO"
-
           CURRENT_MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
           LATEST_MINOR=$(echo "$LATEST_VERSION" | cut -d. -f2)
 
@@ -85,20 +64,12 @@ jobs:
           sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" setup.py
           sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" hugo/cli.py
 
-          GO_UPDATE_NOTE=""
-          if [ "$CURRENT_GO" != "$GO_LATEST" ]; then
-            sed -i "s/go-version: \"$CURRENT_GO\"/go-version: \"$GO_LATEST\"/g" .github/workflows/ci.yml
-            sed -i "s/go-version: \"$CURRENT_GO\"/go-version: \"$GO_LATEST\"/g" .github/workflows/cd.yml
-            sed -i "s/go${CURRENT_GO}\./go${GO_LATEST}./g" .github/workflows/cd.yml
-            GO_UPDATE_NOTE=$'\n'"- Go toolchain updated from $CURRENT_GO to $GO_LATEST"
-          fi
-
           echo "updated=true" >> "$GITHUB_OUTPUT"
           echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
           echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
           echo "release_type=$RELEASE_TYPE" >> "$GITHUB_OUTPUT"
 
-          export CURRENT_VERSION LATEST_VERSION RELEASE_TYPE GO_UPDATE_NOTE
+          export CURRENT_VERSION LATEST_VERSION RELEASE_TYPE
           envsubst < .github/update-hugo.md > /tmp/pr-body.md
 
       - name: Create pull request
