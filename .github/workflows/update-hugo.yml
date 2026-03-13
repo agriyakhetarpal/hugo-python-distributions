@@ -12,6 +12,7 @@ jobs:
   check-and-update:
     name: Check for new Hugo release
     runs-on: ubuntu-latest
+    environment: update-hugo
     permissions:
       contents: write # to update files and push branches
       pull-requests: write # to create PR
