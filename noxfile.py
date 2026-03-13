@@ -10,7 +10,7 @@ import nox
 DIR = Path(__file__).parent.resolve()
 REPO = "agriyakhetarpal/hugo-python-distributions"
 
-nox.options.sessions = ["lint", "tests"]
+nox.options.sessions = ["lint"]
 
 
 @nox.session
