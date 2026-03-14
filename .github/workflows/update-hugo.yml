@@ -2,8 +2,8 @@ name: Update Hugo version
 
 on:
   schedule:
-    # Check for new Hugo releases every six hours
-    - cron: "0 */6 * * *"
+    # Check for new Hugo releases every hour
+    - cron: "0 */1 * * *"
   workflow_dispatch:
 
 permissions: {}
