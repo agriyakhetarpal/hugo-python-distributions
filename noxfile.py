@@ -120,31 +120,41 @@ def release(session: nox.Session) -> None:
     template_path = DIR / "release_notes" / template_name
     template = string.Template(template_path.read_text())
 
-    # Get the date of the previous tag to filter PRs merged after it
-    prev_date = subprocess.run(
-        ["git", "log", "-1", "--format=%aI", previous_tag],
+    # Extract PR numbers from merge commits between the two tags
+    log_output = subprocess.run(
+        ["git", "log", f"{previous_tag}..{tag_name}", "--oneline"],
         capture_output=True,
         text=True,
         check=True,
     ).stdout.strip()
 
-    pr_log = subprocess.run(
-        [
-            "gh",
-            "pr",
-            "list",
-            "--state=merged",
-            "--search",
-            f"merged:>{prev_date}",
-            "--json",
-            "number,title,author",
-            "--jq",
-            '.[] | select(.author.login != "dependabot[bot]" and .author.login != "pre-commit-ci[bot]") | "- \\(.title) by @\\(.author.login) in #\\(.number)"',
-        ],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
+    pr_numbers = re.findall(r"#(\d+)", log_output)
+
+    pr_lines = []
+    for num in pr_numbers:
+        result = subprocess.run(
+            [
+                "gh",
+                "pr",
+                "view",
+                num,
+                "--json",
+                "title,author",
+                "--jq",
+                '"- \\(.title) by @\\(.author.login) in #' + num + '"',
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            continue
+        line = result.stdout.strip()
+        if "dependabot[bot]" in line or "pre-commit-ci[bot]" in line:
+            continue
+        pr_lines.append(line)
+
+    pr_log = "\n".join(pr_lines)
 
     if pr_log:
         changes_section = f"\n## Changes that made it to this release\n\n{pr_log}\n"
