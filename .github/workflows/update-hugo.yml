@@ -11,8 +11,7 @@ permissions: {}
 jobs:
   check-and-update:
     name: Check for new Hugo release
-    runs-on: ubuntu-latest
-    environment: update-hugo
+    runs-on: ubuntu-slim
     permissions:
       contents: write # to update files and push branches
       pull-requests: write # to create PR
@@ -75,8 +74,11 @@ jobs:
         if: steps.check-hugo-release.outputs.updated == 'true'
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
-          token: ${{ secrets.UPDATE_HUGO_TOKEN }}
           branch: update-hugo-v${{ steps.check-hugo-release.outputs.latest_version }}
           commit-message: "Update Hugo to v${{ steps.check-hugo-release.outputs.latest_version }}"
           title: "Update Hugo to v${{ steps.check-hugo-release.outputs.latest_version }}"
           body-path: /tmp/pr-body.md
+          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          reviewers: |
+            agriyakhetarpal
