@@ -2,6 +2,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -276,8 +277,15 @@ class HugoBuilder(build_ext):
             gitdir = content.strip().split("gitdir: ", 1)[1]
             gitdir_abs = (hugo_git.parent / gitdir).resolve()
             hugo_git.unlink()
-            # Copy the real git directory into hugo/.git/
+            # Copy the real git directory into hugo/.git/.  Git pack files
+            # are read-only on Windows, so we must make them writable after
+            # copying, otherwise both the Go build and later cleanup fail
+            # with [WinError 5] Access is denied.
             shutil.copytree(str(gitdir_abs), str(hugo_git))
+            if sys.platform == "win32":
+                for p in hugo_git.rglob("*"):
+                    if p.is_file():
+                        p.chmod(p.stat().st_mode | stat.S_IWRITE)
             # Fix up the worktree path in the config — it was relative to
             # .git/modules/hugo/ and now needs to point to the parent of
             # hugo/.git/ (i.e. hugo/ itself).
