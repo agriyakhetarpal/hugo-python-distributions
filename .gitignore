@@ -174,7 +174,7 @@ go.work
 .DS_Store
 
 # Binaries
-hugo/binaries/*
+src/hugo/binaries/*
 
 # ruff cache
 .ruff_cache/
