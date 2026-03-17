@@ -16,9 +16,11 @@ from setuptools.command.build_py import build_py
 # Also update src/hugo/cli.py
 HUGO_VERSION = "0.155.2"
 
-# The Go toolchain will download the tarball into the hugo_cache/ directory.
+# The Go toolchain will use the hugo_cache/ directory for GOPATH and GOCACHE.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
+# Path to the Hugo source submodule
+HUGO_SRC_DIR = "hugo"
 FILE_EXT = (
     ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
 )
@@ -53,6 +55,22 @@ HUGO_BINARY_NAME = (
     f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', HUGO_PLATFORM)}-{os.environ.get('GOARCH', HUGO_ARCH)}"
     + FILE_EXT
 )
+
+# Write a Hugo commit date stamp file, such that it is available for both wheel builds
+# (via _get_hugo_commit_date) and sdist builds (included via MANIFEST.in). This runs
+# at setup.py parse time, before setuptools collects files for the sdist.
+_hugo_stamp = Path(HUGO_SRC_DIR).resolve() / ".hugo_commit_date"
+try:
+    _commit_date = subprocess.check_output(
+        ["git", "log", "-1", "--format=%cI"],
+        cwd=Path(HUGO_SRC_DIR).resolve(),
+        text=True,
+        stderr=subprocess.DEVNULL,
+    ).strip()
+    if _commit_date:
+        _hugo_stamp.write_text(_commit_date)
+except (subprocess.CalledProcessError, OSError):
+    pass
 
 # ----------------------------------------------------------------------------------
 
@@ -160,23 +178,30 @@ class HugoBuilder(build_ext):
         # 2. GCC/Clang
         # 3. Git
         #
-        # Once built this the files are cached into GOPATH for future use
+        # Once built the files are cached into GOPATH for future use
 
         # Delete hugo_cache/bin/ + files inside, if left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
-        # shutil.rmtree(
-        #     Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}", ignore_errors=True
-        # )
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
         # build environment is set up correctly.
         self._check_build_dependencies()
 
-        # These ldflags are passed to the Go linker to set variables at runtime
+        # These ldflags are passed to the Go linker to set variables at runtime.
+        # We set buildDate explicitly so that `hugo version` and `hugo env` show
+        # the correct commit date even when built from an sdist (where .git is
+        # absent and Go cannot embed VCS info automatically). Hugo's buildDate
+        # variable is the fallback used when vcs.time is unavailable.
+        commit_date = self._get_hugo_commit_date()
+
         ldflags = [
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
+        if commit_date:
+            ldflags.append(
+                f"-X github.com/gohugoio/hugo/common/hugo.buildDate={commit_date}"
+            )
 
         # Build a static binary on Windows to avoid missing DLLs from MinGW,
         # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
@@ -189,6 +214,38 @@ class HugoBuilder(build_ext):
 
         self._build_hugo(ldflags)
         self._rename_and_move_binary()
+
+    @staticmethod
+    def _get_hugo_commit_date():
+        """Get the commit date from the Hugo submodule's git history.
+
+        Falls back to a stamp file (hugo/.hugo_commit_date) for sdist builds
+        where .git is absent. Writes the stamp file when git is available so
+        that it is included in the sdist.
+        """
+        hugo_src_dir = Path(HUGO_SRC_DIR).resolve()
+        stamp_file = hugo_src_dir / ".hugo_commit_date"
+
+        # Try git first (works in git checkout and submodule)
+        try:
+            commit_date = subprocess.check_output(
+                ["git", "log", "-1", "--format=%cI"],
+                cwd=hugo_src_dir,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+            if commit_date:
+                # Write stamp file so sdist builds can use it
+                stamp_file.write_text(commit_date)
+                return commit_date
+        except (subprocess.CalledProcessError, OSError):
+            pass
+
+        # Fall back to stamp file (sdist builds)
+        if stamp_file.exists():
+            return stamp_file.read_text().strip()
+
+        return ""
 
     def _setup_zig_compiler(self):
         goos = os.environ.get("GOOS", self.hugo_platform)
@@ -280,13 +337,14 @@ class HugoBuilder(build_ext):
                 "go",
                 "install",
                 "-trimpath",
+                "-buildvcs=false",
                 "-v",
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",
                 "extended,withdeploy",
             ],
-            cwd=(Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}").resolve(),
+            cwd=Path(HUGO_SRC_DIR).resolve(),
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
