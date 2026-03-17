@@ -187,7 +187,6 @@ class HugoBuilder(build_ext):
         if BUILDING_FOR_WINDOWS:
             ldflags.append("-extldflags '-static'")
 
-        self._clone_hugo_source()
         self._build_hugo(ldflags)
         self._rename_and_move_binary()
 
@@ -274,24 +273,6 @@ class HugoBuilder(build_ext):
         except OSError as err:
             error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
             raise OSError(error_message) from err
-
-    def _clone_hugo_source(self):
-        if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
-            subprocess.check_call(
-                [
-                    "git",
-                    "clone",
-                    "https://github.com/gohugoio/hugo.git",
-                    "--depth=1",
-                    "--single-branch",
-                    "--branch",
-                    f"v{HUGO_VERSION}",
-                    Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
-                    # disable warning about detached HEAD
-                    "-c",
-                    "advice.detachedHead=false",
-                ]
-            )
 
     def _build_hugo(self, ldflags):
         subprocess.check_call(
