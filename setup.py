@@ -189,10 +189,10 @@ class HugoBuilder(build_ext):
         self._check_build_dependencies()
 
         # These ldflags are passed to the Go linker to set variables at runtime.
-        # We set buildDate explicitly so that `hugo version` and `hugo env` show
-        # the correct commit date even when built from an sdist (where .git is
-        # absent and Go cannot embed VCS info automatically). Hugo's buildDate
-        # variable is the fallback used when vcs.time is unavailable.
+        # The buildDate ldflag is a fallback for sdist builds where .git is absent
+        # and Go cannot embed VCS info. In normal builds (git checkout / submodule),
+        # _prepare_submodule_vcs ensures Go's VCS stamping reads the correct
+        # commit hash and date from the Hugo submodule directly.
         commit_date = self._get_hugo_commit_date()
 
         ldflags = [
@@ -212,7 +212,15 @@ class HugoBuilder(build_ext):
         if BUILDING_FOR_WINDOWS:
             ldflags.append("-extldflags '-static'")
 
-        self._build_hugo(ldflags)
+        # Temporarily convert the submodule's .git file into a symlink to the
+        # real git directory so that Go's VCS stamping embeds the correct
+        # commit hash and date from the Hugo submodule (not the parent repo).
+        self._prepare_submodule_vcs()
+        try:
+            self._build_hugo(ldflags)
+        finally:
+            self._restore_submodule_vcs()
+
         self._rename_and_move_binary()
 
     @staticmethod
@@ -246,6 +254,29 @@ class HugoBuilder(build_ext):
             return stamp_file.read_text().strip()
 
         return ""
+
+    def _prepare_submodule_vcs(self):
+        """Convert the submodule .git file to a symlink so Go embeds VCS info
+        from the Hugo submodule rather than the parent repository."""
+        hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
+        self._saved_git_file = None
+
+        if hugo_git.is_file():
+            content = hugo_git.read_text()
+            self._saved_git_file = content
+            # e.g. "gitdir: ../.git/modules/hugo\n"
+            gitdir = content.strip().split("gitdir: ", 1)[1]
+            gitdir_abs = (hugo_git.parent / gitdir).resolve()
+            hugo_git.unlink()
+            hugo_git.symlink_to(gitdir_abs)
+
+    def _restore_submodule_vcs(self):
+        """Restore the original submodule .git file after building."""
+        hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
+        if self._saved_git_file is not None:
+            if hugo_git.is_symlink() or hugo_git.exists():
+                hugo_git.unlink()
+            hugo_git.write_text(self._saved_git_file)
 
     def _setup_zig_compiler(self):
         goos = os.environ.get("GOOS", self.hugo_platform)
@@ -337,7 +368,6 @@ class HugoBuilder(build_ext):
                 "go",
                 "install",
                 "-trimpath",
-                "-buildvcs=false",
                 "-v",
                 "-ldflags",
                 " ".join(ldflags),
