@@ -2,6 +2,7 @@ import os
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -13,12 +14,14 @@ from setuptools.command.build_py import build_py
 
 # ------ Hugo build configuration and constants ------------------------------------
 
-# Also update hugo/cli.py
+# Also update src/hugo/cli.py
 HUGO_VERSION = "0.155.2"
 
-# The Go toolchain will download the tarball into the hugo_cache/ directory.
+# The Go toolchain will use the hugo_cache/ directory for GOPATH and GOCACHE.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
+# Path to the Hugo source submodule
+HUGO_SRC_DIR = "hugo"
 FILE_EXT = (
     ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
 )
@@ -39,9 +42,13 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
+    "i686": "386",
+    "i386": "386",
     "s390x": "s390x",
     "ppc64le": "ppc64le",
     "armv7l": "arm",
+    "armv6l": "arm",
+    "riscv64": "riscv64",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
@@ -50,13 +57,29 @@ HUGO_BINARY_NAME = (
     + FILE_EXT
 )
 
+# Write a Hugo commit date stamp file, such that it is available for both wheel builds
+# (via _get_hugo_commit_date) and sdist builds (included via MANIFEST.in). This runs
+# at setup.py parse time, before setuptools collects files for the sdist.
+_hugo_stamp = Path(HUGO_SRC_DIR).resolve() / ".hugo_commit_date"
+try:
+    _commit_date = subprocess.check_output(
+        ["git", "log", "-1", "--format=%cI"],
+        cwd=Path(HUGO_SRC_DIR).resolve(),
+        text=True,
+        stderr=subprocess.DEVNULL,
+    ).strip()
+    if _commit_date:
+        _hugo_stamp.write_text(_commit_date)
+except (subprocess.CalledProcessError, OSError):
+    pass
+
 # ----------------------------------------------------------------------------------
 
 
 class HugoWriter(build_py):
     """
     A custom pre-installation command that writes the version of Hugo being built
-    directly to hugo/cli.py so that the version is available at runtime.
+    directly to src/hugo/cli.py so that the version is available at runtime.
     """
 
     def initialize_options(self) -> None:
@@ -66,7 +89,7 @@ class HugoWriter(build_py):
         return super().finalize_options()
 
     def run(self) -> None:
-        cli_file_path = Path(__file__).parent / "hugo" / "cli.py"
+        cli_file_path = Path(__file__).parent / "src" / "hugo" / "cli.py"
         content = cli_file_path.read_text()
         version = re.sub(
             r'HUGO_VERSION = "[0-9.]+"', f'HUGO_VERSION = "{HUGO_VERSION}"', content
@@ -120,13 +143,13 @@ class HugoBuilder(build_ext):
             Path(HUGO_CACHE_DIR).mkdir(parents=True)
 
         # The binary is put into GOBIN, which is set to the package directory
-        # (hugo/binaries/) for use in editable mode. The binary is copied
+        # (src/hugo/binaries/) for use in editable mode. The binary is copied
         # into the wheel afterwards
         # Error: GOBIN cannot be set if GOPATH is set when compiling for different
         # architectures, so we use the default GOPATH/bin as the place to copy
         # binaries from
         # os.environ["GOBIN"] = os.path.join(
-        #     os.path.dirname(os.path.abspath(__file__)), "hugo", "binaries"
+        #     os.path.dirname(os.path.abspath(__file__)), "src", "hugo", "binaries"
         # )
         os.environ["CGO_ENABLED"] = "1"
         os.environ["GO111MODULE"] = "on"
@@ -142,7 +165,8 @@ class HugoBuilder(build_ext):
         # i.e., allow override if GOARCH is set!
 
         if os.environ.get("GOARCH") == "arm" and os.environ.get("GOOS") == "linux":
-            os.environ["GOARM"] = os.environ.get("GOARM", "7")
+            default_goarm = "6" if platform.machine() == "armv6l" else "7"
+            os.environ["GOARM"] = os.environ.get("GOARM", default_goarm)
 
         # New: Setup Zig compiler if USE_ZIG is set
         if os.environ.get("USE_ZIG"):
@@ -155,23 +179,30 @@ class HugoBuilder(build_ext):
         # 2. GCC/Clang
         # 3. Git
         #
-        # Once built this the files are cached into GOPATH for future use
+        # Once built the files are cached into GOPATH for future use
 
         # Delete hugo_cache/bin/ + files inside, if left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
-        # shutil.rmtree(
-        #     Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}", ignore_errors=True
-        # )
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
         # build environment is set up correctly.
         self._check_build_dependencies()
 
-        # These ldflags are passed to the Go linker to set variables at runtime
+        # These ldflags are passed to the Go linker to set variables at runtime.
+        # The buildDate ldflag is a fallback for sdist builds where .git is absent
+        # and Go cannot embed VCS info. In normal builds (git checkout / submodule),
+        # _prepare_submodule_vcs ensures Go's VCS stamping reads the correct
+        # commit hash and date from the Hugo submodule directly.
+        commit_date = self._get_hugo_commit_date()
+
         ldflags = [
             f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
         ]
+        if commit_date:
+            ldflags.append(
+                f"-X github.com/gohugoio/hugo/common/hugo.buildDate={commit_date}"
+            )
 
         # Build a static binary on Windows to avoid missing DLLs from MinGW,
         # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
@@ -182,9 +213,97 @@ class HugoBuilder(build_ext):
         if BUILDING_FOR_WINDOWS:
             ldflags.append("-extldflags '-static'")
 
-        self._clone_hugo_source()
-        self._build_hugo(ldflags)
+        # Temporarily convert the submodule's .git file into a symlink to the
+        # real git directory so that Go's VCS stamping embeds the correct
+        # commit hash and date from the Hugo submodule (not the parent repo).
+        self._prepare_submodule_vcs()
+        try:
+            self._build_hugo(ldflags)
+        finally:
+            self._restore_submodule_vcs()
+
         self._rename_and_move_binary()
+
+    @staticmethod
+    def _get_hugo_commit_date():
+        """Get the commit date from the Hugo submodule's git history.
+
+        Falls back to a stamp file (hugo/.hugo_commit_date) for sdist builds
+        where .git is absent. Writes the stamp file when git is available so
+        that it is included in the sdist.
+        """
+        hugo_src_dir = Path(HUGO_SRC_DIR).resolve()
+        stamp_file = hugo_src_dir / ".hugo_commit_date"
+
+        # Try git first (works in git checkout and submodule)
+        try:
+            commit_date = subprocess.check_output(
+                ["git", "log", "-1", "--format=%cI"],
+                cwd=hugo_src_dir,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+            if commit_date:
+                # Write stamp file so sdist builds can use it
+                stamp_file.write_text(commit_date)
+                return commit_date
+        except (subprocess.CalledProcessError, OSError):
+            pass
+
+        # Fall back to stamp file (sdist builds)
+        if stamp_file.exists():
+            return stamp_file.read_text().strip()
+
+        return ""
+
+    def _prepare_submodule_vcs(self):
+        """Replace the submodule .git file with a real .git directory so Go's
+        VCS stamping embeds the correct commit hash and date.
+
+        Submodules store a .git *file* (e.g. ``gitdir: ../.git/modules/hugo``)
+        instead of a .git directory.  Go's VCS detection follows this into the
+        parent repo, producing wrong metadata.  We copy the actual git directory
+        into ``hugo/.git/`` and rewrite the ``worktree`` config entry so that
+        ``git status`` works correctly during the build.  Works on all platforms
+        (no symlinks required).
+        """
+        hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
+        self._saved_git_file = None
+
+        if hugo_git.is_file():
+            content = hugo_git.read_text()
+            self._saved_git_file = content
+            # e.g. "gitdir: ../.git/modules/hugo\n"
+            gitdir = content.strip().split("gitdir: ", 1)[1]
+            gitdir_abs = (hugo_git.parent / gitdir).resolve()
+            hugo_git.unlink()
+            # Copy the real git directory into hugo/.git/.  Git pack files
+            # are read-only on Windows, so we must make them writable after
+            # copying, otherwise both the Go build and later cleanup fail
+            # with [WinError 5] Access is denied.
+            shutil.copytree(str(gitdir_abs), str(hugo_git))
+            if sys.platform == "win32":
+                for p in hugo_git.rglob("*"):
+                    if p.is_file():
+                        p.chmod(p.stat().st_mode | stat.S_IWRITE)
+            # Fix up the worktree path in the config — it was relative to
+            # .git/modules/hugo/ and now needs to point to the parent of
+            # hugo/.git/ (i.e. hugo/ itself).
+            config_file = hugo_git / "config"
+            if config_file.exists():
+                cfg = config_file.read_text()
+                cfg = re.sub(r"worktree\s*=\s*[^\n]+", "worktree = ..", cfg)
+                config_file.write_text(cfg)
+
+    def _restore_submodule_vcs(self):
+        """Restore the original submodule .git file after building."""
+        hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
+        if self._saved_git_file is not None:
+            if hugo_git.is_dir() and not hugo_git.is_symlink():
+                shutil.rmtree(hugo_git)
+            elif hugo_git.exists() or hugo_git.is_symlink():
+                hugo_git.unlink()
+            hugo_git.write_text(self._saved_git_file)
 
     def _setup_zig_compiler(self):
         goos = os.environ.get("GOOS", self.hugo_platform)
@@ -195,8 +314,11 @@ class HugoBuilder(build_ext):
             ("darwin", "arm64"): "aarch64-macos-none",
             ("linux", "amd64"): "x86_64-linux-gnu",
             ("linux", "arm64"): "aarch64-linux-gnu",
+            ("linux", "arm"): "arm-linux-gnueabihf",
+            ("linux", "386"): "x86-linux-gnu",
             ("linux", "ppc64le"): "powerpc64le-linux-gnu",
             ("linux", "s390x"): "s390x-linux-gnu",
+            ("linux", "riscv64"): "riscv64-linux-gnu",
             ("windows", "386"): "x86-windows-gnu",
             ("windows", "amd64"): "x86_64-windows-gnu",
             ("windows", "arm64"): "aarch64-windows-gnu",
@@ -267,24 +389,6 @@ class HugoBuilder(build_ext):
             error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
             raise OSError(error_message) from err
 
-    def _clone_hugo_source(self):
-        if not (Path(HUGO_CACHE_DIR).resolve() / f"hugo-{HUGO_VERSION}").exists():
-            subprocess.check_call(
-                [
-                    "git",
-                    "clone",
-                    "https://github.com/gohugoio/hugo.git",
-                    "--depth=1",
-                    "--single-branch",
-                    "--branch",
-                    f"v{HUGO_VERSION}",
-                    Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}",
-                    # disable warning about detached HEAD
-                    "-c",
-                    "advice.detachedHead=false",
-                ]
-            )
-
     def _build_hugo(self, ldflags):
         subprocess.check_call(
             [
@@ -297,7 +401,7 @@ class HugoBuilder(build_ext):
                 "-tags",
                 "extended,withdeploy",
             ],
-            cwd=(Path(HUGO_CACHE_DIR) / f"hugo-{HUGO_VERSION}").resolve(),
+            cwd=Path(HUGO_SRC_DIR).resolve(),
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
@@ -361,9 +465,9 @@ class HugoBuilder(build_ext):
         # Copy the new_name file into a folder binaries/ inside hugo/
         # so that it is included in the wheel.
         # basically we are copying hugo-HUGO_VERSION-PLATFORM-ARCH into
-        # hugo/binaries/ and creating the folder if it does not exist.
+        # src/hugo/binaries/ and creating the folder if it does not exist.
 
-        binaries_dir = Path(__file__).parent / "hugo" / "binaries"
+        binaries_dir = Path(__file__).parent / "src" / "hugo" / "binaries"
         if not binaries_dir.exists():
             binaries_dir.mkdir()
 
@@ -456,6 +560,14 @@ class HugoWheel(bdist_wheel):
                 platform_tag = "linux_x86_64"
             elif os.environ.get("GOARCH") == "ppc64le":
                 platform_tag = "linux_ppc64le"
+            elif os.environ.get("GOARCH") == "s390x":
+                platform_tag = "linux_s390x"
+            elif os.environ.get("GOARCH") == "arm":
+                platform_tag = "linux_armv7l"
+            elif os.environ.get("GOARCH") == "386":
+                platform_tag = "linux_i686"
+            elif os.environ.get("GOARCH") == "riscv64":
+                platform_tag = "linux_riscv64"
 
         # Handle cross-compilation on/to Windows via the Zig compiler
         # ===========================================================
@@ -494,6 +606,7 @@ class HugoWheel(bdist_wheel):
         # into the wheel.
         hugo_binary = (
             Path(__file__).parent
+            / "src"
             / "hugo"
             / "binaries"
             / f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', HUGO_PLATFORM)}-{os.environ.get('GOARCH', HUGO_ARCH)}{FILE_EXT}"
@@ -513,7 +626,7 @@ setup(
         Extension(
             name="hugo.build",
             sources=[
-                f"hugo/binaries/{HUGO_BINARY_NAME}",
+                f"src/hugo/binaries/{HUGO_BINARY_NAME}",
             ],
         )
     ],
@@ -528,6 +641,6 @@ setup(
             f"binaries/{HUGO_BINARY_NAME}",
         ],
     },
-    # has to be kept in sync with the version in hugo/cli.py
+    # has to be kept in sync with the version in src/hugo/cli.py
     version=HUGO_VERSION,
 )

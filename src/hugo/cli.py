@@ -25,8 +25,13 @@ def get_hugo_arch():
         "AMD64": "amd64",
         "aarch64": "arm64",
         "x86": "386",
+        "i686": "386",
+        "i386": "386",
         "s390x": "s390x",
         "ppc64le": "ppc64le",
+        "armv7l": "arm",
+        "armv6l": "arm",
+        "riscv64": "riscv64",
     }[machine()]
 
     # platform.machine returns AMD64 on Windows because the architecture is

@@ -174,10 +174,13 @@ go.work
 .DS_Store
 
 # Binaries
-hugo/binaries/*
+src/hugo/binaries/*
 
 # ruff cache
 .ruff_cache/
 
 # Hugo builder cache
 hugo_cache/
+
+# Generated stamp file for sdist builds
+hugo/.hugo_commit_date
