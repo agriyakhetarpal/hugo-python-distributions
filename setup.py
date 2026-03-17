@@ -39,9 +39,13 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
+    "i686": "386",
+    "i386": "386",
     "s390x": "s390x",
     "ppc64le": "ppc64le",
     "armv7l": "arm",
+    "armv6l": "arm",
+    "riscv64": "riscv64",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
@@ -142,7 +146,8 @@ class HugoBuilder(build_ext):
         # i.e., allow override if GOARCH is set!
 
         if os.environ.get("GOARCH") == "arm" and os.environ.get("GOOS") == "linux":
-            os.environ["GOARM"] = os.environ.get("GOARM", "7")
+            default_goarm = "6" if platform.machine() == "armv6l" else "7"
+            os.environ["GOARM"] = os.environ.get("GOARM", default_goarm)
 
         # New: Setup Zig compiler if USE_ZIG is set
         if os.environ.get("USE_ZIG"):
@@ -195,8 +200,11 @@ class HugoBuilder(build_ext):
             ("darwin", "arm64"): "aarch64-macos-none",
             ("linux", "amd64"): "x86_64-linux-gnu",
             ("linux", "arm64"): "aarch64-linux-gnu",
+            ("linux", "arm"): "arm-linux-gnueabihf",
+            ("linux", "386"): "x86-linux-gnu",
             ("linux", "ppc64le"): "powerpc64le-linux-gnu",
             ("linux", "s390x"): "s390x-linux-gnu",
+            ("linux", "riscv64"): "riscv64-linux-gnu",
             ("windows", "386"): "x86-windows-gnu",
             ("windows", "amd64"): "x86_64-windows-gnu",
             ("windows", "arm64"): "aarch64-windows-gnu",
@@ -456,6 +464,14 @@ class HugoWheel(bdist_wheel):
                 platform_tag = "linux_x86_64"
             elif os.environ.get("GOARCH") == "ppc64le":
                 platform_tag = "linux_ppc64le"
+            elif os.environ.get("GOARCH") == "s390x":
+                platform_tag = "linux_s390x"
+            elif os.environ.get("GOARCH") == "arm":
+                platform_tag = "linux_armv7l"
+            elif os.environ.get("GOARCH") == "386":
+                platform_tag = "linux_i686"
+            elif os.environ.get("GOARCH") == "riscv64":
+                platform_tag = "linux_riscv64"
 
         # Handle cross-compilation on/to Windows via the Zig compiler
         # ===========================================================
