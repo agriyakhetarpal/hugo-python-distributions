@@ -221,6 +221,18 @@ jobs:
           pipx run build --sdist --wheel . --outdir dist/
           pipx run twine check dist/* --strict
 
+      - name: Check sdist size, fail if it exceeds 10 MiB
+        run: |
+          MAX_SIZE_MB=10
+          SDIST=$(ls dist/*.tar.gz)
+          SIZE=$(stat --format=%s "$SDIST")
+          SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $SIZE / 1048576}")
+          echo "sdist size: ${SIZE_MB} MB"
+          if [ "$SIZE" -gt $((MAX_SIZE_MB * 1048576)) ]; then
+            echo "::error::sdist is ${SIZE_MB} MB, exceeding the ${MAX_SIZE_MB} MB limit"
+            exit 1
+          fi
+
       - name: Build, inspect, and display contents of distributions
         shell: bash
         run: |
