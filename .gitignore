@@ -181,3 +181,6 @@ src/hugo/binaries/*
 
 # Hugo builder cache
 hugo_cache/
+
+# Generated stamp file for sdist builds
+hugo/.hugo_commit_date
