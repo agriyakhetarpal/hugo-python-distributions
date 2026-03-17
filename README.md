@@ -163,10 +163,10 @@ Windows users can use the [Chocolatey package manager](https://chocolatey.org/) 
 choco install mingw
 ```
 
-Then, clone the repository and run the build script:
+Then, clone the repository (with submodules) and run the build script:
 
 ```bash
-git clone https://github.com/agriyakhetarpal/hugo-python-distributions@main
+git clone --recurse-submodules https://github.com/agriyakhetarpal/hugo-python-distributions@main
 python -m venv venv
 source venv/bin/activate      # on Unix-based systems
 venv\Scripts\activate.bat     # on Windows
