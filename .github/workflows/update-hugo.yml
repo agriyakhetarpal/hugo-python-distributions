@@ -61,7 +61,13 @@ jobs:
           fi
 
           sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" setup.py
-          sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" hugo/cli.py
+          sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" src/hugo/cli.py
+
+          # Update the Hugo submodule to the new version tag
+          cd hugo
+          git fetch origin tag "v$LATEST_VERSION" --no-tags
+          git checkout "v$LATEST_VERSION"
+          cd ..
 
           echo "updated=true" >> "$GITHUB_OUTPUT"
           echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
