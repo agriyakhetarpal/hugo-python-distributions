@@ -256,8 +256,16 @@ class HugoBuilder(build_ext):
         return ""
 
     def _prepare_submodule_vcs(self):
-        """Convert the submodule .git file to a symlink so Go embeds VCS info
-        from the Hugo submodule rather than the parent repository."""
+        """Replace the submodule .git file with a real .git directory so Go's
+        VCS stamping embeds the correct commit hash and date.
+
+        Submodules store a .git *file* (e.g. ``gitdir: ../.git/modules/hugo``)
+        instead of a .git directory.  Go's VCS detection follows this into the
+        parent repo, producing wrong metadata.  We copy the actual git directory
+        into ``hugo/.git/`` and rewrite the ``worktree`` config entry so that
+        ``git status`` works correctly during the build.  Works on all platforms
+        (no symlinks required).
+        """
         hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
         self._saved_git_file = None
 
@@ -268,13 +276,24 @@ class HugoBuilder(build_ext):
             gitdir = content.strip().split("gitdir: ", 1)[1]
             gitdir_abs = (hugo_git.parent / gitdir).resolve()
             hugo_git.unlink()
-            hugo_git.symlink_to(gitdir_abs)
+            # Copy the real git directory into hugo/.git/
+            shutil.copytree(str(gitdir_abs), str(hugo_git))
+            # Fix up the worktree path in the config — it was relative to
+            # .git/modules/hugo/ and now needs to point to the parent of
+            # hugo/.git/ (i.e. hugo/ itself).
+            config_file = hugo_git / "config"
+            if config_file.exists():
+                cfg = config_file.read_text()
+                cfg = re.sub(r"worktree\s*=\s*[^\n]+", "worktree = ..", cfg)
+                config_file.write_text(cfg)
 
     def _restore_submodule_vcs(self):
         """Restore the original submodule .git file after building."""
         hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
         if self._saved_git_file is not None:
-            if hugo_git.is_symlink() or hugo_git.exists():
+            if hugo_git.is_dir() and not hugo_git.is_symlink():
+                shutil.rmtree(hugo_git)
+            elif hugo_git.exists() or hugo_git.is_symlink():
                 hugo_git.unlink()
             hugo_git.write_text(self._saved_git_file)
 
