@@ -476,7 +476,7 @@ jobs:
           # Fetch PR titles and authors, filtering out bot PRs
           PR_LINES=""
           for NUM in $PR_NUMBERS; do
-            LINE=$(gh pr view "$NUM" --json title,author \
+            LINE=$(gh pr view "$NUM" --repo "${GITHUB_REPOSITORY}" --json title,author \
               --jq '"- \(.title) by @\(.author.login) in #'"$NUM"'"' 2>/dev/null || true)
             [ -z "$LINE" ] && continue
             echo "$LINE" | grep -qE 'dependabot\[bot\]|pre-commit-ci\[bot\]' && continue
