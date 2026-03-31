@@ -79,13 +79,19 @@ jobs:
 
       - name: Create pull request
         if: steps.check-hugo-release.outputs.updated == 'true'
-        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
-        with:
-          branch: update-hugo-v${{ steps.check-hugo-release.outputs.latest_version }}
-          commit-message: "Update Hugo to v${{ steps.check-hugo-release.outputs.latest_version }}"
-          title: "Update Hugo to v${{ steps.check-hugo-release.outputs.latest_version }}"
-          body-path: /tmp/pr-body.md
-          committer: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          reviewers: |
-            agriyakhetarpal
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_VERSION: ${{ steps.check-hugo-release.outputs.latest_version }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY"
+          git checkout -b "update-hugo-v${LATEST_VERSION}"
+          git add setup.py src/hugo/cli.py hugo
+          git commit -m "Update Hugo to v${LATEST_VERSION}"
+          git push origin "update-hugo-v${LATEST_VERSION}"
+          gh pr create \
+            --title "Update Hugo to v${LATEST_VERSION}" \
+            --body-file /tmp/pr-body.md \
+            --reviewer agriyakhetarpal
