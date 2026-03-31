@@ -7,10 +7,6 @@ updates:
       interval: "daily"
     cooldown:
       default-days: 14
-    ignore:
-      # https://github.com/softprops/action-gh-release/issues/556
-      - dependency-name: "softprops/action-gh-release"
-        versions: ["2.2.0"]
     commit-message:
       prefix: "🦄 "
       include: scope
