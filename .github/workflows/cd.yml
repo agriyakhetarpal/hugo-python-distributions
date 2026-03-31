@@ -66,7 +66,7 @@ jobs:
 
       - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: "1.25.4"
+          go-version: "1.26.1"
           cache: false
 
       - name: Install MinGW compiler(s)
@@ -104,7 +104,7 @@ jobs:
 
       - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: "1.25.4"
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
@@ -146,7 +146,7 @@ jobs:
 
       - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: "1.25.4"
+          go-version: "1.26.1"
           cache: false
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
@@ -194,7 +194,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: x86_64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.25.4.linux-amd64.tar.gz"
+            tarball="go1.26.1.linux-amd64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -231,7 +231,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.25.4.linux-arm64.tar.gz"
+            tarball="go1.26.1.linux-arm64.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -277,7 +277,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: s390x
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.25.4.linux-s390x.tar.gz"
+            tarball="go1.26.1.linux-s390x.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -323,7 +323,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: ppc64le
           CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.25.4.linux-ppc64le.tar.gz"
+            tarball="go1.26.1.linux-ppc64le.tar.gz"
             curl -LJO https://golang.org/dl/$tarball
             mkdir $HOME/go_installed/
             tar -C $HOME/go_installed/ -xzf $tarball
@@ -355,7 +355,7 @@ jobs:
 
       - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: "1.25.4"
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
@@ -389,7 +389,7 @@ jobs:
 
       - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
-          go-version: "1.25.4"
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
