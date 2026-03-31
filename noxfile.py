@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import re
-import string
 import subprocess
 from pathlib import Path
 
@@ -46,26 +45,6 @@ def _get_version(session: nox.Session) -> str:
     return match.group(1)
 
 
-def _get_previous_tag(current_tag: str) -> str:
-    result = subprocess.run(
-        ["git", "tag", "--sort=-v:refname"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    tags = result.stdout.strip().splitlines()
-    for i, t in enumerate(tags):
-        if t == current_tag and i + 1 < len(tags):
-            return tags[i + 1]
-    result = subprocess.run(
-        ["git", "describe", "--tags", "--abbrev=0", f"{current_tag}^"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return result.stdout.strip()
-
-
 @nox.session(default=False)
 def tag(session: nox.Session) -> None:
     """Create a signed, annotated tag for a release.
@@ -103,82 +82,3 @@ def tag(session: nox.Session) -> None:
         external=True,
     )
     session.log(f"Tag {tag_name} created. Push it with: git push origin {tag_name}")
-
-
-@nox.session(default=False)
-def release(session: nox.Session) -> None:
-    """Create a GitHub release with formatted release notes.
-
-    Usage: nox -s release -- 0.157.0
-    """
-    version = _get_version(session)
-    tag_name = f"v{version}"
-
-    previous_tag = _get_previous_tag(tag_name)
-    is_patch = int(version.split(".")[2]) > 0
-    template_name = "patch.md" if is_patch else "stable.md"
-    template_path = DIR / "release_notes" / template_name
-    template = string.Template(template_path.read_text())
-
-    # Extract PR numbers from merge commits between the two tags
-    log_output = subprocess.run(
-        ["git", "log", f"{previous_tag}..{tag_name}", "--oneline"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.strip()
-
-    pr_numbers = re.findall(r"#(\d+)", log_output)
-
-    pr_lines = []
-    for num in pr_numbers:
-        result = subprocess.run(
-            [
-                "gh",
-                "pr",
-                "view",
-                num,
-                "--json",
-                "title,author",
-                "--jq",
-                '"- \\(.title) by @\\(.author.login) in #' + num + '"',
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if result.returncode != 0:
-            continue
-        line = result.stdout.strip()
-        if "dependabot[bot]" in line or "pre-commit-ci[bot]" in line:
-            continue
-        pr_lines.append(line)
-
-    pr_log = "\n".join(pr_lines)
-
-    if pr_log:
-        changes_section = f"\n## Changes that made it to this release\n\n{pr_log}\n"
-    else:
-        changes_section = ""
-
-    substitutions = {
-        "VERSION": version,
-        "PREVIOUS_TAG": previous_tag,
-        "CHANGES_SECTION": changes_section,
-    }
-
-    body = template.substitute(substitutions)
-
-    session.log(f"Creating GitHub release for {tag_name}")
-    session.run(
-        "gh",
-        "release",
-        "create",
-        tag_name,
-        "--title",
-        tag_name,
-        "--notes",
-        body,
-        external=True,
-    )
-    session.log(f"Release {tag_name} created!")

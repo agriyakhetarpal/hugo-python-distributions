@@ -432,14 +432,66 @@ jobs:
       contents: write # Required to upload signed artifacts to a GitHub release
       attestations: write # Required to generate build provenance attestations
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') && github.event_name != 'schedule'
 
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
       - name: Download all artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: upload/
           merge-multiple: true
+
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+
+          # Select template based on whether this is a patch release
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+          if [ "$PATCH" -gt 0 ]; then
+            TEMPLATE="release_notes/patch.md"
+          else
+            TEMPLATE="release_notes/stable.md"
+          fi
+
+          # Find the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | \
+            awk -v tag="${TAG}" '$0 == tag {found=1; next} found {print; exit}')
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${TAG}^")
+          fi
+
+          # Extract PR numbers from commits between the two tags
+          PR_NUMBERS=$(git log "${PREVIOUS_TAG}..${TAG}" --oneline | \
+            grep -oE '#[0-9]+' | tr -d '#' || true)
+
+          # Fetch PR titles and authors, filtering out bot PRs
+          PR_LINES=""
+          for NUM in $PR_NUMBERS; do
+            LINE=$(gh pr view "$NUM" --json title,author \
+              --jq '"- \(.title) by @\(.author.login) in #'"$NUM"'"' 2>/dev/null || true)
+            [ -z "$LINE" ] && continue
+            echo "$LINE" | grep -qE 'dependabot\[bot\]|pre-commit-ci\[bot\]' && continue
+            PR_LINES="${PR_LINES}${LINE}"$'\n'
+          done
+
+          if [ -n "$PR_LINES" ]; then
+            CHANGES_SECTION=$'\n## Changes that made it to this release\n\n'"${PR_LINES}"
+          else
+            CHANGES_SECTION=""
+          fi
+
+          export VERSION PREVIOUS_TAG CHANGES_SECTION
+          envsubst '${VERSION} ${PREVIOUS_TAG} ${CHANGES_SECTION}' \
+            < "$TEMPLATE" > /tmp/release-notes.md
 
       - uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
         with:
@@ -465,10 +517,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create a draft release and upload all artifacts (wheels, sdist, and
-          # Sigstore signatures), then publish — the release becomes immutable
-          # once it is no longer a draft
           gh release create "${GITHUB_REF_NAME}" upload/* \
-            --draft \
-            --generate-notes
-          gh release edit "${GITHUB_REF_NAME}" --draft=false
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file /tmp/release-notes.md
