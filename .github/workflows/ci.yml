@@ -35,7 +35,7 @@ jobs:
           python-version: 3.12
 
       - name: Run style checks
-        run: pipx run pre-commit run --all-files
+        run: pipx run prek -a
 
   build_wheels:
     needs: [style]

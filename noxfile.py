@@ -17,10 +17,8 @@ def lint(session: nox.Session) -> None:
     """
     Run the linter.
     """
-    session.install("pre-commit")
-    session.run(
-        "pre-commit", "run", "--all-files", "--show-diff-on-failure", *session.posargs
-    )
+    session.install("prek")
+    session.run("prek", "-a", *session.posargs)
 
 
 @nox.session(name="venv", reuse_venv=True)
