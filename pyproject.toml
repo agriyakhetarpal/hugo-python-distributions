@@ -1,11 +1,8 @@
 [build-system]
 requires = [
-  "setuptools>=64",
-  "pooch",
-  "tqdm",
-  "wheel==0.42.0",
-  # "ziglang>=0.11.0"
-  ]
+  "setuptools>=77.0.3",
+  "ziglang==0.15.2",
+]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -16,31 +13,40 @@ authors = [
 maintainers = [
   { name = "Agriya Khetarpal", email = "agriyakhetarpal@outlook.com" },
 ]
-description = "Binaries for the Hugo static site generator, installable with pip"
+description = "Binaries for the 'extended + withdeploy' edition of the Hugo static site generator, installable with pip"
 readme = "README.md"
-license = {text = "Apache-2.0"}
-requires-python = ">=3.8"
-dynamic = ["scripts", "version"]
+license = "Apache-2.0"
+license-files = ["LICENSE", "LICENSE-hugo.txt"]
+requires-python = ">=3.10"
+dynamic = ["version"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 6 - Mature",
   "Intended Audience :: Developers",
   "Intended Audience :: Information Technology",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: Unix",
+  "Operating System :: POSIX :: Linux",
   "Operating System :: MacOS",
+  "Operating System :: MacOS :: MacOS X",
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Go",
+  "Programming Language :: Zig",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Internet",
   "Topic :: Internet :: WWW/HTTP :: Dynamic Content :: Content Management System",
   "Topic :: Internet :: WWW/HTTP :: Browsers",
+  "Topic :: Documentation",
+  "Topic :: Software Development :: Documentation",
+  "Topic :: Text Processing :: Markup",
+  "Topic :: Text Processing :: Markup :: Markdown",
+  "Topic :: Text Processing :: Markup :: HTML",
+  "Topic :: Text Processing :: Markup :: reStructuredText",
   "Topic :: Utilities",
 ]
 
@@ -50,10 +56,14 @@ Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["hugo", "hugo.*"]
 
+[project.scripts]
+hugo = "hugo.cli:__call"
+
 [tool.ruff]
-src = ["hugo"]
+src = ["src"]
 lint.extend-select = [
   "B",        # flake8-bugbear
   "I",        # isort
@@ -79,6 +89,7 @@ lint.ignore = [
   "PLR09",    # Too many <...>
   "PLR2004",  # Magic value used in comparison
   "ISC001",   # Conflicts with formatter
+  "PLC0415",  # Import should be at the top-level of a file
 ]
 
 [tool.ruff.lint.per-file-ignores]

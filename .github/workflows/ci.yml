@@ -16,46 +16,64 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
+  CIBW_SKIP: "pp* *musllinux*"
+  CIBW_BUILD_FRONTEND: "build"
+
+permissions: {}
 
 jobs:
   style:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.12
 
       - name: Run style checks
-        run: pipx run nox -s lint
+        run: pipx run prek -a
 
   build_wheels:
     needs: [style]
     name: ${{ matrix.runs-on }}-python-${{ matrix.python-version }}
     runs-on: ${{ matrix.runs-on }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.12", "3.13"]
-        runs-on: [ubuntu-latest, macos-13, macos-14, windows-latest]
-        exclude:
-          # https://github.com/actions/setup-python/issues/808
-          - python-version: "3.8"
-            runs-on: macos-14
-
+        python-version: ["3.10", "3.13", "3.14"]
+        runs-on:
+          [
+            ubuntu-latest,
+            ubuntu-22.04-arm,
+            macos-15-intel,
+            macos-latest,
+            windows-latest,
+          ]
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: "1.22.1"
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
@@ -64,7 +82,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./hugo_cache/
           key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
@@ -79,51 +97,52 @@ jobs:
       - name: Test entry points for package
         run: nox -s venv
 
+  # TODO: add aarch64 to x86_64 cross-compilation for Linux
   experimental:
     needs: [style]
-    name: ${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
-    env:
-      CIBW_BUILD_VERBOSITY: 2
+    name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
     runs-on: ${{ matrix.runs-on }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         runs-on: [ubuntu-latest, windows-latest]
         architecture: [arm64, i686]
-        python-version: [3.8, 3.12, 3.13]
+        python-version: ["3.10", "3.13", "3.14"]
         # Exclude i686 on Linux for all Python versions
         # Test just one Python version on Windows for now
         exclude:
           - runs-on: ubuntu-latest
             architecture: i686
-          - python-version: "3.8"
+          - python-version: "3.10"
             runs-on: windows-latest
-          - python-version: "3.13"
+          - python-version: "3.14"
             runs-on: windows-latest
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
       - name: Set up Go toolchain
         id: setup-go
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: "1.22.1"
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
-      - uses: goto-bus-stop/setup-zig@7ab2955eb728f5440978d5824358023be3a2802d  # v2.2.0
-        with:
-          version: 0.11.0
-
       - name: Restore Hugo builder cache
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9  # v4.0.2
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./hugo_cache/
-          key: ${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
+          key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
 
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox auditwheel
@@ -132,10 +151,9 @@ jobs:
         if: matrix.runs-on == 'ubuntu-latest'
         # Cross-compile for arm64 target via Zig toolchain
         env:
+          USE_ZIG: 1
+          GOOS: linux
           GOARCH: arm64
-          # We are on ubuntu amd64, so set target as arm64
-          CC: zig cc -target aarch64-linux-gnu
-          CXX: zig c++ -target aarch64-linux-gnu
         run: |
           python -m build --wheel . --outdir wheelhouse/
         # can't repair arm64 wheels on Linux x86_64 right now
@@ -145,60 +163,78 @@ jobs:
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         # Cross-compile for arm64 target via Zig toolchain
         env:
+          USE_ZIG: "1"
+          GOOS: windows
           GOARCH: arm64
-          # We are on Windows amd64, so set target as arm64
-          CC: zig cc -target aarch64-windows-gnu
-          CXX: zig c++ -target aarch64-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_SKIP: "*-win_arm64"
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
-        uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         # Cross-compile for i686 target via Zig toolchain
         env:
+          USE_ZIG: "1"
+          GOOS: windows
           GOARCH: 386
-          CC: zig cc -target x86-windows-gnu
-          CXX: zig c++ -target x86-windows-gnu
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: x86
-          CIBW_TEST_COMMAND: >
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-            name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
-            path: ./wheelhouse/*.whl
+          name: wheels_${{ matrix.runs-on }}_${{ matrix.architecture }}_py${{ matrix.python-version }}
+          path: ./wheelhouse/*.whl
 
   inspect_distributions:
     needs: [style]
     name: inspect-sdist-wheel-contents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: 3.12
 
       - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
-          git apply scripts/ci/tools/patches/0001-use-temporary-directory-to-store-eggs.patch
           pipx run build --sdist --wheel . --outdir dist/
           pipx run twine check dist/* --strict
+
+      - name: Check sdist size, fail if it exceeds 10 MiB
+        run: |
+          MAX_SIZE_MB=10
+          SDIST=$(ls dist/*.tar.gz)
+          SIZE=$(stat --format=%s "$SDIST")
+          SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $SIZE / 1048576}")
+          echo "sdist size: ${SIZE_MB} MB"
+          if [ "$SIZE" -gt $((MAX_SIZE_MB * 1048576)) ]; then
+            echo "::error::sdist is ${SIZE_MB} MB, exceeding the ${MAX_SIZE_MB} MB limit"
+            exit 1
+          fi
 
       - name: Build, inspect, and display contents of distributions
         shell: bash

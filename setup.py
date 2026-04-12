@@ -1,33 +1,30 @@
-import glob
 import os
 import platform
+import re
 import shutil
+import stat
 import subprocess
 import sys
-import tarfile
 from pathlib import Path
 
-import pooch
 from setuptools import Command, Extension, setup
+from setuptools.command.bdist_wheel import bdist_wheel
 from setuptools.command.build_ext import build_ext
 from setuptools.command.build_py import build_py
-from wheel.bdist_wheel import bdist_wheel
 
-HUGO_VERSION = "0.124.1"
-HUGO_RELEASE = (
-    f"https://github.com/gohugoio/hugo/archive/refs/tags/v{HUGO_VERSION}.tar.gz"
-)
-# Commit hash for current HUGO_VERSION, needs to be updated when HUGO_VERSION is updated
-# Tip: git ls-remote --tags https://github.com/gohugoio/hugo v<HUGO_VERSION>
-HUGO_RELEASE_COMMIT_HASH = "db083b05f16c945fec04f745f0ca8640560cf1ec"
-# The pooch tool will download the tarball into the hugo_cache/ directory.
+# ------ Hugo build configuration and constants ------------------------------------
+
+# Also update src/hugo/cli.py
+HUGO_VERSION = "0.160.1"
+
+# The Go toolchain will use the hugo_cache/ directory for GOPATH and GOCACHE.
 # We will point the build command to that location to build Hugo from source
 HUGO_CACHE_DIR = "hugo_cache"
-HUGO_SHA256 = "0beb0436f6bd90abb425523229a37f1d31e2e9c7ba9fac4556a72aab3b11bfef"
+# Path to the Hugo source submodule
+HUGO_SRC_DIR = "hugo"
 FILE_EXT = (
     ".exe" if (sys.platform == "win32" or os.environ.get("GOOS") == "windows") else ""
 )
-
 # The vendor name is used to set the vendorInfo variable in the Hugo binary
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
@@ -45,19 +42,44 @@ HUGO_ARCH = {
     "AMD64": "amd64",
     "aarch64": "arm64",
     "x86": "386",
+    "i686": "386",
+    "i386": "386",
+    "s390x": "s390x",
+    "ppc64le": "ppc64le",
+    "armv7l": "arm",
+    "armv6l": "arm",
+    "riscv64": "riscv64",
 }[platform.machine()]
 
 # Name of the Hugo binary that will be built
 HUGO_BINARY_NAME = (
-    f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{os.environ.get('GOARCH', HUGO_ARCH)}"
+    f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', HUGO_PLATFORM)}-{os.environ.get('GOARCH', HUGO_ARCH)}"
     + FILE_EXT
 )
+
+# Write a Hugo commit date stamp file, such that it is available for both wheel builds
+# (via _get_hugo_commit_date) and sdist builds (included via MANIFEST.in). This runs
+# at setup.py parse time, before setuptools collects files for the sdist.
+_hugo_stamp = Path(HUGO_SRC_DIR).resolve() / ".hugo_commit_date"
+try:
+    _commit_date = subprocess.check_output(
+        ["git", "log", "-1", "--format=%cI"],
+        cwd=Path(HUGO_SRC_DIR).resolve(),
+        text=True,
+        stderr=subprocess.DEVNULL,
+    ).strip()
+    if _commit_date:
+        _hugo_stamp.write_text(_commit_date)
+except (subprocess.CalledProcessError, OSError):
+    pass
+
+# ----------------------------------------------------------------------------------
 
 
 class HugoWriter(build_py):
     """
     A custom pre-installation command that writes the version of Hugo being built
-    to hugo/VERSION so that the version is available to read at runtime.
+    directly to src/hugo/cli.py so that the version is available at runtime.
     """
 
     def initialize_options(self) -> None:
@@ -67,10 +89,13 @@ class HugoWriter(build_py):
         return super().finalize_options()
 
     def run(self) -> None:
-        """Write the version of Hugo being built to hugo/VERSION."""
-        with open("hugo/VERSION", "w") as version_file:  # noqa: PTH123
-            version_file.write(HUGO_VERSION)
-            version_file.write("\n")
+        cli_file_path = Path(__file__).parent / "src" / "hugo" / "cli.py"
+        content = cli_file_path.read_text()
+        version = re.sub(
+            r'HUGO_VERSION = "[0-9.]+"', f'HUGO_VERSION = "{HUGO_VERSION}"', content
+        )
+        with open(cli_file_path, "w") as cli_file:  # noqa: PTH123
+            cli_file.write(version)
 
         super().run()
 
@@ -88,7 +113,7 @@ class HugoBuilder(build_ext):
         self.hugo_arch = None
 
     def finalize_options(self):
-        # Platforms and architectures that we will build Hugo for are:
+        # Platforms and architectures that we will build Hugo natively for are:
         # i.e., a subset of "go tool dist list":
         # 1. darwin/amd64
         # 2. darwin/arm64
@@ -101,6 +126,7 @@ class HugoBuilder(build_ext):
         # The platform is used to set the GOOS environment variable, the architecture
         # is used to set the GOARCH environment variable, and they must be exactly these
         # strings for the Go toolchain to work.
+        # Note to self: go tool dist list -json | jq -r "map(select(.CgoSupported)) | .[] | .GOOS + \"/\" + .GOARCH"
         super().finalize_options()
         self.hugo_version = HUGO_VERSION
         self.hugo_platform = HUGO_PLATFORM
@@ -112,39 +138,39 @@ class HugoBuilder(build_ext):
         # the name so that it is unique to the version of Hugo being built.
         """
 
-        # Download Hugo source tarball, place into hugo_cache/ directory
-        hugo_targz = pooch.retrieve(
-            url=HUGO_RELEASE,
-            known_hash=HUGO_SHA256,
-            path=HUGO_CACHE_DIR,
-            progressbar=True,
-        )
-
-        # Extract Hugo source tarball into a folder hugo-HUGO_VERSION/
-        # inside hugo_cache/
-        with tarfile.open(hugo_targz) as tar:
-            tar.extractall(path=HUGO_CACHE_DIR)
+        # If Hugo cache does not exist, create it
+        if not Path(HUGO_CACHE_DIR).exists():
+            Path(HUGO_CACHE_DIR).mkdir(parents=True)
 
         # The binary is put into GOBIN, which is set to the package directory
-        # (hugo/binaries/) for use in editable mode. The binary is copied
+        # (src/hugo/binaries/) for use in editable mode. The binary is copied
         # into the wheel afterwards
         # Error: GOBIN cannot be set if GOPATH is set when compiling for different
         # architectures, so we use the default GOPATH/bin as the place to copy
         # binaries from
         # os.environ["GOBIN"] = os.path.join(
-        #     os.path.dirname(os.path.abspath(__file__)), "hugo", "binaries"
+        #     os.path.dirname(os.path.abspath(__file__)), "src", "hugo", "binaries"
         # )
         os.environ["CGO_ENABLED"] = "1"
-        os.environ["GOPATH"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
+        os.environ["GO111MODULE"] = "on"
+        os.environ["GOPATH"] = str(Path(HUGO_CACHE_DIR).resolve())
         # it must be absolute (Go requirement)
 
         # Set GOCACHE to the hugo_cache/ directory so that the Go toolchain
         # caches the build artifacts there for future use.
-        os.environ["GOCACHE"] = os.path.abspath(HUGO_CACHE_DIR)  # noqa: PTH100
+        os.environ["GOCACHE"] = str(Path(HUGO_CACHE_DIR).resolve())
 
         os.environ["GOOS"] = os.environ.get("GOOS", self.hugo_platform)
         os.environ["GOARCH"] = os.environ.get("GOARCH", self.hugo_arch)
         # i.e., allow override if GOARCH is set!
+
+        if os.environ.get("GOARCH") == "arm" and os.environ.get("GOOS") == "linux":
+            default_goarm = "6" if platform.machine() == "armv6l" else "7"
+            os.environ["GOARM"] = os.environ.get("GOARM", default_goarm)
+
+        # New: Setup Zig compiler if USE_ZIG is set
+        if os.environ.get("USE_ZIG"):
+            self._setup_zig_compiler()
 
         # Build Hugo from source using the Go toolchain, place it into GOBIN
         # Requires the following dependencies:
@@ -153,68 +179,233 @@ class HugoBuilder(build_ext):
         # 2. GCC/Clang
         # 3. Git
         #
-        # Once built this the files are cached into GOPATH for future use
+        # Once built the files are cached into GOPATH for future use
 
-        # Delete hugo_cache/bin/ + files inside, it left over from a previous build
+        # Delete hugo_cache/bin/ + files inside, if left over from a previous build
         shutil.rmtree(Path(HUGO_CACHE_DIR).resolve() / "bin", ignore_errors=True)
-
-        # ldflags are passed to the go linker to set variables at runtime
-        # Note: the Homebrew version of Hugo sets extra ldflags such as the build
-        # date. We do not set that here, we only set the vendorInfo variable.
-        ldflags = [
-            f"-X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}",
-        ]
 
         # Check for compilers, toolchains, etc. and raise helpful errors if they
         # are not found. These are essentially smoke tests to ensure that the
         # build environment is set up correctly.
+        self._check_build_dependencies()
 
+        # These ldflags are passed to the Go linker to set variables at runtime.
+        # The buildDate ldflag is a fallback for sdist builds where .git is absent
+        # and Go cannot embed VCS info. In normal builds (git checkout / submodule),
+        # _prepare_submodule_vcs ensures Go's VCS stamping reads the correct
+        # commit hash and date from the Hugo submodule directly.
+        commit_date = self._get_hugo_commit_date()
+
+        ldflags = [
+            f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}"
+        ]
+        if commit_date:
+            ldflags.append(
+                f"-X github.com/gohugoio/hugo/common/hugo.buildDate={commit_date}"
+            )
+
+        # Build a static binary on Windows to avoid missing DLLs from MinGW,
+        # i.e., libgcc_s_seh-1.dll, libstdc++-6.dll, etc.
+        BUILDING_FOR_WINDOWS = (
+            os.environ.get("GOOS") == "windows" or sys.platform == "win32"
+        )
+
+        if BUILDING_FOR_WINDOWS:
+            ldflags.append("-extldflags '-static'")
+
+        # Temporarily convert the submodule's .git file into a symlink to the
+        # real git directory so that Go's VCS stamping embeds the correct
+        # commit hash and date from the Hugo submodule (not the parent repo).
+        self._prepare_submodule_vcs()
+        try:
+            self._build_hugo(ldflags)
+        finally:
+            self._restore_submodule_vcs()
+
+        self._rename_and_move_binary()
+
+    @staticmethod
+    def _get_hugo_commit_date():
+        """Get the commit date from the Hugo submodule's git history.
+
+        Falls back to a stamp file (hugo/.hugo_commit_date) for sdist builds
+        where .git is absent. Writes the stamp file when git is available so
+        that it is included in the sdist.
+        """
+        hugo_src_dir = Path(HUGO_SRC_DIR).resolve()
+        stamp_file = hugo_src_dir / ".hugo_commit_date"
+
+        # Try git first (works in git checkout and submodule)
+        try:
+            commit_date = subprocess.check_output(
+                ["git", "log", "-1", "--format=%cI"],
+                cwd=hugo_src_dir,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            ).strip()
+            if commit_date:
+                # Write stamp file so sdist builds can use it
+                stamp_file.write_text(commit_date)
+                return commit_date
+        except (subprocess.CalledProcessError, OSError):
+            pass
+
+        # Fall back to stamp file (sdist builds)
+        if stamp_file.exists():
+            return stamp_file.read_text().strip()
+
+        return ""
+
+    def _prepare_submodule_vcs(self):
+        """Replace the submodule .git file with a real .git directory so Go's
+        VCS stamping embeds the correct commit hash and date.
+
+        Submodules store a .git *file* (e.g. ``gitdir: ../.git/modules/hugo``)
+        instead of a .git directory.  Go's VCS detection follows this into the
+        parent repo, producing wrong metadata.  We copy the actual git directory
+        into ``hugo/.git/`` and rewrite the ``worktree`` config entry so that
+        ``git status`` works correctly during the build.  Works on all platforms
+        (no symlinks required).
+        """
+        hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
+        self._saved_git_file = None
+
+        if hugo_git.is_file():
+            content = hugo_git.read_text()
+            self._saved_git_file = content
+            # e.g. "gitdir: ../.git/modules/hugo\n"
+            gitdir = content.strip().split("gitdir: ", 1)[1]
+            gitdir_abs = (hugo_git.parent / gitdir).resolve()
+            hugo_git.unlink()
+            # Copy the real git directory into hugo/.git/.  Git pack files
+            # are read-only on Windows, so we must make them writable after
+            # copying, otherwise both the Go build and later cleanup fail
+            # with [WinError 5] Access is denied.
+            shutil.copytree(str(gitdir_abs), str(hugo_git))
+            if sys.platform == "win32":
+                for p in hugo_git.rglob("*"):
+                    if p.is_file():
+                        p.chmod(p.stat().st_mode | stat.S_IWRITE)
+            # Fix up the worktree path in the config — it was relative to
+            # .git/modules/hugo/ and now needs to point to the parent of
+            # hugo/.git/ (i.e. hugo/ itself).
+            config_file = hugo_git / "config"
+            if config_file.exists():
+                cfg = config_file.read_text()
+                cfg = re.sub(r"worktree\s*=\s*[^\n]+", "worktree = ..", cfg)
+                config_file.write_text(cfg)
+
+    def _restore_submodule_vcs(self):
+        """Restore the original submodule .git file after building."""
+        hugo_git = Path(HUGO_SRC_DIR).resolve() / ".git"
+        if self._saved_git_file is not None:
+            if hugo_git.is_dir() and not hugo_git.is_symlink():
+                shutil.rmtree(hugo_git)
+            elif hugo_git.exists() or hugo_git.is_symlink():
+                hugo_git.unlink()
+            hugo_git.write_text(self._saved_git_file)
+
+    def _setup_zig_compiler(self):
+        goos = os.environ.get("GOOS", self.hugo_platform)
+        goarch = os.environ.get("GOARCH", self.hugo_arch)
+
+        zig_target_map = {
+            ("darwin", "amd64"): "x86_64-macos-none",
+            ("darwin", "arm64"): "aarch64-macos-none",
+            ("linux", "amd64"): "x86_64-linux-gnu",
+            ("linux", "arm64"): "aarch64-linux-gnu",
+            ("linux", "arm"): "arm-linux-gnueabihf",
+            ("linux", "386"): "x86-linux-gnu",
+            ("linux", "ppc64le"): "powerpc64le-linux-gnu",
+            ("linux", "s390x"): "s390x-linux-gnu",
+            ("linux", "riscv64"): "riscv64-linux-gnu",
+            ("windows", "386"): "x86-windows-gnu",
+            ("windows", "amd64"): "x86_64-windows-gnu",
+            ("windows", "arm64"): "aarch64-windows-gnu",
+        }
+
+        zig_target = zig_target_map.get((goos, goarch))
+        if zig_target:
+            os.environ["CC"] = f"{sys.executable} -m ziglang cc -target {zig_target}"
+            os.environ["CXX"] = f"{sys.executable} -m ziglang c++ -target {zig_target}"
+            if zig_target == "x86-windows-gnu":
+                os.environ["CC"] += " -w"
+                os.environ["CXX"] += " -w"
+            # Add additional flags to the linker to ensure that the binary is
+            # stripped of debug information and is as small as possible for release
+            os.environ["CGO_CFLAGS"] = "-g0 -O3 -ffunction-sections -fdata-sections"
+            os.environ["CGO_LDFLAGS"] = "-s -w -Wl,--gc-sections"
+        else:
+            print(f"Warning: No Zig target found for GOOS={goos} and GOARCH={goarch}")
+
+    def _check_build_dependencies(self):
         # Go toolchain is required for building Hugo
         try:
-            subprocess.check_call(["go", "version"])
+            subprocess.check_call(
+                ["go", "version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            )
         except OSError as err:
             error_message = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
             raise OSError(error_message) from err
 
-        # Zig compiler is required for cross-compilation on Linux and Windows, but we will
-        # check for this only if we are cross-compiling and not on macOS (where Xcode is used).
-        # if (os.environ.get("GOARCH") != self.hugo_arch) and (sys.platform != "darwin"):
-        #     try:
-        #         subprocess.check_call([sys.executable, "-m", "ziglang", "version"])
-        #     except OSError as err:
-        #         error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
-        #         raise OSError(error_message) from err
-
-        # GCC/Clang is required for building Hugo because CGO is enabled
-        try:
-            subprocess.check_call(["gcc", "--version"])
-        except OSError:
+        # Check for Zig compiler only if USE_ZIG is set
+        if os.environ.get("USE_ZIG"):
             try:
-                subprocess.check_call(["clang", "--version"])
+                subprocess.check_call(
+                    [sys.executable, "-m", "ziglang", "version"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
             except OSError as err:
-                error_message = "GCC/Clang not found. Please install GCC or Clang via your package manager."
+                error_message = "Zig compiler not found. Please install Zig from https://ziglang.org/download/ or your package manager."
                 raise OSError(error_message) from err
+        else:
+            # GCC/Clang is required for building Hugo because CGO is enabled
+            try:
+                subprocess.check_call(
+                    ["gcc", "--version"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+            except OSError:
+                try:
+                    subprocess.check_call(
+                        ["clang", "--version"],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                except OSError as err:
+                    error_message = "GCC/Clang not found. Please install GCC or Clang via your package manager."
+                    raise OSError(error_message) from err
 
         # Git is required for building Hugo to fetch dependencies from various Git repositories
         try:
-            subprocess.check_call(["git", "--version"])
+            subprocess.check_call(
+                ["git", "--version"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
         except OSError as err:
             error_message = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
             raise OSError(error_message) from err
 
+    def _build_hugo(self, ldflags):
         subprocess.check_call(
             [
                 "go",
                 "install",
+                "-trimpath",
+                "-v",
                 "-ldflags",
-                *ldflags,
+                " ".join(ldflags),
                 "-tags",
-                "extended",
+                "extended,withdeploy",
             ],
-            cwd=os.path.abspath(os.path.join(HUGO_CACHE_DIR, f"hugo-{HUGO_VERSION}")),  # noqa: PTH118, PTH100
+            cwd=Path(HUGO_SRC_DIR).resolve(),
         )
         # TODO: introduce some error handling here to detect compilers, etc.
 
+    def _rename_and_move_binary(self):
         # Mangle the name of the compiled executable to include the version, the
         # platform, and the architecture of Hugo being built.
         # The binary is present in GOPATH (i.e, either at hugo_cache/bin/ or at
@@ -274,9 +465,9 @@ class HugoBuilder(build_ext):
         # Copy the new_name file into a folder binaries/ inside hugo/
         # so that it is included in the wheel.
         # basically we are copying hugo-HUGO_VERSION-PLATFORM-ARCH into
-        # hugo/binaries/ and creating the folder if it does not exist.
+        # src/hugo/binaries/ and creating the folder if it does not exist.
 
-        binaries_dir = Path(__file__).parent / "hugo" / "binaries"
+        binaries_dir = Path(__file__).parent / "src" / "hugo" / "binaries"
         if not binaries_dir.exists():
             binaries_dir.mkdir()
 
@@ -305,12 +496,12 @@ class Cleaner(Command):
     def run(self):
         """Clean ancillary files at runtime."""
 
-        here = os.path.normpath(os.path.abspath(os.path.dirname(__file__)))  # noqa: PTH100, PTH120
-        files_to_clean = "./build ./*.pyc ./*.egg-info ./__pycache__".split(" ")
+        here = os.path.normpath(Path(__file__).parent.resolve())
+        files_to_clean = ["./build", "./*.pyc", "./*.egg-info", "./__pycache__"]
 
         for path_spec in files_to_clean:
             # Make paths absolute and relative to this path
-            abs_paths = glob.glob(os.path.normpath(os.path.join(here, path_spec)))  # noqa: PTH207, PTH118
+            abs_paths = Path(here).glob(path_spec)
             for path in [str(p) for p in abs_paths]:
                 if not path.startswith(str(here)):
                     # raise error if path in files_to_clean is absolute + outside
@@ -321,13 +512,12 @@ class Cleaner(Command):
 
 
 # Mock setuptools into thinking that we are building a target binary on a host machine
-# so that the wheel gets tagged correctly. We can fuse the arm64 and amd64 wheels
-# together later using delocate.
+# so that the wheel gets tagged correctly when building or cross-compiling.
 class HugoWheel(bdist_wheel):
     """
     A customised wheel build command that sets the platform tags to accommodate
     the varieties of the GOARCH and GOOS environment variables when cross-compiling
-    the Hugo binary. Currently used for macOS arm64 and macOS x86_64.
+    the Hugo binary with any available cross-compilation toolchain.
     """
 
     def initialize_options(self):
@@ -363,15 +553,25 @@ class HugoWheel(bdist_wheel):
 
         # Handle cross-compilation on Linux via the Zig compiler
         # ======================================================
-        if (os.environ.get("GOOS") == "linux") or (sys.platform == "linux"):
+        if os.environ.get("GOOS") == "linux":
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "linux_aarch64"
             elif os.environ.get("GOARCH") == "amd64":
                 platform_tag = "linux_x86_64"
+            elif os.environ.get("GOARCH") == "ppc64le":
+                platform_tag = "linux_ppc64le"
+            elif os.environ.get("GOARCH") == "s390x":
+                platform_tag = "linux_s390x"
+            elif os.environ.get("GOARCH") == "arm":
+                platform_tag = "linux_armv7l"
+            elif os.environ.get("GOARCH") == "386":
+                platform_tag = "linux_i686"
+            elif os.environ.get("GOARCH") == "riscv64":
+                platform_tag = "linux_riscv64"
 
         # Handle cross-compilation on/to Windows via the Zig compiler
         # ===========================================================
-        if os.environ.get("GOOS") == "windows" or (sys.platform == "win32"):
+        elif os.environ.get("GOOS") == "windows":
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "win_arm64"
             elif os.environ.get("GOARCH") == "amd64":
@@ -382,18 +582,18 @@ class HugoWheel(bdist_wheel):
         # Cross-compiling to macOS or on macOS via the Zig or Xcode toolchains
         # ====================================================================
         # Also, ensure correct platform tags for macOS arm64 and macOS x86_64
-        # since macOS 3.12 Python GH Actionsrunners are mislabelling the platform
+        # since macOS 3.12 Python GH Actions runners are mislabelling the platform
         # tag to be universal2, see: https://github.com/pypa/wheel/issues/573
         # Also, let cibuildwheel handle the platform tags if it is being used,
         # since that is where we won't cross-compile at all but use the native
         # GitHub Actions runners.
-        if ((os.environ.get("GOOS") == "darwin") or (sys.platform == "darwin")) and (
+        elif (os.environ.get("GOOS") == "darwin") and (
             os.environ.get("CIBUILDWHEEL") != "1"
         ):
             if os.environ.get("GOARCH") == "arm64":
                 platform_tag = "macosx_11_0_arm64"
             elif os.environ.get("GOARCH") == "amd64":
-                platform_tag = "macosx_10_9_x86_64"
+                platform_tag = "macosx_10_13_x86_64"
 
         return python_tag, abi_tag, platform_tag
 
@@ -406,9 +606,10 @@ class HugoWheel(bdist_wheel):
         # into the wheel.
         hugo_binary = (
             Path(__file__).parent
+            / "src"
             / "hugo"
             / "binaries"
-            / f"{os.environ.get('GOOS', HUGO_PLATFORM)}_{os.environ.get('GOARCH', HUGO_ARCH)}{FILE_EXT}"
+            / f"hugo-{HUGO_VERSION}-{os.environ.get('GOOS', HUGO_PLATFORM)}-{os.environ.get('GOARCH', HUGO_ARCH)}{FILE_EXT}"
         )
 
         # if the binary does not exist, then we need to build it, so invoke
@@ -425,7 +626,7 @@ setup(
         Extension(
             name="hugo.build",
             sources=[
-                f"hugo/binaries/{HUGO_BINARY_NAME}",
+                f"src/hugo/binaries/{HUGO_BINARY_NAME}",
             ],
         )
     ],
@@ -440,6 +641,6 @@ setup(
             f"binaries/{HUGO_BINARY_NAME}",
         ],
     },
-    # has to be kept in sync with the version in hugo/cli.py
+    # has to be kept in sync with the version in src/hugo/cli.py
     version=HUGO_VERSION,
 )

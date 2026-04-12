@@ -2,40 +2,52 @@ name: CD
 
 on:
   workflow_dispatch:
-  release:
-    types:
-      - published
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  push:
+    tags:
+      - "v*"
+  schedule:
+    - cron: "0 0 * * 1"
 
 env:
   FORCE_COLOR: 3
-  CIBW_BUILD_VERBOSITY: 2
-  CIBW_BUILD_FRONTEND: "pip"  # use pip for now, not build – missing buildDate otherwise
+  CIBW_BUILD_FRONTEND: "build"
   CIBW_BUILD: "cp312-*"
   CIBW_SKIP: "pp* *musllinux*"
-  CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
-  CIBW_MANYLINUX_AARCH64_IMAGE: "manylinux_2_28"
+
+permissions: {}
 
 jobs:
   sdist:
     name: sdist
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - name: Set up Python 3.12
-        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          python-version: 3.12
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: 3.13
 
       - name: Build source distribution
-        run: |
-          git apply scripts/ci/tools/patches/0001-use-temporary-directory-to-store-eggs.patch
-          pipx run build --sdist --outdir dist/
+        run: pipx run build --sdist --outdir dist/
 
-      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+      - name: Check sdist size, fail if it exceeds 10 MiB
+        run: |
+          MAX_SIZE_MB=10
+          SDIST=$(ls dist/*.tar.gz)
+          SIZE=$(stat --format=%s "$SDIST")
+          SIZE_MB=$(awk "BEGIN {printf \"%.2f\", $SIZE / 1048576}")
+          echo "sdist size: ${SIZE_MB} MB"
+          if [ "$SIZE" -gt $((MAX_SIZE_MB * 1048576)) ]; then
+            echo "::error::sdist is ${SIZE_MB} MB, exceeding the ${MAX_SIZE_MB} MB limit"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: source_distribution
           path: dist
@@ -44,128 +56,321 @@ jobs:
   windows_amd64_wheels:
     name: amd64-windows
     runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          python-version: 3.12
+          persist-credentials: false
+          submodules: recursive
 
-      - name: Set up Go toolchain
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: '1.22.1'
+          go-version: "1.26.1"
           cache: false
 
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_WINDOWS: AMD64
-          CIBW_TEST_COMMAND: >
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: wheels_windows_amd64
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
-  linux_amd64_wheels:
-    name: amd64-linux
-    runs-on: ubuntu-latest
+  windows_arm64_wheels: # Not tested
+    name: arm64-windows
+    runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          python-version: 3.12
+          persist-credentials: false
+          submodules: recursive
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version: "1.26.1"
+          cache: false
+          check-latest: true
+
+      - name: Build binary distribution (wheel) on Windows (arm64)
+        # We need to use cibuildwheel because it has experimental support for cross-compiling
+        # to arm64 and setup-python does not have arm64 support on Windows right now
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        # Cross-compile for arm64 target via Zig toolchain
+        env:
+          USE_ZIG: "1"
+          GOOS: windows
+          GOARCH: arm64
+          CIBW_BUILD: "cp312-*"
+          CIBW_ARCHS_WINDOWS: ARM64
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
+          CIBW_TEST_SKIP: "*-win_arm64"
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: wheels_windows_arm64
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  windows_i686_wheels:
+    name: i686-windows
+    runs-on: windows-2025
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version: "1.26.1"
+          cache: false
+
+        # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
+        # do not need to do that manually unless we use setup-python instead.
+      - name: Build binary distribution (wheel) on Windows (i686)
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        # Cross-compile for i686 target via Zig toolchain
+        env:
+          USE_ZIG: "1"
+          GOOS: windows
+          GOARCH: 386
+          CIBW_BUILD: "cp312-*"
+          CIBW_ARCHS_WINDOWS: x86
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
+          CIBW_TEST_COMMAND: |
+            hugo version
+            hugo env --logLevel debug
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: wheels_windows_i686
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  linux_amd64_wheels:
+    name: amd64-manylinux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.26.1.linux-amd64.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: wheels_linux_amd64
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
   linux_arm64_wheels:
-    name: arm64-linux
-    runs-on: ubuntu-latest
+    name: arm64-manylinux
+    runs-on: ubuntu-22.04-arm
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          python-version: 3.12
+          persist-credentials: false
+          submodules: recursive
 
-      - name: Set up QEMU for emulation
-        uses: docker/setup-qemu-action@68827325e0b33c7199eb31dd4e31fbe9023e06e3  # v3.0.0
-        with:
-          platforms: all
-
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_BEFORE_ALL_LINUX: bash scripts/ci/tools/linux/install_go.sh
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.26.1.linux-arm64.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: wheels_linux_aarch64
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
+  linux_s390x_wheels:
+    name: s390x-manylinux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+        with:
+          platforms: all
+          # This should be temporary
+          # xref https://github.com/docker/setup-qemu-action/issues/188
+          # xref https://github.com/tonistiigi/binfmt/issues/215
+          image: tonistiigi/binfmt:qemu-v8.1.5
+
+      - name: Build binary distribution (wheel) on Linux (s390x)
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: s390x
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.26.1.linux-s390x.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
+          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
+          CIBW_TEST_COMMAND: |
+            hugo version
+            hugo env --logLevel debug
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: wheels_linux_s390x
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
+  linux_ppc64le_wheels:
+    name: ppc64le-manylinux
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+        with:
+          platforms: all
+          # This should be temporary
+          # xref https://github.com/docker/setup-qemu-action/issues/188
+          # xref https://github.com/tonistiigi/binfmt/issues/215
+          image: tonistiigi/binfmt:qemu-v8.1.5
+
+      - name: Build binary distribution (wheel) on Linux (ppc64le)
+        uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: ppc64le
+          CIBW_BEFORE_ALL_LINUX: |
+            tarball="go1.26.1.linux-ppc64le.tar.gz"
+            curl -LJO https://golang.org/dl/$tarball
+            mkdir $HOME/go_installed/
+            tar -C $HOME/go_installed/ -xzf $tarball
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
+            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
+            go version
+          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
+          CIBW_TEST_COMMAND: |
+            hugo version
+            hugo env --logLevel debug
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: wheels_linux_ppc64le
+          path: ./wheelhouse/*.whl
+          if-no-files-found: error
+
   macos_amd64_wheels:
     name: amd64-macos
-    runs-on: macos-13
+    runs-on: macos-15-intel
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          python-version: 3.12
+          persist-credentials: false
+          submodules: recursive
 
-      - name: Set up Go toolchain
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: '1.22.1'
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_MACOS: x86_64
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: wheels_macos_x86_64
           path: ./wheelhouse/*.whl
@@ -173,83 +378,145 @@ jobs:
 
   macos_arm64_wheels:
     name: arm64-macos
-    runs-on: macos-14
+    runs-on: macos-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633  # v4.1.2
-      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d  # v5.1.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          python-version: 3.12
+          persist-credentials: false
+          submodules: recursive
 
-      - name: Set up Go toolchain
-        uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491  # v5.0.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
-          go-version: '1.22.1'
+          go-version: "1.26.1"
           cache: false
           check-latest: true
 
-      - uses: pypa/cibuildwheel@8d945475ac4b1aac4ae08b2fd27db9917158b6ce  # v2.17.0
+      - uses: pypa/cibuildwheel@ee02a1537ce3071a004a6b08c41e72f0fdc42d9a # v3.4.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_MACOS: arm64
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
-          CIBW_TEST_COMMAND: >
+          CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
 
       - name: Upload wheels
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3  # v4.3.1
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: wheels_macos_arm64
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
   publish:
-    needs: [
-      sdist,
-      windows_amd64_wheels,
-      macos_amd64_wheels,
-      macos_arm64_wheels,
-      linux_amd64_wheels,
-      linux_arm64_wheels
-    ]
+    needs:
+      [
+        sdist,
+        windows_amd64_wheels,
+        windows_arm64_wheels,
+        windows_i686_wheels,
+        macos_amd64_wheels,
+        macos_arm64_wheels,
+        linux_amd64_wheels,
+        linux_arm64_wheels,
+        linux_s390x_wheels,
+        linux_ppc64le_wheels,
+      ]
 
     name: Publish to PyPI or TestPyPI
     environment: release
     permissions:
-      # Required by OIDC to publish to PyPI and by Sigstore to sign artifacts
-      id-token: write
-      # Required to upload artifacts to a GitHub release identifier
-      contents: write
+      id-token: write # Required by OIDC to publish to PyPI and by Sigstore to sign artifacts
+      contents: write # Required to upload signed artifacts to a GitHub release
+      attestations: write # Required to generate build provenance attestations
     runs-on: ubuntu-latest
-    if: github.event_name == 'release' && github.event.action == 'published'
+    if: startsWith(github.ref, 'refs/tags/') && github.event_name != 'schedule'
 
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
       - name: Download all artifacts
-        uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427  # v4.1.4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: upload/
           merge-multiple: true
 
-      - uses: pypa/gh-action-pypi-publish@81e9d935c883d0b210363ab89cf05f3894778450  # v1.8.14
-        if: github.event_name == 'release' && github.event.action == 'published'
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+
+          # Select template based on whether this is a patch release
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+          if [ "$PATCH" -gt 0 ]; then
+            TEMPLATE="release_notes/patch.md"
+          else
+            TEMPLATE="release_notes/stable.md"
+          fi
+
+          # Find the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-v:refname | \
+            awk -v tag="${TAG}" '$0 == tag {found=1; next} found {print; exit}')
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${TAG}^")
+          fi
+
+          # Extract PR numbers from commits between the two tags
+          PR_NUMBERS=$(git log "${PREVIOUS_TAG}..${TAG}" --oneline | \
+            grep -oE '#[0-9]+' | tr -d '#' || true)
+
+          # Fetch PR titles and authors, filtering out bot PRs
+          PR_LINES=""
+          for NUM in $PR_NUMBERS; do
+            LINE=$(gh pr view "$NUM" --repo "${GITHUB_REPOSITORY}" --json title,author \
+              --jq '"- \(.title) by @\(.author.login) in #'"$NUM"'"' 2>/dev/null || true)
+            [ -z "$LINE" ] && continue
+            echo "$LINE" | grep -qE 'dependabot\[bot\]|pre-commit-ci\[bot\]' && continue
+            PR_LINES="${PR_LINES}${LINE}"$'\n'
+          done
+
+          if [ -n "$PR_LINES" ]; then
+            CHANGES_SECTION=$'\n## Changes that made it to this release\n\n'"${PR_LINES}"
+          else
+            CHANGES_SECTION=""
+          fi
+
+          export VERSION PREVIOUS_TAG CHANGES_SECTION
+          envsubst '${VERSION} ${PREVIOUS_TAG} ${CHANGES_SECTION}' \
+            < "$TEMPLATE" > /tmp/release-notes.md
+
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           # Comment this line out to publish to PyPI
           # repository-url: https://test.pypi.org/legacy/
           packages-dir: upload
 
       - name: Sign artifacts with Sigstore
-        uses: sigstore/gh-action-sigstore-python@61f6a500bbfdd9a2a339cf033e5421951fbc1cd2  # v2.1.1
+        uses: sigstore/gh-action-sigstore-python@04cffa1d795717b140764e8b640de88853c92acc # v3.3.0
         with:
           inputs: >-
             ./upload/*.whl
             ./upload/*.tar.gz
 
-      - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564  # v2.0.4
-        if: github.event_name == 'release' && github.event.action == 'published'
+      - name: Generate artifact attestation(s)
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
-          # This will contain not only the wheel and sdist, but also the signature files
-          # generated by the Sigstore action
-          files: upload/*
+          subject-path: |
+            upload/*.whl
+            upload/*.tar.gz
+
+      - name: Create GitHub Release and upload artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" upload/* \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file /tmp/release-notes.md

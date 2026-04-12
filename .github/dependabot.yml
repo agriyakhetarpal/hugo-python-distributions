@@ -5,6 +5,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 14
     commit-message:
       prefix: "🦄 "
       include: scope

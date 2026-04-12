@@ -1,0 +1,97 @@
+name: Update Hugo version
+
+on:
+  schedule:
+    # Check for new Hugo releases every hour
+    - cron: "0 */1 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check-and-update:
+    name: Check for new Hugo release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to update files and push branches
+      pull-requests: write # to create PR
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - name: Check for new Hugo release, and apply updates
+        id: check-hugo-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          CURRENT_VERSION=$(grep -oP 'HUGO_VERSION = "\K[0-9.]+' setup.py)
+          echo "Current version: $CURRENT_VERSION"
+
+          # Find the next Hugo release after our current version
+          NEXT_VERSION=$(gh api repos/gohugoio/hugo/releases --paginate --jq '.[].tag_name' | \
+            sed 's/^v//' | sort -V | awk -v cur="$CURRENT_VERSION" 'found {print; exit} $0 == cur {found=1}')
+
+          if [ -z "$NEXT_VERSION" ]; then
+            echo "Already up to date (v$CURRENT_VERSION)"
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LATEST_VERSION="$NEXT_VERSION"
+          echo "Next version to update to: $LATEST_VERSION"
+
+          # Check if a PR already exists for this version, and skip if it does
+          EXISTING_PR=$(gh pr list --search "Update Hugo to v$LATEST_VERSION" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR #$EXISTING_PR already exists for v$LATEST_VERSION"
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CURRENT_MINOR=$(echo "$CURRENT_VERSION" | cut -d. -f2)
+          LATEST_MINOR=$(echo "$LATEST_VERSION" | cut -d. -f2)
+
+          if [ "$CURRENT_MINOR" != "$LATEST_MINOR" ]; then
+            RELEASE_TYPE="minor"
+          else
+            RELEASE_TYPE="patch"
+          fi
+
+          sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" setup.py
+          sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" src/hugo/cli.py
+
+          # Update the Hugo submodule to the new version tag
+          cd hugo
+          git fetch origin tag "v$LATEST_VERSION" --no-tags
+          git checkout "v$LATEST_VERSION"
+          cd ..
+
+          echo "updated=true" >> "$GITHUB_OUTPUT"
+          echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_type=$RELEASE_TYPE" >> "$GITHUB_OUTPUT"
+
+          export CURRENT_VERSION LATEST_VERSION RELEASE_TYPE
+          envsubst < .github/update-hugo.md > /tmp/pr-body.md
+
+      - name: Create pull request
+        if: steps.check-hugo-release.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LATEST_VERSION: ${{ steps.check-hugo-release.outputs.latest_version }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY"
+          git checkout -b "update-hugo-v${LATEST_VERSION}"
+          git add setup.py src/hugo/cli.py hugo
+          git commit -m "Update Hugo to v${LATEST_VERSION}"
+          git push origin "update-hugo-v${LATEST_VERSION}"
+          gh pr create \
+            --title "Update Hugo to v${LATEST_VERSION}" \
+            --body-file /tmp/pr-body.md \
+            --reviewer agriyakhetarpal

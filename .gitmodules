@@ -1,3 +1,7 @@
+[submodule "hugo"]
+	path = hugo
+	url = https://github.com/gohugoio/hugo.git
+
 [submodule "docs/themes/docura"]
 	path = docs/themes/docura
 	url = https://github.com/docura/docura.git

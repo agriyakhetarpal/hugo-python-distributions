@@ -174,7 +174,7 @@ go.work
 .DS_Store
 
 # Binaries
-hugo/binaries/*
+src/hugo/binaries/*
 
 # ruff cache
 .ruff_cache/
@@ -189,3 +189,6 @@ hugo/VERSION
 /docs/public
 /docs/resources
 *.lock
+
+# Generated stamp file for sdist builds
+hugo/.hugo_commit_date

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import argparse
-import shutil
+import re
+import subprocess
 from pathlib import Path
 
 import nox
 
 DIR = Path(__file__).parent.resolve()
+REPO = "agriyakhetarpal/hugo-python-distributions"
 
-nox.options.sessions = ["lint", "tests"]
+nox.options.sessions = ["lint"]
 
 
 @nox.session
@@ -16,66 +17,8 @@ def lint(session: nox.Session) -> None:
     """
     Run the linter.
     """
-    session.install("pre-commit")
-    session.run(
-        "pre-commit", "run", "--all-files", "--show-diff-on-failure", *session.posargs
-    )
-
-
-@nox.session(reuse_venv=True)
-def docs(session: nox.Session) -> None:
-    """
-    Build the docs. Pass "--serve" to serve. Pass "-b linkcheck" to check links.
-    """
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--serve", action="store_true", help="Serve after building")
-    parser.add_argument(
-        "-b", dest="builder", default="html", help="Build target (default: html)"
-    )
-    args, posargs = parser.parse_known_args(session.posargs)
-
-    if args.builder != "html" and args.serve:
-        session.error("Must not specify non-HTML builder with --serve")
-
-    extra_installs = ["sphinx-autobuild"] if args.serve else []
-
-    session.install("-e.[docs]", *extra_installs)
-    session.chdir("docs")
-
-    if args.builder == "linkcheck":
-        session.run(
-            "sphinx-build", "-b", "linkcheck", ".", "_build/linkcheck", *posargs
-        )
-        return
-
-    shared_args = (
-        "-n",  # nitpicky mode
-        "-T",  # full tracebacks
-        f"-b={args.builder}",
-        ".",
-        f"_build/{args.builder}",
-        *posargs,
-    )
-
-    if args.serve:
-        session.run("sphinx-autobuild", *shared_args)
-    else:
-        session.run("sphinx-build", "--keep-going", *shared_args)
-
-
-@nox.session
-def release(session: nox.Session) -> None:
-    """
-    Build an SDist and wheel.
-    """
-
-    build_path = DIR.joinpath("build")
-    if build_path.exists():
-        shutil.rmtree(build_path)
-
-    session.install("build")
-    session.run("python", "-m", "build")
+    session.install("prek")
+    session.run("prek", "-a", *session.posargs)
 
 
 @nox.session(name="venv", reuse_venv=True)
@@ -87,3 +30,53 @@ def venv(session: nox.Session) -> None:
         session.install(file)
         session.run("hugo", "version")
         session.run("hugo", "env", "--logLevel", "debug")
+
+
+def _get_version(session: nox.Session) -> str:
+    """Extract version from session posargs or setup.py."""
+    if session.posargs:
+        return session.posargs[0].lstrip("v")
+    content = (DIR / "setup.py").read_text()
+    match = re.search(r'HUGO_VERSION = "([0-9.]+)"', content)
+    if not match:
+        session.error("Could not determine version. Pass it as: nox -s tag -- 0.157.0")
+    return match.group(1)
+
+
+@nox.session(default=False)
+def tag(session: nox.Session) -> None:
+    """Create a signed, annotated tag for a release.
+
+    Usage: nox -s tag -- 0.157.0
+    """
+    version = _get_version(session)
+    tag_name = f"v{version}"
+    tag_message = f"hugo-python-distributions, version {version}"
+
+    result = subprocess.run(
+        ["git", "tag", "-l", tag_name], capture_output=True, text=True, check=False
+    )
+    if tag_name in result.stdout:
+        session.error(f"Tag {tag_name} already exists")
+
+    branch = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    if branch != "main":
+        session.warn(f"You are on branch '{branch}', not 'main'. Proceed with caution.")
+
+    session.log(f"Creating signed tag {tag_name}: {tag_message}")
+    session.run(
+        "git",
+        "tag",
+        "-s",
+        "-a",
+        tag_name,
+        "-m",
+        tag_message,
+        external=True,
+    )
+    session.log(f"Tag {tag_name} created. Push it with: git push origin {tag_name}")

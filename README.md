@@ -1,33 +1,35 @@
 # hugo-python-distributions
 
-[actions-badge]:            https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CI/badge.svg
-[cd-badge]:                 https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CD/badge.svg
-[actions-link]:             https://github.com/agriyakhetarpal/hugo-python-distributions/actions
-[pypi-link]:                https://pypi.org/project/hugo/
-[pypi-platforms]:           https://img.shields.io/pypi/pyversions/hugo/
-[pypi-version]:             https://img.shields.io/pypi/v/hugo/
-[pypi-downloads-total]:     https://static.pepy.tech/badge/hugo/
-[pypi-downloads-monthly]:   https://static.pepy.tech/badge/hugo/month/
-[license-badge]:            https://img.shields.io/pypi/l/hugo?color=lavender
-[license-link]:             https://apache.org/licenses/LICENSE-2.0
-[hugo-badge]:               https://img.shields.io/badge/hugo-extended-pink.svg?style=flat&logo=hugo
-[hugo-link]:                https://gohugo.io/
-[docs-link]:                https://github.com/agriyakhetarpal/hugo-python-distributions/
-[docs-badge]:               https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
+[actions-badge]: https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CI/badge.svg
+[cd-badge]: https://github.com/agriyakhetarpal/hugo-python-distributions/workflows/CD/badge.svg
+[actions-link]: https://github.com/agriyakhetarpal/hugo-python-distributions/actions
+[pypi-link]: https://pypi.org/project/hugo/
+[pypi-platforms]: https://img.shields.io/pypi/pyversions/hugo/
+[pypi-version]: https://img.shields.io/pypi/v/hugo/
+[pypi-downloads-total]: https://img.shields.io/pepy/dt/hugo
+[pypi-downloads-monthly]: https://img.shields.io/pypi/dm/hugo
+[pypi-downloads-weekly]: https://img.shields.io/pypi/dw/hugo
+[pypi-downloads-daily]: https://img.shields.io/pypi/dd/hugo
+[license-badge]: https://img.shields.io/pypi/l/hugo?color=lavender
+[license-link]: https://apache.org/licenses/LICENSE-2.0
+[hugo-badge]: https://img.shields.io/badge/hugo-extended,withdeploy-pink.svg?style=flat&logo=hugo
+[hugo-link]: https://gohugo.io/
+[docs-link]: https://github.com/agriyakhetarpal/hugo-python-distributions/
+[docs-badge]: https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
 
 <div align="center">
 
-| Classifiers | Description |
-| ------ | ---------------- |
-| Builds | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main) |
-| Package | [![PyPI version](https://badge.fury.io/py/hugo.svg)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://static.pepy.tech/badge/hugo)](https://pepy.tech/project/hugo) [![Downloads per month](https://static.pepy.tech/badge/hugo/month)](https://pepy.tech/project/hugo) [![Downloads](https://static.pepy.tech/badge/hugo/week)](https://pepy.tech/project/hugo) |
-| Meta | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) |
+| Classifiers | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Builds      | [![Actions Status for CI][actions-badge]][actions-link] [![Actions status for CD][cd-badge]][actions-link] [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/agriyakhetarpal/hugo-python-distributions/main.svg)](https://results.pre-commit.ci/latest/github/agriyakhetarpal/hugo-python-distributions/main)                                                                                                                                                                                                                                                                |
+| Package     | [![PyPI version](https://img.shields.io/pypi/v/hugo?color=CD007B)](https://badge.fury.io/py/hugo) ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hugo) [![Downloads](https://img.shields.io/pepy/dt/hugo?color=teal)](https://pepy.tech/project/hugo) [![Downloads per month](https://img.shields.io/pypi/dm/hugo?color=teal)](https://pepy.tech/project/hugo) [![Downloads per week](https://img.shields.io/pypi/dw/hugo?color=teal)](https://pepy.tech/project/hugo) [![Downloads per day](https://img.shields.io/pypi/dd/hugo?color=teal)](https://pepy.tech/project/hugo) |
+| Meta        | [![License][license-badge]][license-link] [![Hugo version][hugo-badge]][hugo-link] [![Documentation][docs-badge]][docs-link] [![prek](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/j178/prek/master/docs/assets/badge-v0.json)](https://github.com/j178/prek) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)                                                                                                                                            |
 
 </div>
 
-Binaries for the **extended version** of the Hugo static site generator, installable via `pip`
+Binaries for the **`extended` + `withdeploy` edition** of the Hugo static site generator, installable via `pip`
 
-This project provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for Python 3.8 and later.
+This project provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for Python 3.10 and later.
 
 > [!NOTE]
 > Only the latest, stable, and to-be EOL Python versions are tested regularly. If you encounter any issues with the package on a specific Python version, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new).
@@ -92,7 +94,32 @@ This repository aims to follow the Hugo project in striving to provide a welcomi
 
 For requesting help, reporting bugs, or requesting features that are specific to Hugo's functionalities, please refer to the [Hugo Discourse forum](https://discourse.gohugo.io/t/requesting-help/9132). For requesting help for `hugo-python-distributions`, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new) in this repository.
 
-### Footnotes
+## Inspirations for this project, and similar projects
+
+### Binaries
+
+- The official [Hugo](https://gohugo.io/) project, which is the source of the binaries provided by this project.
+
+### Naming
+
+- The [`cmake-python-distributions`](https://github.com/scikit-build/cmake-python-distributions) project by the [scikit-build](https://scikit-build.org/) team provides a similar infrastructure for building and distributing CMake as a Python package to be used as a PEP 517 build-time dependency for building packages with extension modules. I used their repository's name as an inspiration for the name of this repository.
+
+### Other distributors of Hugo
+
+- [`uhugo`](pypi.org/project/uhugo) is a Hugo binary helper that installs and updates Hugo binaries from Hugo official releases. It can be used to update the version of Hugo within Cloud providers. The difference between `uHugo` is that this project enables building Hugo from source and embeds the application binary into a wheel, while `uHugo` is a CLI to update an existing Hugo binary already present on `PATH`. It provides similar visions for installing Hugo via a command-line interface, even though the idea and the packaging code is fundamentally different.
+- [`hvm` (Hugo version manager)](https://github.com/jmooring/hvm) is a project by one of the core developers of Hugo that allows downloading multiple Hugo versions and setting different default versions by adding them to `PATH`, thereby allowing the usage of multiple versions at once, but without the extra Python scaffolding provided here (and without `pipx`'s run-without-install functionality of course).
+- [`hugo-installer`](https://github.com/dominique-mueller/hugo-installer) is a small Node.js script which you can use to fetch the correct Hugo binary for your system and install it with `npm`'s post-installation hook. It is similar to this project in that it provides a way to install Hugo binaries.
+- `conda-forge`'s [`hugo` feedstock](https://github.com/conda-forge/hugo-feedstock/) provides a way to install Hugo binaries via the `conda` package format and associated package managers.
+
+### Similar projects that distribute binaries embedded in Python packages
+
+- [`zig-pypi`](https://github.com/ziglang/zig-pypi) is a project that provides a way to distribute the Zig compiler as a Python package, which can be installed via `pip`. It provides a similar infrastructure for building and distributing binaries as this project does for Hugo, but it fetches the Zig compiler binaries from the official Zig releases and embeds them into a Python package in a reproducible manner.
+- [`nodejs-wheel`](https://pypi.org/project/nodejs-wheel/) is a project that provides a way to unofficially distribute Node.js binaries as Python packages, which can be installed via `pip`, in order to use Node.js and `npm` in an isolated Python environment.
+- The [`pip-binary-factory`](https://github.com/Bing-su/pip-binary-factory) repository provides binaries and their CLIs for various Go-based tools as Python packages.
+
+There are several other projects in this area, but are not listed here for brevity.
+
+## Footnotes
 
 - This project is currently not affiliated with the official Hugo project. Please refer to the [Hugo documentation](https://gohugo.io/documentation/) for more information on Hugo.
 - The author of this project: @agriyakhetarpal, would like to express a token of gratitude to the owner of the `Hugo` package on PyPI (@nariman) for their kind gesture of granting access to take over the package name with the underlying provisions of PEP 541. This way, it allows users to install the package using the same name as the official Hugo project, which undoubtedly provides for a better user experience and convenience to users of this package when compared to the previous package name, `python-hugo`.
