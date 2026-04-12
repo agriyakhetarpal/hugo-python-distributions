@@ -8,8 +8,10 @@ import nox
 
 DIR = Path(__file__).parent.resolve()
 REPO = "agriyakhetarpal/hugo-python-distributions"
+DOCS_DIR = DIR / "docs"
 
 nox.options.sessions = ["lint"]
+nox.options.default_venv_backend = "uv|virtualenv"
 
 
 @nox.session
@@ -41,6 +43,20 @@ def _get_version(session: nox.Session) -> str:
     if not match:
         session.error("Could not determine version. Pass it as: nox -s tag -- 0.157.0")
     return match.group(1)
+
+
+@nox.session(default=False, reuse_venv=True)
+def docs(session: nox.Session) -> None:
+    """Build the documentation website.
+
+    Pass -- serve to start a live-reloading development server instead.
+    """
+    session.install(".")
+
+    if session.posargs == ["serve"]:
+        session.run("hugo", "server", "--source", str(DOCS_DIR))
+    else:
+        session.run("hugo", "--minify", "--source", str(DOCS_DIR))
 
 
 @nox.session(default=False)
