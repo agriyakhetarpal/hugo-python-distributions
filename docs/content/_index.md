@@ -10,40 +10,35 @@ toc = true
 # Documentation for `hugo-python-distributions`
 
 This webpage is meant to serve the documentation for the `hugo-python-distributions` project, which aims to provide a distribution
-channel for the extended version of the Hugo static site generator through `pip`-installable binaries (wheels) hosted on the [Python Package Index (PyPI)](https://pypi.org/).
+channel for the **extended + withdeploy edition** of the Hugo static site generator through `pip`-installable binaries (wheels) hosted on the [Python Package Index (PyPI)](https://pypi.org/).
 
-## Table of contents
+Fun fact: this website itself is built with using the `hugo` package from PyPI, thus serving as a real-world test case for the project!
 
-- [Quickstart](#quickstart)
-- [Supported platforms](#supported-platforms)
-- [Building from sources](building-from-sources/)
-  - [Cross-compiling for different architectures](#cross-compiling-for-different-architectures)
-    - [macOS](#macos)
-    - [Linux](#linux)
-    - [Windows](#windows)
-
-
-### Quickstart
+## Quickstart
 
 Create a [virtual environment](https://realpython.com/python-virtual-environments-a-primer/) and install the package (or install it globally on your system):
 
-{{< tabs items="Linux/macOS,Windows" >}}
+{{< tabs >}}
 
-  {{< tab >}}
-    ```bash
-    python -m virtualenv venv
-    source venv/bin/activate
-    python -m pip install hugo
-    ```
-  {{< /tab >}}
+{{< tab name="Linux/macOS" >}}
 
-  {{< tab >}}
-    ```powershell
-    py -m virtualenv venv
-    venv\Scripts\activate.bat
-    py -m pip install hugo
-    ```
-  {{< /tab >}}
+```bash
+python -m virtualenv venv
+source venv/bin/activate
+python -m pip install hugo
+```
+
+{{< /tab >}}
+
+{{< tab name="Windows" >}}
+
+```powershell
+py -m virtualenv venv
+venv\Scripts\activate.bat
+py -m pip install hugo
+```
+
+{{< /tab >}}
 
 {{< /tabs >}}
 
@@ -65,52 +60,89 @@ and more!
 
 Alternatively, you can install the package globally on your system:
 
-{{< tabs items="Linux/macOS,Windows" >}}
+{{< tabs >}}
 
-  {{< tab >}}
-    ```bash
-    python3.X -m pip install hugo
-    ```
-  {{< /tab >}}
+{{< tab name="Linux/macOS" >}}
 
-  {{< tab >}}
-    ```powershell
-    py -m pip install hugo
-    ```
-  {{< /tab >}}
+```bash
+python3.X -m pip install hugo
+```
+
+{{< /tab >}}
+
+{{< tab name="Windows" >}}
+
+```powershell
+py -m pip install hugo
+```
+
+{{< /tab >}}
 
 {{< /tabs >}}
 
 {{< callout emoji=✨ >}}
 
-It is a great idea to use [`pipx`](https://github.com/pypa/pipx) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system.
+It is a great idea to use [`pipx`](https://github.com/pypa/pipx) or [`uvx`](https://docs.astral.sh/uv/concepts/tools/) to install or use Hugo in an isolated location without having to create a virtual environment, which will allow you to run Hugo as a command-line tool without having to install it globally on your system.
 
 {{</ callout >}}
 
+{{< tabs >}}
 
-{{< tabs items="Install it as an app globally, Run it" >}}
+{{< tab name="Install it as an app globally" >}}
 
-  {{< tab >}}
-    ```bash
-    pipx install hugo
-    ```
-    This installs Hugo in a separate location on your system that is isolated from your global Python environment(s).
-  {{< /tab >}}
+```bash
+pipx install hugo      # install Hugo through pipx
+```
 
-  {{< tab >}}
-    ```bash
-    pipx run hugo version
-    pipx run hugo env --logLevel info
-    ```
-    This runs the latest version of Hugo available on PyPI and installed through `pipx`. You can also run a specific version of Hugo through `pipx`, even if a different version is installed in whatever environment you are in:
-    ```bash
-    pipx run hugo==0.124.1 version
-    pipx run hugo==0.124.1 env --logLevel info
-    ```
-  {{< /tab >}}
+or
+
+```bash
+uv tool install hugo   # install Hugo through uv
+```
+
+This installs Hugo in a separate location on your system that is isolated from your global Python environment(s).
+{{< /tab >}}
+
+{{< tab name="Run it" >}}
+
+```bash
+pipx run hugo version
+pipx run hugo env --logLevel info
+```
+
+This runs the latest version of Hugo available on PyPI and installed through `pipx`. You can also run a specific version of Hugo through `pipx`, even if a different version is installed in whatever environment you are in:
+
+```bash
+pipx run hugo==0.124.1 version
+pipx run hugo==0.124.1 env --logLevel info
+```
+
+Alternatively, with `uv`:
+
+```bash
+uvx hugo version
+uvx hugo env --logLevel info
+```
+
+{{< /tab >}}
 
 {{< /tabs >}}
 
-Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) for more information.
+Please refer to the [`pipx` documentation](https://pipx.pypa.io/stable/) and [documentation on `uv`'s tools interface](https://docs.astral.sh/uv/concepts/tools/) for more information.
 
 For more information on using Hugo and its command-line interface, please refer to the [Hugo documentation](https://gohugo.io/documentation/) and the [Hugo CLI documentation](https://gohugo.io/commands/).
+
+## What version of `hugo` do I install?
+
+This project is versioned alongside Hugo releases, aligned with Hugo's own versioning which uses SemVer — but is likely versioned according to [0ver](https://0ver.org/) standards based on their [versioning history](https://github.com/gohugoio/hugo/releases).
+
+Binaries are available for Hugo versions **0.121.2** and above, through PyPI or through releases on GitHub. If you need an older version that is not available through this package, please consider using the [official Hugo binaries](https://github.com/gohugoio/hugo/releases).
+
+{{< callout type="warning" >}}
+Owing to the overall size limits on [PyPI](https://pypi.org/project/hugo/#history), only the most recent versions of Hugo are available for download through `pip` — older wheels will be deleted to make space for newer releases. If you need an older version, use the wheels uploaded to the [GitHub releases](https://github.com/agriyakhetarpal/hugo-python-distributions/releases) page or the [official Hugo binaries](https://github.com/gohugoio/hugo/releases). The former can be done via `pip` by downloading the `.whl` file, or through `pipx` using the URL directly. For example:
+
+```bash
+pipx install "https://github.com/agriyakhetarpal/hugo-python-distributions/releases/download/v0.122.0/hugo-0.122.0-cp311-cp311-win_amd64.whl"
+```
+
+{{</ callout >}}
