@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          CURRENT_VERSION=$(grep -oP 'HUGO_VERSION = "\K[0-9.]+' setup.py)
+          CURRENT_VERSION=$(grep -oP "version\s*:\s*'\K[0-9.]+" meson.build)
           echo "Current version: $CURRENT_VERSION"
 
           # Find the next Hugo release after our current version
@@ -60,8 +60,7 @@ jobs:
             RELEASE_TYPE="patch"
           fi
 
-          sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" setup.py
-          sed -i "s/HUGO_VERSION = \"$CURRENT_VERSION\"/HUGO_VERSION = \"$LATEST_VERSION\"/" src/hugo/cli.py
+          sed -i "s/version\s*:\s*'$CURRENT_VERSION'/version : '$LATEST_VERSION'/" meson.build
 
           # Update the Hugo submodule to the new version tag
           cd hugo
@@ -88,7 +87,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY"
           git checkout -b "update-hugo-v${LATEST_VERSION}"
-          git add setup.py src/hugo/cli.py hugo
+          git add meson.build hugo
           git commit -m "Update Hugo to v${LATEST_VERSION}"
           git push origin "update-hugo-v${LATEST_VERSION}"
           gh pr create \
