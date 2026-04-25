@@ -188,8 +188,10 @@ jobs:
         if: matrix.runs-on == 'windows-latest'
         id: meson-cross-file
         shell: pwsh
+        env:
+          MATRIX_ARCH: ${{ matrix.architecture }}
         run: |
-          $crossFileName = if ('${{ matrix.architecture }}' -eq 'arm64') { 'windows-arm64.ini' } else { 'windows-386.ini' }
+          $crossFileName = if ($env:MATRIX_ARCH -eq 'arm64') { 'windows-arm64.ini' } else { 'windows-386.ini' }
           $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE "meson_cross_files/$crossFileName")).Path -replace '\\', '/'
           "path=$crossFile" >> $env:GITHUB_OUTPUT
 
