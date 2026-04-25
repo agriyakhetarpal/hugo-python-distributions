@@ -35,6 +35,42 @@ jobs:
       - name: Run style checks
         uses: j178/prek-action@53276d8b0d10f8b6672aa85b4588c6921d0370cc # v2.0.1
 
+  editable_install:
+    needs: [style]
+    name: editable-install-smoke
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+
+      - name: Set up Go toolchain
+        id: setup-go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version: "1.26.1"
+          cache: false
+          check-latest: true
+
+      - name: Restore Hugo builder cache
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ~/.cache/hugo-go
+          key: editable-install-hugo-${{ runner.os }}-${{ steps.setup-go.outputs.go-version }}
+
+      - name: Install Python dependencies
+        run: python -m pip install nox[uv]
+
+      - name: Smoke test editable install entry points
+        run: nox -s editable
+
   build_wheels:
     needs: [style]
     name: ${{ matrix.runs-on }}-python-${{ matrix.python-version }}

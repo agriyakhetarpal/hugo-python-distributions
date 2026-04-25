@@ -34,6 +34,15 @@ def venv(session: nox.Session) -> None:
         session.run("hugo", "env", "--logLevel", "debug")
 
 
+@nox.session(default=False, reuse_venv=True)
+def editable(session: nox.Session) -> None:
+    """Smoke test console and module entry points from an editable install."""
+    session.install("meson-python==0.19.0", "ziglang==0.15.2")
+    session.install("--no-build-isolation", "-e", ".")
+    session.run("python", "-m", "hugo", "version")
+    session.run("hugo", "version")
+
+
 def _get_version(session: nox.Session) -> str:
     """Extract version from session posargs or meson.build."""
     if session.posargs:
