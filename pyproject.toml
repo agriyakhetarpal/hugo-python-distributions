@@ -55,10 +55,6 @@ Homepage = "https://github.com/agriyakhetarpal/hugo-python-distributions"
 Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["hugo", "hugo.*"]
-
 [project.scripts]
 hugo = "hugo.cli:__call"
 
