@@ -36,7 +36,7 @@ def _editable_hugo_executable() -> Path | None:
 
 def _hugo_executable():
     try:
-        binary = resources.files("hugo").joinpath("binaries", HUGO_EXECUTABLE)
+        binary = resources.files("hugo").joinpath("binaries").joinpath(HUGO_EXECUTABLE)
         return resources.as_file(binary)
     except ValueError:
         editable_binary = _editable_hugo_executable()
