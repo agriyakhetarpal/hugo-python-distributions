@@ -88,7 +88,7 @@ def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
     if tag is None:
         return
 
-    os.environ.setdefault("_PYTHON_HOST_PLATFORM", tag)
+    os.environ["_PYTHON_HOST_PLATFORM"] = tag
 
 
 # Unchanged meson-python PEP 517 entry points below
