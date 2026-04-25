@@ -133,10 +133,11 @@ class SubmoduleVcsSwap:
     VCS stamping reads the Hugo submodule's HEAD, not that of the parent
     repository.
 
-    Submodules store a .git *file* (e.g. ``gitdir: ../.git/modules/hugo``).
-    Go's VCS detection follows it into the parent repo and produces wrong
-    metadata. We copy the actual git directory into ``hugo/.git/`` and
-    rewrite the worktree config entry. This is restored on exit.
+    Submodules store a `.git` file that points into the parent repository's
+    `.git/modules` directory. Go's VCS detection follows that link into the
+    parent repo and produces wrong metadata. We copy the actual git directory
+    into the submodule worktree temporarily and rewrite the worktree config
+    entry. This is restored on exit.
     """
 
     def __init__(self, hugo_src: Path) -> None:
@@ -176,8 +177,8 @@ class SubmoduleVcsSwap:
 def get_hugo_commit_date(hugo_src: Path) -> str:
     """Return the Hugo submodule's HEAD commit date (ISO 8601).
 
-    Falls back to a stamp file (``hugo/.hugo_commit_date``) when ``.git`` is
-    absent, which happens for sdist builds.
+    Falls back to a stamp file (`<hugo-src>/.hugo_commit_date`) when
+    `.git` is absent, which is the case for sdist builds.
     """
     stamp = hugo_src / ".hugo_commit_date"
     try:
