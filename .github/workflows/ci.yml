@@ -180,7 +180,7 @@ jobs:
 
       - name: Build binary distribution (wheel) on Linux
         if: matrix.runs-on == 'ubuntu-latest'
-        run: python -m build --wheel . --outdir wheelhouse -Csetup-args=--cross-file=$PWD/meson_cross_files/linux-arm64.ini
+        run: python -m build --wheel . --outdir wheelhouse -Csetup-args=--cross-file="$GITHUB_WORKSPACE/meson_cross_files/linux-arm64.ini"
         # can't repair arm64 wheels on Linux x86_64 right now
         # auditwheel repair --plat manylinux_2_28_aarch64 -w wheelhouse/ dist/*.whl
 
@@ -195,7 +195,7 @@ jobs:
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file=$PWD/meson_cross_files/windows-arm64.ini"
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-arm64.ini"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_SKIP: "*-win_arm64"
 
@@ -211,7 +211,7 @@ jobs:
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: x86
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file=$PWD/meson_cross_files/windows-686.ini"
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-386.ini"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: |
             hugo version
