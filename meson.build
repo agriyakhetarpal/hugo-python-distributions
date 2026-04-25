@@ -24,3 +24,4 @@ py.install_sources(
   subdir : 'hugo',
 )
 
+meson.add_dist_script(py.full_path(), files('scripts/prune_sdist.py'))
