@@ -11,6 +11,7 @@ REPO = "agriyakhetarpal/hugo-python-distributions"
 DOCS_DIR = DIR / "docs"
 
 nox.options.sessions = ["lint"]
+nox.options.verbose = True
 nox.options.default_venv_backend = "uv|virtualenv"
 
 
@@ -37,8 +38,8 @@ def venv(session: nox.Session) -> None:
 @nox.session(default=False, reuse_venv=True)
 def editable(session: nox.Session) -> None:
     """Smoke test console and module entry points from an editable install."""
-    session.install("meson-python==0.19.0", "ziglang==0.15.2")
-    session.install("--no-build-isolation", "-e", ".")
+    session.install("meson-python==0.19.0", "ziglang==0.15.2", "ninja")
+    session.install("--no-build-isolation", "-ve", ".")
     session.run("python", "-m", "hugo", "version")
     session.run("hugo", "version")
 
