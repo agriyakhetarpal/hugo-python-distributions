@@ -83,7 +83,7 @@ custom_target(
     '--goarch',  goarch,
   ],
   install : true,
-  install_dir : py.get_install_dir() / 'hugo' / 'binaries',
+  install_dir : py.get_install_dir(pure: false) / 'hugo' / 'binaries',
   install_tag : 'python-runtime',
   build_by_default : true,
   console : true,
