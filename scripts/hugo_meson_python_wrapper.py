@@ -92,7 +92,9 @@ def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
         return
 
     os.environ["_PYTHON_HOST_PLATFORM"] = tag
-    mesonpy._tags.get_platform_tag = lambda: tag # TODO: drop this hack/use of private API
+    mesonpy._tags.get_platform_tag = lambda: (
+        tag
+    )  # TODO: drop this hack/use of private API
 
 
 # Unchanged meson-python PEP 517 entry points below
