@@ -61,12 +61,10 @@ def _strip_quotes(string: str) -> str:
     return string.strip().strip("'\"")
 
 
-def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
-    """If config_settings contains a --cross-file=... flag, parse the cross file and set
-    _PYTHON_HOST_PLATFORM based on the host_machine config.
-    """
+def _host_platform_tag(config_settings: dict[str, Any] | None) -> str | None:
+    """Return the target wheel platform tag from a Meson cross file, if any."""
     if not config_settings:
-        return
+        return None
     setup_args = _flatten(config_settings.get("setup-args"))
     cross_file: Path | None = None
     for arg in setup_args:
@@ -75,20 +73,26 @@ def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
             cross_file = Path(m.group(1))
             break
     if cross_file is None or not cross_file.exists():
-        return
+        return None
 
     cfg = configparser.ConfigParser()
     cfg.read(cross_file)
     if "host_machine" not in cfg:
-        return
+        return None
 
     system = _strip_quotes(cfg["host_machine"].get("system", ""))
     family = _strip_quotes(cfg["host_machine"].get("cpu_family", ""))
-    tag = PLATFORM_TAGS_MAP.get((system, family))
+    return PLATFORM_TAGS_MAP.get((system, family))
+
+
+def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
+    """If config_settings contains a Meson cross file, force meson-python's wheel tag."""
+    tag = _host_platform_tag(config_settings)
     if tag is None:
         return
 
     os.environ["_PYTHON_HOST_PLATFORM"] = tag
+    mesonpy._tags.get_platform_tag = lambda: tag # TODO: drop this hack/use of private API
 
 
 # Unchanged meson-python PEP 517 entry points below
