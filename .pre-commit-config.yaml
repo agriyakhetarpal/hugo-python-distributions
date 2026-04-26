@@ -2,6 +2,7 @@ ci:
   autoupdate_commit_msg: "📈 Update versions for pre-commit hooks"
   autofix_commit_msg: "🪩 Automated fixes from https://pre-commit.ci"
   autoupdate_schedule: "weekly"
+  autofix_prs: false
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
