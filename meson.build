@@ -83,10 +83,23 @@ custom_target(
     '--goarch',  goarch,
   ],
   install : true,
-  install_dir : get_option('bindir') / 'binaries',
+  install_dir : py.get_install_dir(pure: false) / 'hugo' / 'binaries',
   install_tag : 'python-runtime',
   build_by_default : true,
   console : true,
+)
+
+# This is a hack to make meson-python mark the wheel as non-pure regardless
+# of whether the host platform's magic-number check in mesonpy._is_native
+# matches the target binary. _pure becomes False whenever mesonpy-libs
+# ({libdir}) is non-empty, without running _is_native on its contents. See
+#_WheelBuilder._pure in mesonpy/__init__.py.
+configure_file(
+  output : '.platform_marker',
+  configuration : configuration_data(),
+  install : true,
+  install_dir : get_option('libdir'),
+  install_tag : 'runtime',
 )
 
 meson.add_dist_script(py.full_path(), files('scripts/prune_sdist.py'))

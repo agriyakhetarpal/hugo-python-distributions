@@ -59,6 +59,9 @@ Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releas
 [project.scripts]
 hugo = "hugo.cli:__call"
 
+[tool.meson-python]
+allow-windows-internal-shared-libs = true
+
 [tool.ruff]
 src = ["src"]
 lint.extend-select = [
