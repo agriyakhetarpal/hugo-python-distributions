@@ -5,10 +5,10 @@ project(
   default_options : ['warning_level=0'],
 )
 
-# Setting `pure: true` routes the Python package (including the bundled Hugo
-# executable) to purelib, so platlib stays empty. Combined with the marker file
-# installed into libdir below, this keeps the wheel tag at py3-none-<platform>
-# instead of a Python-version-specific ABI tag.
+# Setting `pure: true` routes the Python package to purelib, so platlib stays
+# empty. The bundled Hugo executable is installed under datadir and the marker
+# file below keeps the wheel tag at py3-none-<platform> instead of a
+# Python-version-specific ABI tag.
 # See _has_extension_modules and _pure in mesonpy/__init__.py
 py = import('python').find_installation(pure: true)
 
@@ -83,7 +83,7 @@ custom_target(
     '--goarch',  goarch,
   ],
   install : true,
-  install_dir : py.get_install_dir() / 'hugo' / 'binaries',
+  install_dir : get_option('datadir') / 'hugo' / 'binaries',
   install_tag : 'python-runtime',
   build_by_default : true,
   console : true,
