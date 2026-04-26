@@ -90,7 +90,6 @@ Cross-compilation for Hugo binaries is provided for the following platforms and 
 
 For a list of supported distributions for Go, please run the `go tool dist list` command on your system. For a list of supported targets for Zig, please refer to the [Zig documentation](https://ziglang.org/documentation/) for more information or run the `zig targets` command on your system.
 
-
 ### 2. Build the wheel
 
 ```bash
