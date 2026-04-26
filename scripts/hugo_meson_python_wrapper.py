@@ -140,9 +140,3 @@ def get_requires_for_build_sdist(
     config_settings: dict[str, Any] | None = None,
 ) -> list[str]:
     return mesonpy.get_requires_for_build_sdist(config_settings)
-
-
-# PEP 517's prepare_metadata_for_build_{wheel,editable} are optional hooks.
-# meson-python intentionally does not implement them, so we don't either —
-# frontends fall back to running the matching build_* hook to extract
-# metadata, which is the documented behaviour.

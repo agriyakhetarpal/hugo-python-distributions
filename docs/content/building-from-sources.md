@@ -5,11 +5,15 @@ draft = false
 toc = true
 +++
 
-Building the extended + withdeploy edition of Hugo from source requires the following dependencies:
+The build is driven by [Meson](https://mesonbuild.com/) and [meson-python](https://meson-python.readthedocs.io/). Building the extended + withdeploy edition of Hugo from source requires the following dependencies:
 
 1. The [Go](https://go.dev/doc/install) toolchain
 2. The [Git](https://git-scm.com/downloads) version control system
-3. A C/C++ compiler, such as [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/)
+3. A C/C++ compiler, such as [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/). You may also use [Zig](https://ziglang.org/) as a C compiler. On Windows, the [MinGW](https://www.mingw-w64.org/) toolchain is supported, and [MSVC](https://visualstudio.microsoft.com/visual-cpp-build-tools/) is untested.
+   3a. For cross-compilation to non-macOS targets, [Zig](https://ziglang.org/) is pulled in from PyPI and auto-selected as the C compiler. For cross-compilation from macOS hosts to macOS targets, AppleClang is used with `-arch <target>`.
+4. [Python](https://www.python.org/downloads/) ≥ 3.10
+
+`meson-python`, `meson`, `ninja`, and `ziglang` are all pulled in as build-time dependencies by the build backend, so you don't have to install them yourself.
 
 Windows users can use the [Chocolatey package manager](https://chocolatey.org/) in order to use the [MinGW compiler](https://chocolatey.org/packages/mingw). After installing Chocolatey, run the following command in an elevated terminal prompt:
 
@@ -17,16 +21,18 @@ Windows users can use the [Chocolatey package manager](https://chocolatey.org/) 
 choco install mingw
 ```
 
-Then, clone the repository and run the build script:
+Then, clone the repository and install the package:
 
 {{< tabs >}}
 
 {{< tab name="Linux/macOS" >}}
 
 ```bash
-git clone --recurse-submodules https://github.com/agriyakhetarpal/hugo-python-distributions@main
+git clone --recurse-submodules https://github.com/agriyakhetarpal/hugo-python-distributions
+cd hugo-python-distributions
 python -m venv venv
 source venv/bin/activate
+pip install .
 ```
 
 {{< /tab >}}
@@ -34,22 +40,18 @@ source venv/bin/activate
 {{< tab name="Windows" >}}
 
 ```cmd
-git clone --recurse-submodules https://github.com/agriyakhetarpal/hugo-python-distributions@main
+git clone --recurse-submodules https://github.com/agriyakhetarpal/hugo-python-distributions
+cd hugo-python-distributions
 py -m venv venv
 venv\Scripts\activate.bat
+pip install .
 ```
 
 {{< /tab >}}
 
 {{< /tabs >}}
 
-and then install the package in the current directory:
-
-```bash
-pip install .
-```
-
-or perform an editable installation via the following command:
+For an editable install:
 
 ```bash
 pip install -e .
@@ -61,89 +63,88 @@ pip install -e .
 Cross-compilation is experimental and may not be stable or reliable for all use cases. If you encounter any issues, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new).
 {{</ callout >}}
 
-This project is capable of cross-compiling Hugo binaries for various platforms and architectures. Cross-compilation is provided for the following platforms:
+Cross-compilation is indicated by and happens entirely via a [Meson cross file](https://mesonbuild.com/Cross-compilation.html). This cross-build definition file has a `[host_machine]` section that describes the target platform, and Meson and meson-python both consume it:
 
-1. macOS; for the `arm64` and `amd64` architectures via the Xcode toolchain,
-2. Linux; for the `arm64`, `amd64`, `s390x`, and `ppc64le` architectures via the Zig toolchain, and
-3. Windows; for the `amd64`, `arm64`, and `x86` architectures via the Zig toolchain.
+- `meson` gets to know what the target is,
+- `meson.build` gets to know what `GOOS`/`GOARCH` combination is to be passed on to the Go build, and whether to use the Zig compiler for cross-compilation or not, based on said combination.
+- There is an in-tree PEP 517 build backend wrapper around `meson-python` at [`scripts/hugo_meson_python_wrapper.py`](https://github.com/agriyakhetarpal/hugo-python-distributions/blob/main/scripts/hugo_meson_python_wrapper.py), that sets `_PYTHON_HOST_PLATFORM` to tag the wheel correctly for cross-compilation scenarios, both
+  across platforms or across architectures on the same platform.
+
+### 1. Generate a cross file
+
+There is a helper that ships with the project:
+
+```bash
+python scripts/generate_meson_cross.py --goos linux --goarch arm64 --output cross-linux-arm64.ini
+```
+
+The output is a small `[host_machine]` description that meson-python and Meson both consume. You can also write one by hand if you'd like – see the [Meson cross file documentation](https://mesonbuild.com/Cross-compilation.html#cross-file).
+
+Some cross files are already checked into the repository for convenience, in the `meson_cross_files` directory. You can use those directly, or as a reference for writing your own.
+
+Cross-compilation for Hugo binaries is provided for the following platforms and architectures, based on `GOOS`/`GOARCH` combinations that the Go toolchain supports, and that Zig can target for C code generation:
+
+- macOS: `darwin/arm64` and `darwin/amd64`
+- Linux: `linux/amd64`, `linux/arm64`, `linux/arm`, `linux/386`, `linux/ppc64le`, `linux/s390x`, and `linux/riscv64`
+- Windows: `windows/amd64`, `windows/arm64`, and `windows/386`
+
+For a list of supported distributions for Go, please run the `go tool dist list` command on your system. For a list of supported targets for Zig, please refer to the [Zig documentation](https://ziglang.org/documentation/) for more information or run the `zig targets` command on your system.
+
+
+### 2. Build the wheel
+
+```bash
+python -m build --wheel -Csetup-args=--cross-file=cross-linux-arm64.ini
+```
+
+Some examples are showcased below.
 
 {{< tabs >}}
 
-{{< tab name="macOS" >}}
-Say, on an Intel-based (x86_64) macOS machine:
+{{< tab name="Linux arm64" >}}
 
 ```bash
-export GOARCH="arm64"
-pip install .  # or pip install -e .
-```
-
-This will build a macOS `arm64` binary distribution of Hugo that can be used on Apple Silicon-based (`arm64`) macOS machines. To build a binary distribution for the _target_ Intel-based (`x86_64`) macOS platform on the _host_ Apple Silicon-based (`arm64`) macOS machine, you can use the following command:
-
-```bash
-export GOARCH="amd64"
-pip install .  # or pip install -e .
+python scripts/generate_meson_cross.py --goos linux --goarch arm64 --output cross.ini
+python -m build --wheel -Csetup-args=--cross-file=cross.ini
+# builds into dist/hugo-<ver>-py3-none-linux_aarch64.whl
 ```
 
 {{< /tab >}}
 
-{{< tab name="Linux" >}}
-Set the `USE_ZIG`, `GOOS`, and `GOARCH` environment variables prior to installing the package:
-
-Say, on an `amd64` Linux machine:
+{{< tab name="Windows arm64" >}}
 
 ```bash
-export USE_ZIG="1"
-export GOOS="linux"
-export GOARCH="arm64"
-pip install .  # or pip install -e .
+python scripts/generate_meson_cross.py --goos windows --goarch arm64 --output cross.ini
+python -m build --wheel -Csetup-args=--cross-file=cross.ini
+# builds into dist/hugo-<ver>-py3-none-win_arm64.whl
 ```
 
-will cross-compile a Linux arm64 binary distribution of Hugo that can be used on the targeted arm64 Linux machines. To build a binary distribution for the _target_ `amd64` Linux platform on the _host_ `arm64` Linux machine, set the targets differently:
-
-```bash
-export USE_ZIG="1"
-export GOOS="linux"
-export GOARCH="amd64"
-pip install .  # or pip install -e .
-```
-
-This creates dynamic linkage for the built Hugo binary with a system-provided GLIBC. If you wish to statically link the binary with MUSL, change the `CC` and `CXX` environment variables as follows:
-
-```bash
-export CC="zig cc -target x86_64-linux-musl"
-export CXX="zig c++ -target x86_64-linux-musl"
-```
-
-Linkage against MUSL is not tested in CI at this time, but it should work in theory. The official Hugo binaries do not link against MUSL for a variety of reasons including the size of the binary and the prevalence of the GLIBC C standard library.
 {{< /tab >}}
 
-{{< tab name="Windows" >}}
-Set these environment variables prior to installing the package (note the use of `set` instead of `export` on Windows):
+{{< tab name="macOS arm64 to macOS x86_64" >}}
 
-Say, on an `amd64` Windows machine:
-
-```cmd
-set USE_ZIG="1"
-set GOOS="windows"
-set GOARCH="arm64"
-pip install .  # or pip install -e .
+```bash
+python scripts/generate_meson_cross.py --goos darwin --goarch amd64 --output cross.ini
+python -m build --wheel -Csetup-args=--cross-file=cross.ini
+# builds into dist/hugo-<ver>-py3-none-macosx_26_0_x86_64.whl
 ```
 
-will cross-compile a Windows `arm64` binary distribution of Hugo that can be used on the targeted `arm64` Windows machines, and so on for the `x86` architecture:
-
-```cmd
-set USE_ZIG="1"
-set GOOS="windows"
-set GOARCH="386"
-pip install .  # or pip install -e .
-```
+For darwin to darwin cross-builds, you may use AppleClang `-arch <target>`.
 
 {{< /tab >}}
 
 {{< /tabs >}}
 
-For a list of supported distributions for Go, please run the `go tool dist list` command on your system. For a list of supported targets for Zig, please refer to the [Zig documentation](https://ziglang.org/documentation/) for more information or run the `zig targets` command on your system.
+### Use a custom toolchain (such as, for MUSL on Linux)
 
-{{< callout type="info" >}}
-Cross-compilation for a target platform and architecture from a different host platform and architecture is also possible, but it remains largely untested at this time. Currently, the [Zig compiler toolchain](https://ziglang.org/) is known to work for cross-platform, cross-architecture compilation.
-{{</ callout >}}
+To override the auto-selected compiler, say, to link against MUSL instead of GLIBC on Linux, you can set `CC`/`CXX` manually and disable the Zig target auto-selection by the build backend:
+
+```bash
+export CC="$(python -m ziglang) cc -target x86_64-linux-musl"
+export CXX="$(python -m ziglang) c++ -target x86_64-linux-musl"
+python -m build --wheel \
+  -Csetup-args=--cross-file=cross-linux-amd64.ini \
+  -Csetup-args=-Duse_zig=disabled
+```
+
+Linkage against MUSL is not tested in CI at this time, but it should work in theory. The official Hugo binaries do not link against MUSL for a variety of reasons including the size of the binary and the prevalence of the GLIBC C standard library.
