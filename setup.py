@@ -15,7 +15,7 @@ from setuptools.command.build_py import build_py
 # ------ Hugo build configuration and constants ------------------------------------
 
 # Also update src/hugo/cli.py
-HUGO_VERSION = "0.161.0"
+HUGO_VERSION = "0.161.1"
 
 # The Go toolchain will use the hugo_cache/ directory for GOPATH and GOCACHE.
 # We will point the build command to that location to build Hugo from source
