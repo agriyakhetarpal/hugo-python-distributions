@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from sys import platform as sysplatform
 
-HUGO_VERSION = "0.161.0"
+HUGO_VERSION = "0.161.1"
 FILE_EXT = ".exe" if sysplatform == "win32" else ""
 if sysplatform == "win32":
     HUGO_PLATFORM = "windows"
