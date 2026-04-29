@@ -1,5 +1,5 @@
 baseURL: https://agriyakhetarpal.github.io/hugo-python-distributions/
-languageCode: en-uk
+locale: en-uk
 title: hugo-python-distributions
 
 module:
@@ -26,3 +26,10 @@ menu:
       url: "https://github.com/agriyakhetarpal/hugo-python-distributions"
       params:
         icon: github
+
+security:
+  http:
+    urls:
+      - (?i)^https?://[a-z]
+      - "! (?i)localhost"
+      - "! (?i)^https?://[^/?#]*@"
