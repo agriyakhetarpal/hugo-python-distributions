@@ -33,7 +33,7 @@ jobs:
           persist-credentials: false
 
       - name: Run style checks
-        uses: j178/prek-action@53276d8b0d10f8b6672aa85b4588c6921d0370cc # v2.0.1
+        uses: j178/prek-action@cbc2f23eb5539cf20d82d1aabd0d0ecbcc56f4e3 # v2.0.2
 
   editable_install:
     needs: [style]
@@ -113,7 +113,7 @@ jobs:
         run: choco install mingw
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/hugo-go
           key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
@@ -170,7 +170,7 @@ jobs:
           check-latest: true
 
       - name: Restore Hugo builder cache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/hugo-go
           key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
