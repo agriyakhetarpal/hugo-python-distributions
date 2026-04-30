@@ -91,7 +91,7 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
-  windows_arm64_wheels: # Not tested
+  windows_arm64_wheels: # TODO: for later: use windows-11-arm runners as they're available now
     name: arm64-windows
     runs-on: windows-latest
     permissions:
@@ -108,6 +108,13 @@ jobs:
           cache: false
           check-latest: true
 
+      - name: Resolve Windows Meson cross file
+        id: meson-cross-file
+        shell: pwsh
+        run: |
+          $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-arm64.ini')).Path -replace '\\', '/'
+          "path=$crossFile" >> $env:GITHUB_OUTPUT
+
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
@@ -115,14 +122,11 @@ jobs:
         with:
           package-dir: .
           output-dir: wheelhouse
-        # Cross-compile for arm64 target via Zig toolchain
         env:
-          USE_ZIG: "1"
-          GOOS: windows
-          GOARCH: arm64
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: ARM64
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file=${{ steps.meson-cross-file.outputs.path }}"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_SKIP: "*-win_arm64"
 
@@ -149,21 +153,23 @@ jobs:
           go-version: "1.26.1"
           cache: false
 
-        # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
-        # do not need to do that manually unless we use setup-python instead.
+      - name: Resolve Windows Meson cross file
+        id: meson-cross-file
+        shell: pwsh
+        run: |
+          $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-386.ini')).Path -replace '\\', '/'
+          "path=$crossFile" >> $env:GITHUB_OUTPUT
+
       - name: Build binary distribution (wheel) on Windows (i686)
         uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
         with:
           package-dir: .
           output-dir: wheelhouse
-        # Cross-compile for i686 target via Zig toolchain
         env:
-          USE_ZIG: "1"
-          GOOS: windows
-          GOARCH: 386
           CIBW_BUILD: "cp312-*"
           CIBW_ARCHS_WINDOWS: x86
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file=${{ steps.meson-cross-file.outputs.path }}"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: |
             hugo version

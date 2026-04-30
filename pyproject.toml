@@ -1,9 +1,10 @@
 [build-system]
 requires = [
-  "setuptools>=77.0.3",
+  "meson-python==0.19.0",
   "ziglang==0.15.2",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "hugo_meson_python_wrapper"
+backend-path = ["scripts"]
 
 [project]
 name = "hugo"
@@ -55,12 +56,11 @@ Homepage = "https://github.com/agriyakhetarpal/hugo-python-distributions"
 Issues = "https://github.com/agriyakhetarpal/hugo-python-distributions/issues"
 Changelog = "https://github.com/agriyakhetarpal/hugo-python-distributions/releases"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["hugo", "hugo.*"]
-
 [project.scripts]
 hugo = "hugo.cli:__call"
+
+[tool.meson-python]
+allow-windows-internal-shared-libs = true
 
 [tool.ruff]
 src = ["src"]
