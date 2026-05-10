@@ -51,19 +51,11 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Set up Go toolchain
-        id: setup-go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-          check-latest: true
-
       - name: Restore Hugo builder cache
         uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ~/.cache/hugo-go
-          key: editable-install-hugo-${{ runner.os }}-${{ steps.setup-go.outputs.go-version }}
+          key: editable-install-hugo-${{ runner.os }}-1.26.1
 
       - name: Install Python dependencies
         run: python -m pip install nox[uv]
@@ -100,14 +92,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
-      - name: Set up Go toolchain
-        id: setup-go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-          check-latest: true
-
       - name: Install MinGW on Windows
         if: matrix.runs-on == 'windows-latest'
         run: choco install mingw
@@ -116,7 +100,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/hugo-go
-          key: ${{ matrix.runs-on }}-hugo-${{ steps.setup-go.outputs.go-version }}
+          key: ${{ matrix.runs-on }}-hugo-1.26.1
 
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox[uv]
@@ -161,19 +145,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
-      - name: Set up Go toolchain
-        id: setup-go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-          check-latest: true
-
       - name: Restore Hugo builder cache
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.cache/hugo-go
-          key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.setup-go.outputs.go-version }}
+          key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-1.26.1
 
       - name: Install Python dependencies
         run: python -m pip install build virtualenv nox auditwheel
