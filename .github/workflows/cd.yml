@@ -104,6 +104,13 @@ jobs:
           $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-arm64.ini')).Path -replace '\\', '/'
           "path=$crossFile" >> $env:GITHUB_OUTPUT
 
+      - name: Resolve Windows Meson cross file
+        id: meson-cross-file
+        shell: pwsh
+        run: |
+          $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-arm64.ini')).Path -replace '\\', '/'
+          "path=$crossFile" >> $env:GITHUB_OUTPUT
+
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
@@ -136,6 +143,13 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
+
+      - name: Resolve Windows Meson cross file
+        id: meson-cross-file
+        shell: pwsh
+        run: |
+          $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-386.ini')).Path -replace '\\', '/'
+          "path=$crossFile" >> $env:GITHUB_OUTPUT
 
       - name: Resolve Windows Meson cross file
         id: meson-cross-file
