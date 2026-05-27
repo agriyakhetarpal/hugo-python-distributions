@@ -254,7 +254,7 @@ jobs:
 
       - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
-          uvx build --sdist --wheel . --outdir dist/
+          uvx --from build pyproject-build --sdist --wheel . --outdir dist/
           uvx twine check dist/* --strict
 
       - name: Check sdist size, fail if it exceeds 10 MiB
