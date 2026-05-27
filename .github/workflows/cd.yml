@@ -64,11 +64,6 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
@@ -101,12 +96,6 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
-
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-          check-latest: true
 
       - name: Resolve Windows Meson cross file
         id: meson-cross-file
@@ -147,11 +136,6 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
-
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
 
       - name: Resolve Windows Meson cross file
         id: meson-cross-file
@@ -199,15 +183,6 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: x86_64
-          CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.26.1.linux-amd64.tar.gz"
-            curl -LJO https://golang.org/dl/$tarball
-            mkdir $HOME/go_installed/
-            tar -C $HOME/go_installed/ -xzf $tarball
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
-            go version
-          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
@@ -236,15 +211,6 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.26.1.linux-arm64.tar.gz"
-            curl -LJO https://golang.org/dl/$tarball
-            mkdir $HOME/go_installed/
-            tar -C $HOME/go_installed/ -xzf $tarball
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
-            go version
-          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_TEST_COMMAND: |
             hugo version
             hugo env --logLevel debug
@@ -282,14 +248,6 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: s390x
-          CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.26.1.linux-s390x.tar.gz"
-            curl -LJO https://golang.org/dl/$tarball
-            mkdir $HOME/go_installed/
-            tar -C $HOME/go_installed/ -xzf $tarball
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
-            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_TEST_COMMAND: |
             hugo version
@@ -328,14 +286,6 @@ jobs:
           output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: ppc64le
-          CIBW_BEFORE_ALL_LINUX: |
-            tarball="go1.26.1.linux-ppc64le.tar.gz"
-            curl -LJO https://golang.org/dl/$tarball
-            mkdir $HOME/go_installed/
-            tar -C $HOME/go_installed/ -xzf $tarball
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bashrc
-            export PATH=$PATH:$HOME/go_installed/go/bin >> ~/.bash_profile
-            go version
           CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
           CIBW_TEST_COMMAND: |
             hugo version
@@ -358,12 +308,6 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
-
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-          check-latest: true
 
       - uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
         with:
@@ -392,12 +336,6 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
-
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
-        with:
-          go-version: "1.26.1"
-          cache: false
-          check-latest: true
 
       - uses: pypa/cibuildwheel@8d2b08b68458a16aeb24b64e68a09ab1c8e82084 # v3.4.1
         with:

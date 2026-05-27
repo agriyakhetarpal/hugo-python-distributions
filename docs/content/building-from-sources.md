@@ -7,13 +7,12 @@ toc = true
 
 The build is driven by [Meson](https://mesonbuild.com/) and [meson-python](https://meson-python.readthedocs.io/). Building the extended + withdeploy edition of Hugo from source requires the following dependencies:
 
-1. The [Go](https://go.dev/doc/install) toolchain
-2. The [Git](https://git-scm.com/downloads) version control system
-3. A C/C++ compiler, such as [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/). You may also use [Zig](https://ziglang.org/) as a C compiler. On Windows, the [MinGW](https://www.mingw-w64.org/) toolchain is supported, and [MSVC](https://visualstudio.microsoft.com/visual-cpp-build-tools/) is untested.
-   3a. For cross-compilation to non-macOS targets, [Zig](https://ziglang.org/) is pulled in from PyPI and auto-selected as the C compiler. For cross-compilation from macOS hosts to macOS targets, AppleClang is used with `-arch <target>`.
-4. [Python](https://www.python.org/downloads/) ≥ 3.10
+1. The [Git](https://git-scm.com/downloads) version control system
+2. A C/C++ compiler, such as [GCC](https://gcc.gnu.org/) or [Clang](https://clang.llvm.org/). On Windows, the [MinGW](https://www.mingw-w64.org/) toolchain is supported, and [MSVC](https://visualstudio.microsoft.com/visual-cpp-build-tools/) is untested.
+   2a. For cross-compilation to non-macOS targets, [Zig](https://ziglang.org/) is pulled in from PyPI and auto-selected as the C compiler. For cross-compilation from macOS hosts to macOS targets, AppleClang is used with `-arch <target>`.
+3. [Python](https://www.python.org/downloads/) ≥ 3.10
 
-`meson-python`, `meson`, `ninja`, and `ziglang` are all pulled in as build-time dependencies by the build backend, so you don't have to install them yourself.
+`meson-python`, `meson`, `ninja`, `go-bin` (the Go compiler toolchain), and `ziglang` are all pulled in as build-time dependencies automatically by the build backend, so you do not need to install them yourself.
 
 Windows users can use the [Chocolatey package manager](https://chocolatey.org/) in order to use the [MinGW compiler](https://chocolatey.org/packages/mingw). After installing Chocolatey, run the following command in an elevated terminal prompt:
 

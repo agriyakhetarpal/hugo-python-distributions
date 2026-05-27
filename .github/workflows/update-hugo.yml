@@ -63,7 +63,7 @@ jobs:
           sed -i "s/version\s*:\s*'$CURRENT_VERSION'/version : '$LATEST_VERSION'/" meson.build
 
           # Update the Hugo submodule to the new version tag
-          cd hugo
+          cd hugo-src
           git fetch origin tag "v$LATEST_VERSION" --no-tags
           git checkout "v$LATEST_VERSION"
           cd ..
@@ -87,7 +87,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY"
           git checkout -b "update-hugo-v${LATEST_VERSION}"
-          git add meson.build hugo
+          git add meson.build hugo-src
           git commit -m "Update Hugo to v${LATEST_VERSION}"
           git push origin "update-hugo-v${LATEST_VERSION}"
           gh pr create \
