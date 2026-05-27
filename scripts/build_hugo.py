@@ -8,6 +8,7 @@ can also run this script standalone for debugging.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import platform
 import re
@@ -18,6 +19,28 @@ import sys
 from pathlib import Path
 
 HUGO_VENDOR_NAME = "hugo-python-distributions"
+
+
+def _resolve_go_binary() -> tuple[str, str | None]:
+    """
+    Return the path to the Go binary and its GOROOT if found via the `go-bin`
+
+    TODO: remove once go-bin ships a release that includes my PR at
+    https://github.com/jmelahman/go-bin/pull/16, which fixes this by using
+    ``subprocess`` on non-POSIX platforms instead of ``os.execv``. At that
+    point this function can be dropped and callers replaced with just "go"
+    """
+    spec = importlib.util.find_spec("go")
+    if spec and spec.origin:
+        goroot = Path(spec.origin).parent
+        suffix = ".exe" if sys.platform == "win32" else ""
+        exe = goroot / "bin" / ("go" + suffix)
+        if exe.is_file():
+            return str(exe), str(goroot)
+    return "go", None
+
+
+_GO_BINARY, _GO_GOROOT = _resolve_go_binary()
 
 HOST_GOOS = {
     "darwin": "darwin",
@@ -71,7 +94,9 @@ def parse_args() -> argparse.Namespace:
 def check_dependencies(use_zig: bool) -> None:
     try:
         subprocess.check_call(
-            ["go", "version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            [_GO_BINARY, "version"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
     except OSError as err:
         msg = "Go toolchain not found. Please install Go from https://go.dev/dl/ or your package manager."
@@ -226,6 +251,9 @@ def main() -> int:
 
     check_dependencies(use_zig)
 
+    if _GO_GOROOT:
+        os.environ.setdefault("GOROOT", _GO_GOROOT)
+
     os.environ["CGO_ENABLED"] = "1"
     os.environ["GO111MODULE"] = "on"
     os.environ["GOPATH"] = str(cache)
@@ -254,7 +282,7 @@ def main() -> int:
     with SubmoduleVcsSwap(hugo_src):
         subprocess.check_call(
             [
-                "go",
+                _GO_BINARY,
                 "install",
                 "-trimpath",
                 "-v",
