@@ -1,0 +1,6 @@
+option(
+  'use_zig',
+  type : 'feature',
+  value : 'auto',
+  description : 'Use ziglang as the CGO cross-compiler. "auto" picks Zig when cross-compiling to a non-darwin target.',
+)

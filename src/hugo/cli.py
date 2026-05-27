@@ -6,79 +6,78 @@ hugo: Binaries for the Hugo static site generator, installable with pip
 
 from __future__ import annotations
 
+import json
 import os
+import sys
+import sysconfig
+from contextlib import nullcontext
+from pathlib import Path, PurePosixPath
 from sys import platform as sysplatform
 
-HUGO_VERSION = "0.161.1"
-FILE_EXT = ".exe" if sysplatform == "win32" else ""
-if sysplatform == "win32":
-    HUGO_PLATFORM = "windows"
-elif sysplatform == "linux":
-    HUGO_PLATFORM = "linux"
-else:
-    HUGO_PLATFORM = "darwin"
+from hugo._version import HUGO_VERSION
+
+HUGO_EXECUTABLE = "hugo.exe" if sysplatform == "win32" else "hugo"
+HUGO_BINARY_PATH = Path("hugo", "binaries", HUGO_EXECUTABLE)
 
 
-def get_hugo_arch():
-    from sys import maxsize as sysmaxsize
+def _editable_hugo_executable() -> Path | None:
+    """Resolve the bundled binary from meson-python's editable install tree."""
+    for finder in sys.meta_path:
+        if type(finder).__name__ != "MesonpyMetaFinder":
+            continue
+        if getattr(finder, "_name", None) != "hugo":
+            continue
 
-    if sysplatform == "win32":
-        from platform import machine
+        finder._rebuild()
 
-        m = machine()
-    else:
-        m = os.uname().machine
+        install_plan = Path(finder._build_path, "meson-info", "intro-install_plan.json")
+        if not install_plan.is_file():
+            continue
 
-    HUGO_ARCH = {
-        "x86_64": "amd64",
-        "arm64": "arm64",
-        "AMD64": "amd64",
-        "aarch64": "arm64",
-        "x86": "386",
-        "i686": "386",
-        "i386": "386",
-        "s390x": "s390x",
-        "ppc64le": "ppc64le",
-        "armv7l": "arm",
-        "armv6l": "arm",
-        "riscv64": "riscv64",
-    }[m]
+        with install_plan.open(encoding="utf-8") as file:
+            plan = json.load(file)
 
-    # platform.machine returns AMD64 on Windows because the architecture is
-    # 64-bit (even if one is running a 32-bit Python interpreter). Therefore
-    # we use sys.maxsize to handle this special case on Windows
+        for targets in plan.values():
+            for source, target in targets.items():
+                destination = PurePosixPath(target["destination"].replace("\\", "/"))
+                if destination.parts[-3:] == ("hugo", "binaries", HUGO_EXECUTABLE):
+                    return Path(source)
 
-    if not (sysmaxsize > 2**32) and sysplatform == "win32":
-        HUGO_ARCH = "386"
-
-    return HUGO_ARCH
+    return None
 
 
-HUGO_ARCH = get_hugo_arch()
+def _hugo_executable():
+    data_path = Path(sysconfig.get_path("data"))
+    binary = data_path / HUGO_BINARY_PATH
+    if binary.is_file():
+        return nullcontext(binary)
 
-DIR = os.path.dirname(os.path.abspath(__file__))  # noqa: PTH100, PTH120
+    editable_binary = _editable_hugo_executable()
+    if editable_binary is not None:
+        return nullcontext(editable_binary)
 
-HUGO_EXECUTABLE = os.path.join(  # noqa: PTH118
-    DIR, "binaries", f"hugo-{HUGO_VERSION}-{HUGO_PLATFORM}-{HUGO_ARCH}{FILE_EXT}"
-)
+    raise FileNotFoundError(binary)
 
 
 def __call():
     """
     Hugo binary entry point. Passes all command-line arguments to Hugo.
     """
-    print(
-        f"\033[95mRunning Hugo {HUGO_VERSION} via hugo-python-distributions at {HUGO_EXECUTABLE}\033[0m"
-    )
+    with _hugo_executable() as hugo_executable:
+        hugo_executable_str = os.fspath(hugo_executable)
 
-    from sys import argv as sysargv
+        print(
+            f"\033[95mRunning Hugo {HUGO_VERSION} via hugo-python-distributions at {hugo_executable_str}\033[0m"
+        )
 
-    if sysplatform == "win32":
-        from subprocess import check_call
+        from sys import argv as sysargv
 
-        check_call([HUGO_EXECUTABLE, *sysargv[1:]])
-    else:
-        os.execv(HUGO_EXECUTABLE, ["hugo", *sysargv[1:]])
+        if sysplatform == "win32":
+            from subprocess import check_call
+
+            check_call([hugo_executable_str, *sysargv[1:]])
+        else:
+            os.execv(hugo_executable_str, ["hugo", *sysargv[1:]])
 
 
 if __name__ == "__main__":

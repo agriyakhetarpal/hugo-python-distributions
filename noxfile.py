@@ -11,6 +11,7 @@ REPO = "agriyakhetarpal/hugo-python-distributions"
 DOCS_DIR = DIR / "docs"
 
 nox.options.sessions = ["lint"]
+nox.options.verbose = True
 nox.options.default_venv_backend = "uv|virtualenv"
 
 
@@ -34,12 +35,21 @@ def venv(session: nox.Session) -> None:
         session.run("hugo", "env", "--logLevel", "debug")
 
 
+@nox.session(default=False, reuse_venv=True)
+def editable(session: nox.Session) -> None:
+    """Smoke test console and module entry points from an editable install."""
+    session.install("meson-python==0.19.0", "ziglang==0.15.2", "ninja")
+    session.install("--no-build-isolation", "-ve", ".")
+    session.run("python", "-m", "hugo", "version")
+    session.run("hugo", "version")
+
+
 def _get_version(session: nox.Session) -> str:
-    """Extract version from session posargs or setup.py."""
+    """Extract version from session posargs or meson.build."""
     if session.posargs:
         return session.posargs[0].lstrip("v")
-    content = (DIR / "setup.py").read_text()
-    match = re.search(r'HUGO_VERSION = "([0-9.]+)"', content)
+    content = (DIR / "meson.build").read_text()
+    match = re.search(r"version\s*:\s*'([0-9.]+)'", content)
     if not match:
         session.error("Could not determine version. Pass it as: nox -s tag -- 0.157.0")
     return match.group(1)
