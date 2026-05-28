@@ -1,6 +1,6 @@
 project(
   'hugo-python-distributions',
-  version : '0.162.0',
+  version : '0.162.0.1',
   meson_version : '>=1.3.0',
   default_options : ['warning_level=0'],
 )
@@ -14,6 +14,33 @@ py = import('python').find_installation(pure: true)
 
 go  = find_program('go',  required: true)
 git = find_program('git', required: true)
+
+# Verify the hugo-src submodule tag matches the declared version at configure time
+fs = import('fs')
+_hugo_src = meson.project_source_root() / 'hugo-src'
+_hugo_tag = ''
+if fs.is_file(_hugo_src / '.git') or fs.is_dir(_hugo_src / '.git')
+  _r = run_command(
+    git, '-C', _hugo_src, 'describe', '--tags', '--exact-match', 'HEAD',
+    check: false,
+    capture: true,
+  )
+  if _r.returncode() == 0
+    _hugo_tag = _r.stdout().strip()
+  endif
+endif
+if _hugo_tag != ''
+  # We need some special handling so that we can have a different X.Y.Z.W version scheme for
+  # the Python package than the Hugo versioning scheme of X.Y.Z. The submodule is expected to
+  # be tagged with 'vX.Y.Z' matching the first three components of the meson.build version.
+  version = meson.project_version().split('.')
+  _expected_hugo_tag = 'v' + version[0] + '.' + version[1] + '.' + version[2]
+  if _hugo_tag != _expected_hugo_tag
+    error(
+      'the hugo-src submodule is at \'' + _hugo_tag + '\' but meson.build declares v' + meson.project_version()
+    )
+  endif
+endif
 
 configure_file(
   input : 'src/hugo/_version.py.in',

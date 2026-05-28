@@ -12,6 +12,7 @@ https://github.com/gohugoio/hugo/releases/tag/v${LATEST_VERSION}
 
 ### Release checklist
 
+- [ ] Confirm the `hugo-src` submodule is at the correct tag (`git submodule status` should show `v${LATEST_VERSION}`)
 - [ ] Check the release notes for any interesting changes, and if the Go version has been updated (if so, update the Go version in `ci.yml`, `cd.yml`, and `docs/go.mod` manually)
 - [ ] Merge this PR
 - [ ] Run `nox -s tag -- v${LATEST_VERSION}` locally to create a signed tag

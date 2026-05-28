@@ -68,6 +68,14 @@ jobs:
           git checkout "v$LATEST_VERSION"
           cd ..
 
+          # Verify the submodule HEAD is exactly at the expected tag
+          SUBMODULE_TAG=$(git -C hugo-src describe --tags --exact-match HEAD)
+          if [ "$SUBMODULE_TAG" != "v$LATEST_VERSION" ]; then
+            echo "ERROR: submodule tag '$SUBMODULE_TAG' does not match 'v$LATEST_VERSION'"
+            exit 1
+          fi
+          echo "Submodule verified at $SUBMODULE_TAG"
+
           echo "updated=true" >> "$GITHUB_OUTPUT"
           echo "latest_version=$LATEST_VERSION" >> "$GITHUB_OUTPUT"
           echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"

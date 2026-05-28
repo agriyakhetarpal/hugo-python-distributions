@@ -399,8 +399,12 @@ jobs:
           VERSION="${TAG#v}"
 
           # Select template based on whether this is a patch release
+          # A fourth version component would mean that it's a patch
+          # release for hugo-python-distributions to fix a problem
+          # with a stable/patch release of Hugo
           PATCH=$(echo "$VERSION" | cut -d. -f3)
-          if [ "$PATCH" -gt 0 ]; then
+          PKG_PATCH=$(echo "$VERSION" | cut -d. -f4)
+          if [ "$PATCH" -gt 0 ] || [ -n "$PKG_PATCH" ]; then
             TEMPLATE="release_notes/patch.md"
           else
             TEMPLATE="release_notes/stable.md"
