@@ -5,12 +5,14 @@ project(
   default_options : ['warning_level=0'],
 )
 
-# Setting `pure: true` routes the Python package to purelib, so platlib stays
-# empty. The bundled Hugo executable is installed under datadir and the marker
-# file below keeps the wheel tag at py3-none-<platform> instead of a
-# Python-version-specific ABI tag.
+# Setting `pure: false` routes both Python sources and the Hugo executable to
+# platlib, keeping them in the same site-packages subtree. This satisfies
+# auditwheel (ELF binaries must not be in purelib) and lets cli.py locate the
+# binary via Path(__file__).parent regardless of install scheme.
+# The marker file below keeps the wheel tag at py3-none-<platform> instead of
+# a Python-version-specific ABI tag.
 # See _has_extension_modules and _pure in mesonpy/__init__.py
-py = import('python').find_installation(pure: true)
+py = import('python').find_installation(pure: false)
 
 go  = find_program('go',  required: true)
 git = find_program('git', required: true)
