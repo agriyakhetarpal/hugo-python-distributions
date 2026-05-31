@@ -401,13 +401,21 @@ jobs:
           # Select template based on whether this is a patch release
           # A fourth version component would mean that it's a patch
           # release for hugo-python-distributions to fix a problem
-          # with a stable/patch release of Hugo
+          # with a stable/patch release of Hugo. Say:
+          # X.Y.0     -> stable release of Hugo
+          # X.Y.Z     -> patch release of Hugo (Z > 0)
+          # X.Y.Z.W   -> packaging-side patch over Hugo vX.Y.Z (W > 0)
           PATCH=$(echo "$VERSION" | cut -d. -f3)
           PKG_PATCH=$(echo "$VERSION" | cut -d. -f4)
-          if [ "$PATCH" -gt 0 ] || [ -n "$PKG_PATCH" ]; then
+          if [ -n "$PKG_PATCH" ]; then
+            TEMPLATE="release_notes/pkg-patch.md"
+            HUGO_VERSION=$(echo "$VERSION" | cut -d. -f1-3)
+          elif [ "$PATCH" -gt 0 ]; then
             TEMPLATE="release_notes/patch.md"
+            HUGO_VERSION="$VERSION"
           else
             TEMPLATE="release_notes/stable.md"
+            HUGO_VERSION="$VERSION"
           fi
 
           # Find the previous tag
@@ -437,8 +445,8 @@ jobs:
             CHANGES_SECTION=""
           fi
 
-          export VERSION PREVIOUS_TAG CHANGES_SECTION
-          envsubst '${VERSION} ${PREVIOUS_TAG} ${CHANGES_SECTION}' \
+          export VERSION HUGO_VERSION PREVIOUS_TAG CHANGES_SECTION
+          envsubst '${VERSION} ${HUGO_VERSION} ${PREVIOUS_TAG} ${CHANGES_SECTION}' \
             < "$TEMPLATE" > /tmp/release-notes.md
 
       - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0

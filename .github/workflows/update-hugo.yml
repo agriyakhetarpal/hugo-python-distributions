@@ -30,9 +30,14 @@ jobs:
           CURRENT_VERSION=$(grep -oP "version\s*:\s*'\K[0-9.]+" meson.build)
           echo "Current version: $CURRENT_VERSION"
 
+          # Hugo releases use X.Y.Z (3 components). Our Python dist version may have a fourth.
+          # If you're reading this, may the fourth be with you! A Star Wars easter egg for you.
+          CURRENT_HUGO_VERSION=$(echo "$CURRENT_VERSION" | cut -d. -f1-3)
+          echo "Current Hugo version: $CURRENT_HUGO_VERSION"
+
           # Find the next Hugo release after our current version
           NEXT_VERSION=$(gh api repos/gohugoio/hugo/releases --paginate --jq '.[].tag_name' | \
-            sed 's/^v//' | sort -V | awk -v cur="$CURRENT_VERSION" 'found {print; exit} $0 == cur {found=1}')
+            sed 's/^v//' | sort -V | awk -v cur="$CURRENT_HUGO_VERSION" 'found {print; exit} $0 == cur {found=1}')
 
           if [ -z "$NEXT_VERSION" ]; then
             echo "Already up to date (v$CURRENT_VERSION)"
