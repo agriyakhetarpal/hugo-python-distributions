@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 import os
 import sys
-import sysconfig
 from contextlib import nullcontext
 from pathlib import Path, PurePosixPath
 from sys import platform as sysplatform
@@ -17,7 +16,7 @@ from sys import platform as sysplatform
 from hugo._version import HUGO_VERSION
 
 HUGO_EXECUTABLE = "hugo.exe" if sysplatform == "win32" else "hugo"
-HUGO_BINARY_PATH = Path("hugo", "binaries", HUGO_EXECUTABLE)
+HUGO_BINARY_PATH = Path("binaries", HUGO_EXECUTABLE)
 
 
 def _editable_hugo_executable() -> Path | None:
@@ -47,8 +46,7 @@ def _editable_hugo_executable() -> Path | None:
 
 
 def _hugo_executable():
-    data_path = Path(sysconfig.get_path("data"))
-    binary = data_path / HUGO_BINARY_PATH
+    binary = Path(__file__).parent / HUGO_BINARY_PATH
     if binary.is_file():
         return nullcontext(binary)
 
