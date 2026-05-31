@@ -38,7 +38,8 @@ def venv(session: nox.Session) -> None:
 @nox.session(default=False, reuse_venv=True)
 def editable(session: nox.Session) -> None:
     """Smoke test console and module entry points from an editable install."""
-    session.install("meson-python==0.19.0", "ziglang==0.15.2", "ninja")
+    build_deps = nox.project.load_toml("pyproject.toml")["build-system"]["requires"]
+    session.install(*build_deps)
     session.install("--no-build-isolation", "-ve", ".")
     session.run("python", "-m", "hugo", "version")
     session.run("hugo", "version")
