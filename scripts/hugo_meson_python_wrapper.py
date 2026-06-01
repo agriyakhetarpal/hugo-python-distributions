@@ -97,6 +97,20 @@ def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
     )  # TODO: drop this hack/use of private API
 
 
+def _force_py3_none_tag() -> None:
+    """Force py3-none-<platform> instead of cp<XY>-cp<XY>-<platform>.
+
+    With pure: false, meson-python assumes every file in {platlib} is a CPython
+    extension module and applies a Python-version-specific ABI tag. The Hugo
+    binary is a Go executable that runs under any Python version, so we patch
+    _has_extension_modules to always return False, and that causes meson-python
+    to fall through to the py3-none-<platform> branch in its tag property.
+    TODO: drop this hack/use of public API if meson-python someday exposes a way
+    to opt out of the CPython ABI tag for non-extension platlib content.
+    """
+    mesonpy._WheelBuilder._has_extension_modules = property(lambda _: False)
+
+
 # Unchanged meson-python PEP 517 entry points below
 
 
@@ -106,6 +120,7 @@ def build_wheel(
     metadata_directory: str | None = None,
 ) -> str:
     _maybe_set_host_platform(config_settings)
+    _force_py3_none_tag()
     return mesonpy.build_wheel(wheel_directory, config_settings, metadata_directory)
 
 
@@ -115,6 +130,7 @@ def build_editable(
     metadata_directory: str | None = None,
 ) -> str:
     _maybe_set_host_platform(config_settings)
+    _force_py3_none_tag()
     return mesonpy.build_editable(wheel_directory, config_settings, metadata_directory)
 
 
