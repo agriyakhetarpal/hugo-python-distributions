@@ -178,7 +178,9 @@ def get_requires_for_build_wheel(
 def get_requires_for_build_editable(
     config_settings: dict[str, Any] | None = None,
 ) -> list[str]:
-    return mesonpy.get_requires_for_build_editable(config_settings)
+    reqs = list(mesonpy.get_requires_for_build_editable(config_settings))
+    reqs.append("go-bin==1.26.3")
+    return reqs
 
 
 def get_requires_for_build_sdist(
