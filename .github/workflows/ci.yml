@@ -52,21 +52,6 @@ jobs:
           python-version: "3.14"
           activate-environment: true
 
-      - name: Get Go version from pyproject.toml
-        id: go-version
-        shell: python
-        run: |
-          import re, os
-          version = re.search(r'go-bin==([0-9.]+)', open('pyproject.toml').read()).group(1)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f'version={version}\n')
-
-      - name: Restore Hugo builder cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.cache/hugo-go
-          key: editable-install-hugo-${{ runner.os }}-${{ steps.go-version.outputs.version }}
-
       - name: Install Python dependencies
         run: uv pip install nox[uv]
 
@@ -102,24 +87,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           activate-environment: true
 
-      - name: Get Go version from pyproject.toml
-        id: go-version
-        shell: python
-        run: |
-          import re, os
-          version = re.search(r'go-bin==([0-9.]+)', open('pyproject.toml').read()).group(1)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f'version={version}\n')
-
       - name: Install MinGW on Windows
         if: matrix.runs-on == 'windows-latest'
         run: choco install mingw
-
-      - name: Restore Hugo builder cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.cache/hugo-go
-          key: ${{ matrix.runs-on }}-hugo-${{ steps.go-version.outputs.version }}
 
       - name: Install Python dependencies
         run: uv pip install build virtualenv nox[uv]
@@ -163,21 +133,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           activate-environment: true
-
-      - name: Get Go version from pyproject.toml
-        id: go-version
-        shell: python
-        run: |
-          import re, os
-          version = re.search(r'go-bin==([0-9.]+)', open('pyproject.toml').read()).group(1)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f'version={version}\n')
-
-      - name: Restore Hugo builder cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.cache/hugo-go
-          key: zig-${{ matrix.runs-on }}-${{ matrix.architecture}}-hugo-experimental-${{ steps.go-version.outputs.version }}
 
       - name: Install Python dependencies
         run: uv pip install build virtualenv nox auditwheel
