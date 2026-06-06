@@ -61,8 +61,8 @@ def _strip_quotes(string: str) -> str:
     return string.strip().strip("'\"")
 
 
-def _host_platform_tag(config_settings: dict[str, Any] | None) -> str | None:
-    """Return the target wheel platform tag from a Meson cross file, if any."""
+def _parse_cross_file(config_settings: dict[str, Any] | None) -> tuple[str, str] | None:
+    """Return (system, cpu_family) from a Meson cross file in config_settings, or None."""
     if not config_settings:
         return None
     setup_args = _flatten(config_settings.get("setup-args"))
@@ -82,7 +82,32 @@ def _host_platform_tag(config_settings: dict[str, Any] | None) -> str | None:
 
     system = _strip_quotes(cfg["host_machine"].get("system", ""))
     family = _strip_quotes(cfg["host_machine"].get("cpu_family", ""))
-    return PLATFORM_TAGS_MAP.get((system, family))
+    return (system, family) if system and family else None
+
+
+def _host_platform_tag(config_settings: dict[str, Any] | None) -> str | None:
+    """Return the target wheel platform tag from a Meson cross file, if any."""
+    host = _parse_cross_file(config_settings)
+    return None if host is None else PLATFORM_TAGS_MAP.get(host)
+
+
+def _needs_zig(config_settings: dict[str, Any] | None) -> bool:
+    """Return True if the Zig compiler is needed for this build.
+
+    We do `auto_use_zig = meson.is_cross_build() and host_sys != 'darwin'`.
+    It maps here. An explicit -Duse_zig=true/false in setup-args overrides
+    the auto logic.
+    """
+    host = _parse_cross_file(config_settings)
+    if host is None:
+        return False
+    setup_args = _flatten(config_settings.get("setup-args") if config_settings else [])
+    for arg in setup_args:
+        m = re.match(r"-Duse_zig=(true|false)$", arg)
+        if m:
+            return m.group(1) == "true"
+    system, _ = host
+    return system != "darwin"
 
 
 def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
@@ -143,7 +168,11 @@ def build_sdist(
 def get_requires_for_build_wheel(
     config_settings: dict[str, Any] | None = None,
 ) -> list[str]:
-    return mesonpy.get_requires_for_build_wheel(config_settings)
+    reqs = list(mesonpy.get_requires_for_build_wheel(config_settings))
+    reqs.append("go-bin==1.26.3")
+    if _needs_zig(config_settings):
+        reqs.append("ziglang==0.16.0")
+    return reqs
 
 
 def get_requires_for_build_editable(
