@@ -28,25 +28,10 @@ jobs:
           fetch-depth: 0
           submodules: "recursive"
 
-      - name: Get Go version from pyproject.toml
-        id: go-version
-        shell: python
-        run: |
-          import re, os
-          version = re.search(r'go-bin==([0-9.]+)', open('pyproject.toml').read()).group(1)
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-              f.write(f'version={version}\n')
-
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           python-version: "3.14"
           activate-environment: true
-
-      - name: Restore Hugo builder cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ./hugo_cache/
-          key: ubuntu-latest-hugo-${{ steps.go-version.outputs.version }}
 
       - name: Install Python dependencies
         run: uv pip install nox
