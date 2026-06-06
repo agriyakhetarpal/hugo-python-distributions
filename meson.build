@@ -14,7 +14,9 @@ project(
 # See _has_extension_modules and _pure in mesonpy/__init__.py
 py = import('python').find_installation(pure: false)
 
-go  = find_program('go',  required: true)
+# sdist builds do not require a Go toolchain. It is only needed when compiling
+# the Hugo binary. We enforce it at wheel build time in build_hugo.py anyway.
+go  = find_program('go',  required: false)
 git = find_program('git', required: true)
 
 # Verify the hugo-src submodule tag matches the declared version at configure time
