@@ -4,8 +4,6 @@ requires = [
   # newer ninjas aren't available on PyPI:
   # https://github.com/scikit-build/ninja-python-distributions/issues/308
   "ninja==1.13.0",
-  "ziglang==0.16.0",
-  "go-bin==1.26.3",
 ]
 build-backend = "hugo_meson_python_wrapper"
 backend-path = ["scripts"]
