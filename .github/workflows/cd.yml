@@ -67,6 +67,8 @@ jobs:
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
+      - name: Build binary distribution (wheel) on Windows (amd64)
+        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
         with:
           package-dir: .
           output-dir: wheelhouse
