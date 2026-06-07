@@ -11,7 +11,7 @@ on:
 env:
   FORCE_COLOR: 3
   CIBW_BUILD_FRONTEND: "build"
-  CIBW_BUILD: "cp312-*"
+  CIBW_BUILD: "cp314-*"
   CIBW_SKIP: "pp* *musllinux*"
 
 permissions: {}
@@ -96,13 +96,6 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - name: Resolve Windows Meson cross file
-        id: meson-cross-file
-        shell: pwsh
-        run: |
-          $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-arm64.ini')).Path -replace '\\', '/'
-          "path=$crossFile" >> $env:GITHUB_OUTPUT
-
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
@@ -111,10 +104,10 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp312-*"
+          CIBW_BUILD: "cp314-*"
           CIBW_ARCHS_WINDOWS: ARM64
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file=${{ steps.meson-cross-file.outputs.path }}"
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-arm64.ini"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_SKIP: "*-win_arm64"
 
@@ -136,23 +129,16 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - name: Resolve Windows Meson cross file
-        id: meson-cross-file
-        shell: pwsh
-        run: |
-          $crossFile = (Resolve-Path (Join-Path $env:GITHUB_WORKSPACE 'meson_cross_files/windows-386.ini')).Path -replace '\\', '/'
-          "path=$crossFile" >> $env:GITHUB_OUTPUT
-
       - name: Build binary distribution (wheel) on Windows (i686)
         uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
         with:
           package-dir: .
           output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp312-*"
+          CIBW_BUILD: "cp314-*"
           CIBW_ARCHS_WINDOWS: x86
           CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file=${{ steps.meson-cross-file.outputs.path }}"
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-386.ini"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
           CIBW_TEST_COMMAND: |
             hugo version
