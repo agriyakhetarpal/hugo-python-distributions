@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import mesonpy
+from piwheels_go_toolchain import GO_VERSION, is_32bit_arm_linux
 
 # (host_machine.system, host_machine.cpu_family) -> _PYTHON_HOST_PLATFORM
 PLATFORM_TAGS_MAP: dict[tuple[str, str], str] = {
@@ -169,7 +170,11 @@ def get_requires_for_build_wheel(
     config_settings: dict[str, Any] | None = None,
 ) -> list[str]:
     reqs = list(mesonpy.get_requires_for_build_wheel(config_settings))
-    reqs.append("go-bin==1.26.3")
+    # It is impossible for go-bin to ship armv6l/armv7l wheels as it
+    # just bundles the downloaded Go toolchain, so we need to download
+    # it ourselves for piwheels instead of relying on go-bin.
+    if not is_32bit_arm_linux():
+        reqs.append(f"go-bin=={GO_VERSION}")
     if _needs_zig(config_settings):
         reqs.append("ziglang==0.16.0")
     return reqs
@@ -179,7 +184,8 @@ def get_requires_for_build_editable(
     config_settings: dict[str, Any] | None = None,
 ) -> list[str]:
     reqs = list(mesonpy.get_requires_for_build_editable(config_settings))
-    reqs.append("go-bin==1.26.3")
+    if not is_32bit_arm_linux():
+        reqs.append(f"go-bin=={GO_VERSION}")
     return reqs
 
 
