@@ -47,7 +47,10 @@ def download_go_toolchain(dest_dir: Path) -> tuple[str, str]:
         raise RuntimeError(msg)
 
     with tarfile.open(archive_path) as tar:
-        tar.extractall(dest_dir, filter="data")
+        if hasattr(tarfile, "data_filter"):
+            tar.extractall(dest_dir, filter="data")
+        else:
+            tar.extractall(dest_dir)
     archive_path.unlink()
 
     return str(goroot / "bin" / "go"), str(goroot)
