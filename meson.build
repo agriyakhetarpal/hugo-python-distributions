@@ -1,6 +1,6 @@
 project(
   'hugo-python-distributions',
-  version : '0.163.1',
+  version : '0.163.2',
   meson_version : '>=1.3.0',
   default_options : ['warning_level=0'],
 )
