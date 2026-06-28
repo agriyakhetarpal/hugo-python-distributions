@@ -157,7 +157,7 @@ jobs:
       - name: Build binary distribution (wheel) on Windows (arm64)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
         # TODO: FIXME: use windows-11-arm runners as they're available now, and drop this
-        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -173,7 +173,7 @@ jobs:
         # do not need to do that manually unless we use setup-python instead.
       - name: Build binary distribution (wheel) on Windows (i686)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'i686'
-        uses: pypa/cibuildwheel@f03ac7617d6cff873ccf24cc0d567ef5ba5a9e6d # v4.0.0
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
         with:
           package-dir: .
           output-dir: wheelhouse
