@@ -64,6 +64,7 @@ allow-windows-internal-shared-libs = true
 # but since we are shipping a none-any wheel this doesn't matter for local
 # builds as we don't want to build multiple wheels
 build = "cp314-*"
+skip = "*musllinux*"
 test-command = """
 hugo version
 hugo env --logLevel debug
