@@ -6,7 +6,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v6.0.0"
+    rev: "3e8a8703264a2f4a69428a0aa4dcb512790b2c8c" # frozen: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -19,7 +19,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.15"
+    rev: "77039ccbba72c8aede339c5f8ae29b42aced0a2e" # frozen: v0.15.18
     hooks:
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
@@ -28,25 +28,25 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: "v3.21.2"
+    rev: "75992aaa40730136014f34227e0135f63fc951b4" # frozen: v3.21.2
     hooks:
       - id: pyupgrade
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.4.2"
+    rev: "2ccb47ff45ad361a21071a7eedda4c37e6ae8c5a" # frozen: v2.4.2
     hooks:
       - id: codespell
         args: ["--skip=CODE_OF_CONDUCT.md"]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.8.3"
+    rev: "06507ab9500d4a9919b5ebd76d9d5b7074f15c1f" # frozen: v3.8.4
     hooks:
       - id: prettier
         files: \.(html|md|toml|yml|yaml)
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: "v1.25.2"
+    rev: "e3eebf65325ccc992422292cb7a4baee967cf815" # frozen: v1.26.1
     hooks:
       - id: zizmor
         args: ["--pedantic"]

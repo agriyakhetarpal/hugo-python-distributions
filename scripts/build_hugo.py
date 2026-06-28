@@ -18,6 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from piwheels_go_toolchain import download_go_toolchain, is_32bit_arm_linux
+
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
 
@@ -91,10 +93,10 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
-def check_dependencies(use_zig: bool) -> None:
+def check_dependencies(go_binary: str, use_zig: bool) -> None:
     try:
         subprocess.check_call(
-            [_GO_BINARY, "version"],
+            [go_binary, "version"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -249,10 +251,17 @@ def main() -> int:
     cache.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(cache / "bin", ignore_errors=True)
 
-    check_dependencies(use_zig)
+    go_binary, go_goroot = _GO_BINARY, _GO_GOROOT
+    if is_32bit_arm_linux() and go_binary == "go":
+        # It is impossible for go-bin to ship armv6l/armv7l wheels as it
+        # just bundles the downloaded Go toolchain, so we need to download
+        # it ourselves for piwheels.
+        go_binary, go_goroot = download_go_toolchain(cache)
 
-    if _GO_GOROOT:
-        os.environ.setdefault("GOROOT", _GO_GOROOT)
+    check_dependencies(go_binary, use_zig)
+
+    if go_goroot:
+        os.environ.setdefault("GOROOT", go_goroot)
 
     os.environ["CGO_ENABLED"] = "1"
     os.environ["GO111MODULE"] = "on"
@@ -282,7 +291,7 @@ def main() -> int:
     with SubmoduleVcsSwap(hugo_src):
         subprocess.check_call(
             [
-                _GO_BINARY,
+                go_binary,
                 "install",
                 "-trimpath",
                 "-v",
