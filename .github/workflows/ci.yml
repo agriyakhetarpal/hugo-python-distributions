@@ -82,24 +82,24 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          activate-environment: true
-
-      - name: Install MinGW on Windows
+      - name: Install MinGW compiler(s) on Windows
         if: matrix.runs-on == 'windows-latest'
         run: choco install mingw
 
-      - name: Install Python dependencies
-        run: uv pip install build virtualenv nox[uv]
-
-      - name: Build binary distribution (wheel)
-        run: |
-          python -m build --wheel . --outdir wheelhouse/
-
-      - name: Test entry points for package
-        run: nox -s venv
+      - uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          # The wheel is py3-none, so building for the single matrix Python is
+          # enough to exercise the build on each interpreter. cibuildwheel picks
+          # each runner's native architecture automatically.
+          CIBW_BUILD: "cp${{ matrix.python-version == '3.10' && '310' || matrix.python-version == '3.13' && '313' || '314' }}-*"
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
+          CIBW_TEST_COMMAND: |
+            hugo version
+            hugo env --logLevel debug
 
   # TODO: add aarch64 to x86_64 cross-compilation for Linux
   experimental:
@@ -128,14 +128,6 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
-
-      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          activate-environment: true
-
-      - name: Install Python dependencies
-        run: uv pip install build virtualenv nox auditwheel
 
       - name: Build binary distribution (wheel) on Linux
         if: matrix.runs-on == 'ubuntu-latest'
