@@ -260,10 +260,6 @@ jobs:
       - uses: docker/setup-qemu-action@06116385d9baf250c9f4dcb4858b16962ea869c3 # v4.1.0
         with:
           platforms: all
-          # This should be temporary
-          # xref https://github.com/docker/setup-qemu-action/issues/188
-          # xref https://github.com/tonistiigi/binfmt/issues/215
-          image: tonistiigi/binfmt:qemu-v8.1.5
 
       - name: Build binary distribution (wheel) on Linux (ppc64le)
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
