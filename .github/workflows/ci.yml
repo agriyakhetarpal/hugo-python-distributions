@@ -139,9 +139,17 @@ jobs:
 
       - name: Build binary distribution (wheel) on Linux
         if: matrix.runs-on == 'ubuntu-latest'
-        run: python -m build --wheel . --outdir wheelhouse -Csetup-args=--cross-file="{project}/meson_cross_files/linux-arm64.ini"
         # can't repair arm64 wheels on Linux x86_64 right now
         # auditwheel repair --plat manylinux_2_28_aarch64 -w wheelhouse/ dist/*.whl
+        uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
+        with:
+          package-dir: .
+          output-dir: wheelhouse
+        env:
+          CIBW_BUILD: "cp${{ matrix.python-version == '3.10' && '310' || matrix.python-version == '3.13' && '313' || '314' }}-*"
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_CONFIG_SETTINGS_LINUX: "setup-args=--cross-file={project}/meson_cross_files/linux-arm64.ini"
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
 
       - name: Build binary distribution (wheel) on Windows (arm64)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
