@@ -78,14 +78,18 @@ test-skip = "*-win_arm64"
 archs = ["AMD64"]
 
 # cross-compile the Windows arm64 wheel with the matching Meson cross file
+# Switch back to {project} once https://github.com/pypa/cibuildwheel/pull/2934
+# makes it to a release
 [[tool.cibuildwheel.overrides]]
 select = "*-win_arm64"
-config-settings = { setup-args = "--cross-file={project}/meson_cross_files/windows-arm64.ini" }
+config-settings = { setup-args = "--cross-file={package}/meson_cross_files/windows-arm64.ini" }
 
 # cross-compile the Windows 32-bit (x86) wheel with the matching Meson cross file
 [[tool.cibuildwheel.overrides]]
 select = "*-win32"
-config-settings = { setup-args = "--cross-file={project}/meson_cross_files/windows-386.ini" }
+# Switch back to {project} once https://github.com/pypa/cibuildwheel/pull/2934
+# makes it to a release
+config-settings = { setup-args = "--cross-file={package}/meson_cross_files/windows-386.ini" }
 
 [tool.ruff]
 src = ["src"]
