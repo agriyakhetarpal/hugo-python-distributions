@@ -16,8 +16,6 @@ concurrency:
 
 env:
   FORCE_COLOR: 3
-  CIBW_SKIP: "pp* *musllinux*"
-  CIBW_BUILD_FRONTEND: "build"
 
 permissions: {}
 
@@ -91,15 +89,7 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
-          # The wheel is py3-none, so building for the single matrix Python is
-          # enough to exercise the build on each interpreter. cibuildwheel picks
-          # each runner's native architecture automatically.
           CIBW_BUILD: "cp${{ matrix.python-version == '3.10' && '310' || matrix.python-version == '3.13' && '313' || '314' }}-*"
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
   # TODO: add aarch64 to x86_64 cross-compilation for Linux
   experimental:
@@ -140,8 +130,14 @@ jobs:
         env:
           CIBW_BUILD: "cp${{ matrix.python-version == '3.10' && '310' || matrix.python-version == '3.13' && '313' || '314' }}-*"
           CIBW_ARCHS_LINUX: x86_64
+          # This job lies about the arch (x86_64 container, aarch64 wheel via the
+          # cross file), so its build identifier collides with the native x86_64
+          # build and can't be selected in a pyproject override. Keep the cross
+          # settings here, and disable the global test-command and repair: the
+          # aarch64 wheel can neither run nor be repaired on x86_64.
           CIBW_CONFIG_SETTINGS_LINUX: "setup-args=--cross-file={project}/meson_cross_files/linux-arm64.ini"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
+          CIBW_TEST_COMMAND: ""
 
       - name: Build binary distribution (wheel) on Windows (arm64)
         if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
@@ -151,12 +147,7 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp314-*"
           CIBW_ARCHS_WINDOWS: ARM64
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-arm64.ini"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_SKIP: "*-win_arm64"
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.
@@ -167,14 +158,7 @@ jobs:
           package-dir: .
           output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp314-*"
           CIBW_ARCHS_WINDOWS: x86
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-386.ini"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload artifacts for debugging
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

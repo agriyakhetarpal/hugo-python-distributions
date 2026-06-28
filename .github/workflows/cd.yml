@@ -10,9 +10,6 @@ on:
 
 env:
   FORCE_COLOR: 3
-  CIBW_BUILD_FRONTEND: "build"
-  CIBW_BUILD: "cp314-*"
-  CIBW_SKIP: "pp* *musllinux*"
 
 permissions: {}
 
@@ -71,13 +68,6 @@ jobs:
         with:
           package-dir: .
           output-dir: wheelhouse
-        env:
-          CIBW_ARCHS_WINDOWS: AMD64
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -101,16 +91,8 @@ jobs:
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
-        with:
-          package-dir: .
-          output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp314-*"
           CIBW_ARCHS_WINDOWS: ARM64
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-arm64.ini"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_SKIP: "*-win_arm64"
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -121,7 +103,7 @@ jobs:
 
   windows_i686_wheels:
     name: i686-windows
-    runs-on: windows-2025
+    runs-on: windows-latest
     permissions:
       contents: read
     steps:
@@ -132,18 +114,8 @@ jobs:
 
       - name: Build binary distribution (wheel) on Windows (i686)
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
-        with:
-          package-dir: .
-          output-dir: wheelhouse
         env:
-          CIBW_BUILD: "cp314-*"
           CIBW_ARCHS_WINDOWS: x86
-          CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
-          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--cross-file={project}/meson_cross_files/windows-386.ini"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: delvewheel repair -w {dest_dir} {wheel}
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -167,11 +139,6 @@ jobs:
         with:
           package-dir: .
           output-dir: wheelhouse
-        env:
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -195,11 +162,6 @@ jobs:
         with:
           package-dir: .
           output-dir: wheelhouse
-        env:
-          CIBW_ARCHS_LINUX: aarch64
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -229,15 +191,8 @@ jobs:
 
       - name: Build binary distribution (wheel) on Linux (s390x)
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
-        with:
-          package-dir: .
-          output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: s390x
-          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -263,15 +218,8 @@ jobs:
 
       - name: Build binary distribution (wheel) on Linux (ppc64le)
         uses: pypa/cibuildwheel@294735312765b09d24a2fbec22660ce817587d55 # v4.1.0
-        with:
-          package-dir: .
-          output-dir: wheelhouse
         env:
           CIBW_ARCHS_LINUX: ppc64le
-          CIBW_ENVIRONMENT_LINUX: PATH=$PATH:$HOME/go_installed/go/bin
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -295,11 +243,6 @@ jobs:
         with:
           package-dir: .
           output-dir: wheelhouse
-        env:
-          CIBW_ARCHS_MACOS: x86_64
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -323,11 +266,6 @@ jobs:
         with:
           package-dir: .
           output-dir: wheelhouse
-        env:
-          CIBW_ARCHS_MACOS: arm64
-          CIBW_TEST_COMMAND: |
-            hugo version
-            hugo env --logLevel debug
 
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
