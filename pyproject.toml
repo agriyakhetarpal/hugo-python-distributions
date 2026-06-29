@@ -59,6 +59,38 @@ hugo = "hugo.cli:__call"
 [tool.meson-python]
 allow-windows-internal-shared-libs = true
 
+[tool.cibuildwheel]
+# CI overrides CIBW_BUILD to also exercise the build on other interpreters
+# but since we are shipping a none-any wheel this doesn't matter for local
+# builds as we don't want to build multiple wheels
+build = "cp314-*"
+skip = "*musllinux*"
+test-command = """
+hugo version
+hugo env --logLevel debug
+"""
+# arm64 wheels are cross-compiled from the x86_64 runner and cannot run there
+test-skip = "*-win_arm64"
+
+[tool.cibuildwheel.windows]
+# auto would also build 32-bit x86 on a 64-bit runner. That target is
+# cross-compiled in its own job, so let's keep native Windows builds as AMD64 only.
+archs = ["AMD64"]
+
+# cross-compile the Windows arm64 wheel with the matching Meson cross file
+# Switch back to {project} once https://github.com/pypa/cibuildwheel/pull/2934
+# makes it to a release
+[[tool.cibuildwheel.overrides]]
+select = "*-win_arm64"
+config-settings = { setup-args = "--cross-file={package}/meson_cross_files/windows-arm64.ini" }
+
+# cross-compile the Windows 32-bit (x86) wheel with the matching Meson cross file
+[[tool.cibuildwheel.overrides]]
+select = "*-win32"
+# Switch back to {project} once https://github.com/pypa/cibuildwheel/pull/2934
+# makes it to a release
+config-settings = { setup-args = "--cross-file={package}/meson_cross_files/windows-386.ini" }
+
 [tool.ruff]
 src = ["src"]
 lint.extend-select = [

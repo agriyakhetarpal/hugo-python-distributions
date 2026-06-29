@@ -24,17 +24,6 @@ def lint(session: nox.Session) -> None:
     session.run("prek", "-a", *session.posargs)
 
 
-@nox.session(name="venv", reuse_venv=True)
-def venv(session: nox.Session) -> None:
-    """Create a virtual environment and install wheels from a specified folder into it."""
-    folder = "dist" if session.interactive else "wheelhouse"
-    session.log(f"Installing wheels from {folder}")
-    for file in DIR.joinpath(folder).glob("*.whl"):
-        session.install(file)
-        session.run("hugo", "version")
-        session.run("hugo", "env", "--logLevel", "debug")
-
-
 @nox.session(default=False, reuse_venv=True)
 def editable(session: nox.Session) -> None:
     """Smoke test console and module entry points from an editable install."""
@@ -43,17 +32,6 @@ def editable(session: nox.Session) -> None:
     session.install("--no-build-isolation", "-ve", ".")
     session.run("python", "-m", "hugo", "version")
     session.run("hugo", "version")
-
-
-def _get_version(session: nox.Session) -> str:
-    """Extract version from session posargs or meson.build."""
-    if session.posargs:
-        return session.posargs[0].lstrip("v")
-    content = (DIR / "meson.build").read_text()
-    match = re.search(r"version\s*:\s*'([0-9.]+)'", content)
-    if not match:
-        session.error("Could not determine version. Pass it as: nox -s tag -- 0.157.0")
-    return match.group(1)
 
 
 @nox.session(default=False, reuse_venv=True)
@@ -68,6 +46,17 @@ def docs(session: nox.Session) -> None:
         session.run("hugo", "server", "--source", str(DOCS_DIR))
     else:
         session.run("hugo", "--minify", "--source", str(DOCS_DIR))
+
+
+def _get_version(session: nox.Session) -> str:
+    """Extract version from session posargs or meson.build."""
+    if session.posargs:
+        return session.posargs[0].lstrip("v")
+    content = (DIR / "meson.build").read_text()
+    match = re.search(r"version\s*:\s*'([0-9.]+)'", content)
+    if not match:
+        session.error("Could not determine version. Pass it as: nox -s tag -- 0.157.0")
+    return match.group(1)
 
 
 @nox.session(default=False)
