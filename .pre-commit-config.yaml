@@ -39,7 +39,7 @@ repos:
         args: ["--skip=CODE_OF_CONDUCT.md"]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "4923370d55631aa5b66f612f52d67b2e0ca2a38c" # frozen: v3.9.1
+    rev: "39e2973981e6d2f9b6c543b0086a2d2393abdc89" # frozen: v3.9.4
     hooks:
       - id: prettier
         files: \.(html|md|toml|yml|yaml)
