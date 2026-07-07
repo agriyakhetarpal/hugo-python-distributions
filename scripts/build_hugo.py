@@ -8,7 +8,6 @@ can also run this script standalone for debugging.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import os
 import platform
 import re
@@ -22,27 +21,6 @@ from piwheels_go_toolchain import download_go_toolchain, is_32bit_arm_linux
 
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
-
-def _resolve_go_binary() -> tuple[str, str | None]:
-    """
-    Return the path to the Go binary and its GOROOT if found via the `go-bin`
-
-    TODO: remove once go-bin ships a release that includes my PR at
-    https://github.com/jmelahman/go-bin/pull/16, which fixes this by using
-    ``subprocess`` on non-POSIX platforms instead of ``os.execv``. At that
-    point this function can be dropped and callers replaced with just "go"
-    """
-    spec = importlib.util.find_spec("go")
-    if spec and spec.origin:
-        goroot = Path(spec.origin).parent
-        suffix = ".exe" if sys.platform == "win32" else ""
-        exe = goroot / "bin" / ("go" + suffix)
-        if exe.is_file():
-            return str(exe), str(goroot)
-    return "go", None
-
-
-_GO_BINARY, _GO_GOROOT = _resolve_go_binary()
 
 HOST_GOOS = {
     "darwin": "darwin",
@@ -251,8 +229,8 @@ def main() -> int:
     cache.mkdir(parents=True, exist_ok=True)
     shutil.rmtree(cache / "bin", ignore_errors=True)
 
-    go_binary, go_goroot = _GO_BINARY, _GO_GOROOT
-    if is_32bit_arm_linux() and go_binary == "go":
+    go_binary, go_goroot = "go", None
+    if is_32bit_arm_linux():
         # It is impossible for go-bin to ship armv6l/armv7l wheels as it
         # just bundles the downloaded Go toolchain, so we need to download
         # it ourselves for piwheels.
