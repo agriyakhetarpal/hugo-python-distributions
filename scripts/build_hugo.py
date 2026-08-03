@@ -16,9 +16,12 @@ import stat
 import subprocess
 import sys
 from pathlib import Path
-from typing import Self
+from typing import TYPE_CHECKING
 
 from piwheels_go_toolchain import download_go_toolchain, is_32bit_arm_linux
+
+if TYPE_CHECKING:
+    from typing import Self
 
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
