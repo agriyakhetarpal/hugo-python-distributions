@@ -16,8 +16,12 @@ import stat
 import subprocess
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from piwheels_go_toolchain import download_go_toolchain, is_32bit_arm_linux
+
+if TYPE_CHECKING:
+    from typing import Self
 
 HUGO_VENDOR_NAME = "hugo-python-distributions"
 
@@ -149,7 +153,7 @@ class SubmoduleVcsSwap:
         self.hugo_git = hugo_src / ".git"
         self._saved: str | None = None
 
-    def __enter__(self) -> SubmoduleVcsSwap:
+    def __enter__(self) -> Self:
         if not self.hugo_git.is_file():
             return self
         content = self.hugo_git.read_text()
