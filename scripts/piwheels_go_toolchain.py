@@ -18,9 +18,8 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-# Keep in sync with the go-bin pins in hugo_meson_python_wrapper.py
-GO_VERSION = "1.26.4"
-GO_LINUX_ARM_SHA256 = "8db458e995f18a9427a745cefe7a3323962fa2548c4715148963311f300d3b1a"
+GO_VERSION = "1.26.5"
+GO_LINUX_ARM_SHA256 = "6dae9edab81c13bccf962dec15f1fd2ec26c14a6821b4d2c92dab4130c289d7a"
 
 GO_LINUX_ARM_FILENAME = f"go{GO_VERSION}.linux-armv6l.tar.gz"
 GO_LINUX_ARM_URL = f"https://go.dev/dl/{GO_LINUX_ARM_FILENAME}"
