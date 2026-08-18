@@ -64,7 +64,7 @@ jobs:
       - name: Install MinGW compiler(s)
         run: choco install mingw
 
-      - uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+      - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -90,7 +90,7 @@ jobs:
       - name: Build binary distribution (wheel) on Windows (arm64)
         # We need to use cibuildwheel because it has experimental support for cross-compiling
         # to arm64 and setup-python does not have arm64 support on Windows right now
-        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         env:
           CIBW_ARCHS_WINDOWS: ARM64
 
@@ -113,7 +113,7 @@ jobs:
           submodules: recursive
 
       - name: Build binary distribution (wheel) on Windows (i686)
-        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         env:
           CIBW_ARCHS_WINDOWS: x86
 
@@ -135,7 +135,7 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+      - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -158,7 +158,7 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+      - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -190,7 +190,7 @@ jobs:
           image: tonistiigi/binfmt:qemu-v8.1.5
 
       - name: Build binary distribution (wheel) on Linux (s390x)
-        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         env:
           CIBW_ARCHS_LINUX: s390x
 
@@ -217,7 +217,7 @@ jobs:
           platforms: all
 
       - name: Build binary distribution (wheel) on Linux (ppc64le)
-        uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+        uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         env:
           CIBW_ARCHS_LINUX: ppc64le
 
@@ -239,7 +239,7 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+      - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           package-dir: .
           output-dir: wheelhouse
@@ -262,7 +262,7 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - uses: pypa/cibuildwheel@4726cd35bb13f7bde50cf2761f2499ac7b3aa32c # v4.1.1
+      - uses: pypa/cibuildwheel@1828c10ab37f080699c7b81cea34097c684a7074 # v4.2.0
         with:
           package-dir: .
           output-dir: wheelhouse
