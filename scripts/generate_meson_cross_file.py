@@ -1,7 +1,7 @@
 """
 Emits a Meson cross file for a given GOOS and GOARCH combination, to derive
 the wheel platform tag from `[host_machine]` for cross-compilation builds.
-These are used for Zig-based cross-compilation in CI, but can also be used
+These are used for cross-compilation in CI, but can also be used
 for any general cross-compiler (say, Clang, or a custom-built GCC toolchain).
 
 Usage:

@@ -89,16 +89,6 @@ endif
 goos = GOOS_MAP[host_sys]
 goarch = GOARCH_MAP[host_cpu]
 
-# Use Zig when cross-compiling, except for the "macOS arm64 to macOS x86_64"
-# case where Zig lacks the macOS SDK and cannot find libresolv.dylib. For that
-# we rely on the system linker as it is where AppleClang has native support
-# for cross-compilation. This can still be overridden by setting the use_zig
-# option to true or false explicitly.
-auto_use_zig = meson.is_cross_build() and host_sys != 'darwin'
-use_zig_opt = get_option('use_zig')
-use_zig = use_zig_opt.auto() ? auto_use_zig : use_zig_opt.enabled()
-
-
 custom_target(
   'hugo-binary',
   output : 'hugo' + exe_suffix, # must match src/hugo/cli.py
@@ -109,7 +99,6 @@ custom_target(
     '--cache',   meson.project_build_root()  / 'hugo_cache',
     '--version', meson.project_version(),
     '--output',  '@OUTPUT@',
-    '--use-zig', use_zig.to_string(),
     '--goos',    goos,
     '--goarch',  goarch,
   ],

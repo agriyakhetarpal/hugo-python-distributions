@@ -73,16 +73,17 @@ jobs:
             macos-15-intel,
             macos-latest,
             windows-latest,
+            windows-11-arm,
           ]
+        # CPython ships native Windows arm64 builds for 3.11 and later only
+        exclude:
+          - runs-on: windows-11-arm
+            python-version: "3.10"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           submodules: recursive
-
-      - name: Install MinGW compiler(s) on Windows
-        if: matrix.runs-on == 'windows-latest'
-        run: choco install mingw
 
       - uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
         with:
@@ -91,10 +92,9 @@ jobs:
         env:
           CIBW_BUILD: "cp${{ matrix.python-version == '3.10' && '310' || matrix.python-version == '3.13' && '313' || '314' }}-*"
 
-  # TODO: add aarch64 to x86_64 cross-compilation for Linux
-  experimental:
+  cross_compile:
     needs: [style]
-    name: zig-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
+    name: cross-${{ matrix.runs-on }}-${{ matrix.architecture }}-python-${{ matrix.python-version }}
     runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: read
@@ -104,11 +104,13 @@ jobs:
         runs-on: [ubuntu-latest, windows-latest]
         architecture: [arm64, i686]
         python-version: ["3.10", "3.13", "3.14"]
-        # Exclude i686 on Linux for all Python versions
-        # Test just one Python version on Windows for now
+        # Cross-compile arm64 on Linux and i686 on Windows only.
+        # Test just one Python version on Windows for now.
         exclude:
           - runs-on: ubuntu-latest
             architecture: i686
+          - runs-on: windows-latest
+            architecture: arm64
           - python-version: "3.10"
             runs-on: windows-latest
           - python-version: "3.14"
@@ -138,16 +140,6 @@ jobs:
           CIBW_CONFIG_SETTINGS_LINUX: "setup-args=--cross-file={project}/meson_cross_files/linux-arm64.ini"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
           CIBW_TEST_COMMAND: ""
-
-      - name: Build binary distribution (wheel) on Windows (arm64)
-        if: matrix.runs-on == 'windows-latest' && matrix.architecture == 'arm64'
-        # TODO: FIXME: use windows-11-arm runners as they're available now, and drop this
-        uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
-        with:
-          package-dir: .
-          output-dir: wheelhouse
-        env:
-          CIBW_ARCHS_WINDOWS: ARM64
 
         # Note: cibuildwheel will manage installing 32-bit Python on Windows. We
         # do not need to do that manually unless we use setup-python instead.

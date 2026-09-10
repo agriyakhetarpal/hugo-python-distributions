@@ -12,7 +12,7 @@
 [pypi-downloads-daily]: https://img.shields.io/pypi/dd/hugo
 [license-badge]: https://img.shields.io/pypi/l/hugo?color=lavender
 [license-link]: https://apache.org/licenses/LICENSE-2.0
-[hugo-badge]: https://img.shields.io/badge/hugo-extended,withdeploy-pink.svg?style=flat&logo=hugo
+[hugo-badge]: https://img.shields.io/badge/hugo-standard,withdeploy-pink.svg?style=flat&logo=hugo
 [hugo-link]: https://gohugo.io/
 [docs-link]: https://github.com/agriyakhetarpal/hugo-python-distributions/
 [docs-badge]: https://img.shields.io/badge/docs-read%20on%20GitHub-blue.svg?style=flat&logo=github
@@ -27,9 +27,12 @@
 
 </div>
 
-Binaries for the **`extended` + `withdeploy` edition** of the Hugo static site generator, installable via `pip`
+Binaries for the **`standard` + `withdeploy` edition** of the Hugo static site generator, installable via `pip`
 
 This project provides wheels for [Hugo](https://gohugo.io/) so that it can be used with `pip` on macOS, Linux, and Windows; for Python 3.10 and later.
+
+> [!IMPORTANT]
+> These wheels ship the standard edition of Hugo, which does not bundle the deprecated LibSass transpiler. If your site compiles Sass, install [Dart Sass](https://gohugo.io/functions/css/sass/#dart-sass) and set `transpiler = "dartsass"` in your `css.Sass` options.
 
 > [!NOTE]
 > Only the latest, stable, and to-be EOL Python versions are tested regularly. If you encounter any issues with the package on a specific Python version, please feel free to [open an issue](https://github.com/agriyakhetarpal/hugo-python-distributions/issues/new).

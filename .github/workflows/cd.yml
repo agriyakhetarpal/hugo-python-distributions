@@ -61,9 +61,6 @@ jobs:
           persist-credentials: false
           submodules: recursive
 
-      - name: Install MinGW compiler(s)
-        run: choco install mingw
-
       - uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
         with:
           package-dir: .
@@ -76,9 +73,9 @@ jobs:
           path: ./wheelhouse/*.whl
           if-no-files-found: error
 
-  windows_arm64_wheels: # TODO: for later: use windows-11-arm runners as they're available now
+  windows_arm64_wheels:
     name: arm64-windows
-    runs-on: windows-latest
+    runs-on: windows-11-arm
     permissions:
       contents: read
     steps:

@@ -92,25 +92,6 @@ def _host_platform_tag(config_settings: dict[str, Any] | None) -> str | None:
     return None if host is None else PLATFORM_TAGS_MAP.get(host)
 
 
-def _needs_zig(config_settings: dict[str, Any] | None) -> bool:
-    """Return True if the Zig compiler is needed for this build.
-
-    We do `auto_use_zig = meson.is_cross_build() and host_sys != 'darwin'`.
-    It maps here. An explicit -Duse_zig=true/false in setup-args overrides
-    the auto logic.
-    """
-    host = _parse_cross_file(config_settings)
-    if host is None:
-        return False
-    setup_args = _flatten(config_settings.get("setup-args") if config_settings else [])
-    for arg in setup_args:
-        m = re.match(r"-Duse_zig=(true|false)$", arg)
-        if m:
-            return m.group(1) == "true"
-    system, _ = host
-    return system != "darwin"
-
-
 def _maybe_set_host_platform(config_settings: dict[str, Any] | None) -> None:
     """If config_settings contains a Meson cross file, force meson-python's wheel tag."""
     tag = _host_platform_tag(config_settings)
@@ -175,8 +156,6 @@ def get_requires_for_build_wheel(
     # it ourselves for piwheels instead of relying on go-bin.
     if not is_32bit_arm_linux():
         reqs.append(f"go-bin=={GO_VERSION}")
-    if _needs_zig(config_settings):
-        reqs.append("ziglang==0.16.0")
     return reqs
 
 
