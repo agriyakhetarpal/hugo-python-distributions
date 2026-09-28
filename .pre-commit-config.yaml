@@ -19,7 +19,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "a56c0b927e6465d37cae3e97d35d4d18ab2b96cd"  # frozen: v0.16.9
+    rev: "a56c0b927e6465d37cae3e97d35d4d18ab2b96cd" # frozen: v0.16.9
     hooks:
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
@@ -39,7 +39,7 @@ repos:
         args: ["--skip=CODE_OF_CONDUCT.md"]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "ef4a397f916211b4a39ccf9d3d9cbb6562157251"  # frozen: v3.9.9
+    rev: "ef4a397f916211b4a39ccf9d3d9cbb6562157251" # frozen: v3.9.9
     hooks:
       - id: prettier
         files: \.(html|md|toml|yml|yaml)
