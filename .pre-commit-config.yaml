@@ -19,7 +19,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "c0f278f1254ccc8fb09676bcdb8d847e7db493e5"  # frozen: v0.17.4
+    rev: "c0f278f1254ccc8fb09676bcdb8d847e7db493e5" # frozen: v0.17.4
     hooks:
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
@@ -46,7 +46,7 @@ repos:
         args: [--prose-wrap=preserve]
 
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: "06a39750ec31860bb44f2acf67182c40016cd1e7"  # frozen: v1.32.0
+    rev: "06a39750ec31860bb44f2acf67182c40016cd1e7" # frozen: v1.32.0
     hooks:
       - id: zizmor
         args: ["--pedantic"]
