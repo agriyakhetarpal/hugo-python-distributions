@@ -18,8 +18,8 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-GO_VERSION = "1.27.3"
-GO_LINUX_ARM_SHA256 = "d6f4e11dd7157030d7ac11c51c8f73201a2db932d593c3106b1da11cc32bfdf8"
+GO_VERSION = "1.27.4"
+GO_LINUX_ARM_SHA256 = "e50964c41c6e187375387939e2f380de7250eba44e2259dfeb75c540d9d585c3"
 
 GO_LINUX_ARM_FILENAME = f"go{GO_VERSION}.linux-armv6l.tar.gz"
 GO_LINUX_ARM_URL = f"https://go.dev/dl/{GO_LINUX_ARM_FILENAME}"
