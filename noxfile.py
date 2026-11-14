@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 import subprocess
 from pathlib import Path
 
@@ -49,14 +48,13 @@ def docs(session: nox.Session) -> None:
 
 
 def _get_version(session: nox.Session) -> str:
-    """Extract version from session posargs or meson.build."""
+    """Extract version from session posargs or pyproject.toml."""
     if session.posargs:
         return session.posargs[0].lstrip("v")
-    content = (DIR / "meson.build").read_text()
-    match = re.search(r"version\s*:\s*'([0-9.]+)'", content)
-    if not match:
+    version = nox.project.load_toml("pyproject.toml")["project"].get("version")
+    if not version:
         session.error("Could not determine version. Pass it as: nox -s tag -- 0.157.0")
-    return match.group(1)
+    return version
 
 
 @nox.session(default=False)

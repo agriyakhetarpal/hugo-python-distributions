@@ -1,8 +1,8 @@
 """
 Build the Hugo binary from the vendored submodule.
 
-Invoked by meson.build's custom_target. All inputs come via CLI flags, so we
-can also run this script standalone for debugging.
+Invoked by the hatchling build hook in hatch_build.py. All inputs come via
+CLI flags, so we can also run this script standalone for debugging.
 """
 
 from __future__ import annotations
@@ -47,35 +47,18 @@ HOST_GOARCH = {
     "riscv64": "riscv64",
 }.get(platform.machine(), platform.machine())
 
-ZIG_TARGET_MAP = {
-    ("darwin", "amd64"): "x86_64-macos-none",
-    ("darwin", "arm64"): "aarch64-macos-none",
-    ("linux", "amd64"): "x86_64-linux-gnu",
-    ("linux", "arm64"): "aarch64-linux-gnu",
-    ("linux", "arm"): "arm-linux-gnueabihf",
-    ("linux", "386"): "x86-linux-gnu",
-    ("linux", "ppc64le"): "powerpc64le-linux-gnu",
-    ("linux", "s390x"): "s390x-linux-gnu",
-    ("linux", "riscv64"): "riscv64-linux-gnu",
-    ("windows", "386"): "x86-windows-gnu",
-    ("windows", "amd64"): "x86_64-windows-gnu",
-    ("windows", "arm64"): "aarch64-windows-gnu",
-}
-
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--hugo-src", required=True, type=Path)
     p.add_argument("--cache", required=True, type=Path)
-    p.add_argument("--version", required=True)
     p.add_argument("--output", required=True, type=Path)
-    p.add_argument("--use-zig", default="false")
     p.add_argument("--goos", default="")
     p.add_argument("--goarch", default="")
     return p.parse_args()
 
 
-def check_dependencies(go_binary: str, use_zig: bool) -> None:
+def check_dependencies(go_binary: str) -> None:
     try:
         subprocess.check_call(
             [go_binary, "version"],
@@ -93,48 +76,6 @@ def check_dependencies(go_binary: str, use_zig: bool) -> None:
     except OSError as err:
         msg = "Git not found. Please install Git from https://git-scm.com/downloads or your package manager."
         raise OSError(msg) from err
-
-    if use_zig:
-        try:
-            subprocess.check_call(
-                [sys.executable, "-m", "ziglang", "version"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-        except OSError as err:
-            msg = "Zig compiler not found. Please install Zig from https://ziglang.org/download/, from PyPI as ziglang, or your package manager."
-            raise OSError(msg) from err
-        return
-
-    for cc in ("gcc", "clang"):
-        try:
-            subprocess.check_call(
-                [cc, "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            return
-        except OSError:
-            continue
-    msg = "GCC/Clang not found. Please install GCC or Clang via your package manager."
-    raise OSError(msg)
-
-
-def setup_zig_compiler(goos: str, goarch: str) -> None:
-    target = ZIG_TARGET_MAP.get((goos, goarch))
-    if not target:
-        print(
-            f"Warning: there is no Zig target combination for GOOS={goos} and GOARCH={goarch}",
-            file=sys.stderr,
-        )
-        return
-    cc = f"{sys.executable} -m ziglang cc -target {target}"
-    cxx = f"{sys.executable} -m ziglang c++ -target {target}"
-    if target == "x86-windows-gnu":
-        cc += " -w"
-        cxx += " -w"
-    os.environ["CC"] = cc
-    os.environ["CXX"] = cxx
-    os.environ["CGO_CFLAGS"] = "-g0 -O3 -ffunction-sections -fdata-sections"
-    os.environ["CGO_LDFLAGS"] = "-s -w -Wl,--gc-sections"
 
 
 class SubmoduleVcsSwap:
@@ -223,7 +164,6 @@ def locate_built_binary(gopath: Path, goos: str, goarch: str, exe_ext: str) -> P
 
 def main() -> int:
     args = parse_args()
-    use_zig = args.use_zig.lower() == "true"
     goos = args.goos or HOST_GOOS
     goarch = args.goarch or HOST_GOARCH
     cache = args.cache.resolve()
@@ -240,12 +180,12 @@ def main() -> int:
         # it ourselves for piwheels.
         go_binary, go_goroot = download_go_toolchain(cache)
 
-    check_dependencies(go_binary, use_zig)
+    check_dependencies(go_binary)
 
     if go_goroot:
         os.environ.setdefault("GOROOT", go_goroot)
 
-    os.environ["CGO_ENABLED"] = "1"
+    os.environ["CGO_ENABLED"] = "0"
     os.environ["GO111MODULE"] = "on"
     os.environ["GOPATH"] = str(cache)
     os.environ["GOCACHE"] = str(cache)
@@ -256,9 +196,6 @@ def main() -> int:
         default_goarm = "6" if platform.machine() == "armv6l" else "7"
         os.environ.setdefault("GOARM", default_goarm)
 
-    if use_zig:
-        setup_zig_compiler(goos, goarch)
-
     ldflags = [
         f"-s -w -X github.com/gohugoio/hugo/common/hugo.vendorInfo={HUGO_VENDOR_NAME}",
     ]
@@ -267,8 +204,6 @@ def main() -> int:
         ldflags.append(
             f"-X github.com/gohugoio/hugo/common/hugo.buildDate={commit_date}",
         )
-    if goos == "windows":
-        ldflags.append("-extldflags '-static'")
 
     with SubmoduleVcsSwap(hugo_src):
         subprocess.check_call(
@@ -277,10 +212,11 @@ def main() -> int:
                 "install",
                 "-trimpath",
                 "-v",
+                "-modcacherw",  # to keep the persistent build cache deletable
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",
-                "extended,withdeploy",
+                "withdeploy",
             ],
             cwd=hugo_src,
         )
