@@ -52,6 +52,7 @@ GO_TARGETS["linux_armv6l"] = ("linux", "arm")  # piwheels case
 # macOS architecture mappings cases
 MACOS_ARCHS = {"amd64": "x86_64", "arm64": "arm64"}
 MACOS_GOARCHS = {arch: goarch for goarch, arch in MACOS_ARCHS.items()}
+GO_MACOS_MIN = (13, 0)
 
 _32BIT_INTERPRETER = sys.maxsize <= 2**32
 
@@ -73,11 +74,9 @@ def _macos_platform_tag(arch: str) -> str:
             major, minor = (int(p) for p in [*mac_ver.split(".")[:2], "0"][:2])
             version = (major, minor)
         else:
-            version = (11, 0) if arch == "arm64" else (10, 13)
+            version = GO_MACOS_MIN
 
-    # arm64 starts at 11.0, and from 11 onwards the minor is a patch level
-    if arch == "arm64" and version < (11, 0):
-        version = (11, 0)
+    version = max(version, GO_MACOS_MIN)
     major, minor = version
     if major >= 11:
         minor = 0
@@ -103,7 +102,7 @@ def native_platform_tag() -> str:
 
 def go_target_for_tag(tag: str) -> tuple[str, str]:
     if tag.startswith("macosx_"):
-        arch = tag.rsplit("_", 1)[1]
+        arch = tag.split("_", 3)[-1]  # macosx_<major>_<minor>_<arch>
         if arch in MACOS_GOARCHS:
             return ("darwin", MACOS_GOARCHS[arch])
     elif tag in GO_TARGETS:

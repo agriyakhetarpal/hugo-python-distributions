@@ -104,6 +104,9 @@ hugo version
 hugo env --logLevel debug
 """
 
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "13.0"
+
 [tool.cibuildwheel.windows]
 # auto would also build 32-bit x86 on a 64-bit runner. That target is
 # cross-compiled in its own job, so build only the runner's native 64-bit
