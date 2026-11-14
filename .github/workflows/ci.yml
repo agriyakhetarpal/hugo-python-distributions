@@ -133,11 +133,12 @@ jobs:
           CIBW_BUILD: "cp${{ matrix.python-version == '3.10' && '310' || matrix.python-version == '3.13' && '313' || '314' }}-*"
           CIBW_ARCHS_LINUX: x86_64
           # This job lies about the arch (x86_64 container, aarch64 wheel via the
-          # cross file), so its build identifier collides with the native x86_64
-          # build and can't be selected in a pyproject override. Keep the cross
-          # settings here, and disable the global test-command and repair: the
-          # aarch64 wheel can neither run nor be repaired on x86_64.
-          CIBW_CONFIG_SETTINGS_LINUX: "setup-args=--cross-file={project}/meson_cross_files/linux-arm64.ini"
+          # goos/goarch config settings), so its build identifier collides with
+          # the native x86_64 build and can't be selected in a pyproject override
+          #
+          # Keep the cross settings here, and disable the global test-command and
+          # repair, as the aarch64 wheel can neither run nor be repaired on x86_64
+          CIBW_CONFIG_SETTINGS_LINUX: "goos=linux goarch=arm64"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: ""
           CIBW_TEST_COMMAND: ""
 
@@ -172,10 +173,38 @@ jobs:
         with:
           python-version: "3.14"
 
+      # so that we don't pick up Go on a runner in case it's there
+      - name: Check that go-bin is a dynamic build requirement
+        run: |
+          uv run --no-project --with hatchling python - <<'EOF'
+          import sys
+          sys.path.insert(0, "scripts")
+          import hugo_build_backend
+          requires = hugo_build_backend.get_requires_for_build_wheel()
+          print(requires)
+          assert any(r.startswith("go-bin==") for r in requires), requires
+          EOF
+
       - name: Build source distribution (SDist) and binary distribution (wheel)
         run: |
           uvx --from build pyproject-build --sdist --wheel . --outdir dist/
           uvx twine check dist/* --strict
+
+        # The root .gitignore applies inside hugo-src, so a new Hugo release
+        # could lose files silently. Just a smoke check like this is fine
+      - name: Check that the sdist contains every tracked Hugo source file
+        run: |
+          SDIST=$(ls dist/*.tar.gz)
+          PREFIX=$(tar -tzf "$SDIST" | head -1 | cut -d/ -f1)
+          git -C hugo-src -c core.quotePath=false ls-files | grep -vE '^(docs|testscripts)/|(^|/)testdata/' | sort > expected.txt
+          tar -tzf "$SDIST" | sed -n "s#^$PREFIX/hugo-src/##p" | grep -v '^$' | sort > actual.txt
+          comm -23 expected.txt actual.txt > missing.txt
+          if [ -s missing.txt ]; then
+            echo "::error::tracked hugo-src files missing from the sdist:"
+            cat missing.txt
+            exit 1
+          fi
+          echo "All $(wc -l < expected.txt) tracked hugo-src files are in the sdist"
 
       - name: Check sdist size, fail if it exceeds 10 MiB
         run: |

@@ -85,8 +85,6 @@ jobs:
           submodules: recursive
 
       - name: Build binary distribution (wheel) on Windows (arm64)
-        # We need to use cibuildwheel because it has experimental support for cross-compiling
-        # to arm64 and setup-python does not have arm64 support on Windows right now
         uses: pypa/cibuildwheel@f9b966cfadf4109556cadc5bb39ddb72d0ce664e # v4.3.5
         env:
           CIBW_ARCHS_WINDOWS: ARM64

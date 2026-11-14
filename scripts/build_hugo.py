@@ -1,8 +1,8 @@
 """
 Build the Hugo binary from the vendored submodule.
 
-Invoked by meson.build's custom_target. All inputs come via CLI flags, so we
-can also run this script standalone for debugging.
+Invoked by the hatchling build hook in hatch_build.py. All inputs come via
+CLI flags, so we can also run this script standalone for debugging.
 """
 
 from __future__ import annotations
@@ -52,7 +52,6 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
     p.add_argument("--hugo-src", required=True, type=Path)
     p.add_argument("--cache", required=True, type=Path)
-    p.add_argument("--version", required=True)
     p.add_argument("--output", required=True, type=Path)
     p.add_argument("--goos", default="")
     p.add_argument("--goarch", default="")
@@ -213,6 +212,7 @@ def main() -> int:
                 "install",
                 "-trimpath",
                 "-v",
+                "-modcacherw",  # to keep the persistent build cache deletable
                 "-ldflags",
                 " ".join(ldflags),
                 "-tags",

@@ -10,7 +10,7 @@ toc = true
 # Documentation for `hugo-python-distributions`
 
 This webpage is meant to serve the documentation for the `hugo-python-distributions` project, which aims to provide a distribution
-channel for the **standard + withdeploy edition** of the Hugo static site generator through `pip`-installable binaries (wheels) hosted on the [Python Package Index (PyPI)](https://pypi.org/).
+channel for the **deploy edition** of the Hugo static site generator through `pip`-installable binaries (wheels) hosted on the [Python Package Index (PyPI)](https://pypi.org/).
 
 Fun fact: this website itself is built with using the `hugo` package from PyPI, thus serving as a real-world test case for the project!
 

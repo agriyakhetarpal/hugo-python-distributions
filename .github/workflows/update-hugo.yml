@@ -27,7 +27,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          CURRENT_VERSION=$(grep -oP "version\s*:\s*'\K[0-9.]+" meson.build)
+          CURRENT_VERSION=$(grep -oP '^version = "\K[0-9.]+' pyproject.toml)
           echo "Current version: $CURRENT_VERSION"
 
           # Hugo releases use X.Y.Z (3 components). Our Python dist version may have a fourth.
@@ -65,7 +65,7 @@ jobs:
             RELEASE_TYPE="patch"
           fi
 
-          sed -i "s/version\s*:\s*'$CURRENT_VERSION'/version : '$LATEST_VERSION'/" meson.build
+          sed -i "s/^version = \"$CURRENT_VERSION\"/version = \"$LATEST_VERSION\"/" pyproject.toml
 
           # Update the Hugo submodule to the new version tag
           cd hugo-src
@@ -100,7 +100,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY"
           git checkout -b "update-hugo-v${LATEST_VERSION}"
-          git add meson.build hugo-src
+          git add pyproject.toml hugo-src
           git commit -m "Update Hugo to v${LATEST_VERSION}"
           git push origin "update-hugo-v${LATEST_VERSION}"
           gh pr create \
