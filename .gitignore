@@ -187,6 +187,9 @@ hugo_cache/
 /docs/resources
 *.lock
 
+# GitHub Actions lockfile
+!.github/workflows/actions.lock
+
 # Generated stamp file for sdist builds
 hugo-src/.hugo_commit_date
 
